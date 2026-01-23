@@ -1,8 +1,9 @@
 {
   "lodka": {
-    "x": 0,
-    "y": 0,
+    "height": 32,
+    "pixelRatio": 1,
     "width": 32,
-    "height": 32
+    "x": 0,
+    "y": 0
   }
 }
