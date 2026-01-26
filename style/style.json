@@ -1,24 +1,27 @@
 {
-  "ROZA_01": { "width": 128, "height": 128, "x": 0, "y": 0, "pixelRatio": 1 },
-  "VORDME_svg": { "width": 51, "height": 42, "x": 128, "y": 0, "pixelRatio": 1 },
-  "VOR_svg": { "width": 51, "height": 42, "x": 128, "y": 42, "pixelRatio": 1 },
-  "DME_svg": { "width": 51, "height": 42, "x": 128, "y": 84, "pixelRatio": 1 },
+  "ROZA": { "width": 128, "height": 128, "x": 0, "y": 0, "pixelRatio": 1 },
 
-  "NCRP_svg": { "width": 50, "height": 50, "x": 0, "y": 128, "pixelRatio": 1 },
-  "HP_svg": { "width": 50, "height": 50, "x": 0, "y": 178, "pixelRatio": 1 },
-  "NDB_svg": { "width": 50, "height": 50, "x": 50, "y": 128, "pixelRatio": 1 },
-  "AD_CG_svg": { "width": 50, "height": 50, "x": 50, "y": 178, "pixelRatio": 1 },
-  "AD_C_svg": { "width": 50, "height": 50, "x": 100, "y": 128, "pixelRatio": 1 },
-  "CRP_svg": { "width": 50, "height": 50, "x": 100, "y": 178, "pixelRatio": 1 },
+  "VOR": { "width": 51, "height": 42, "x": 128, "y": 0, "pixelRatio": 1 },
+  "DME": { "width": 51, "height": 42, "x": 179, "y": 0, "pixelRatio": 1 },
+  "VORDME": { "width": 51, "height": 42, "x": 128, "y": 42, "pixelRatio": 1 },
 
-  "LS_svg": { "width": 37, "height": 37, "x": 179, "y": 0, "pixelRatio": 1 },
-  "AD_G_svg": { "width": 37, "height": 37, "x": 179, "y": 42, "pixelRatio": 1 },
+  "NCRP": { "width": 50, "height": 50, "x": 179, "y": 42, "pixelRatio": 1 },
+  "NDB": { "width": 50, "height": 50, "x": 0, "y": 128, "pixelRatio": 1 },
+  "CRP": { "width": 50, "height": 50, "x": 0, "y": 178, "pixelRatio": 1 },
 
-  "lodka": { "width": 33, "height": 33, "x": 179, "y": 79, "pixelRatio": 1 },
-  "lodka_odna": { "width": 33, "height": 33, "x": 150, "y": 128, "pixelRatio": 1 },
+  "AD_C": { "width": 50, "height": 50, "x": 50, "y": 128, "pixelRatio": 1 },
+  "HP": { "width": 50, "height": 50, "x": 50, "y": 178, "pixelRatio": 1 },
+  "AD_CG": { "width": 50, "height": 50, "x": 100, "y": 128, "pixelRatio": 1 },
 
-  "TACAN_01": { "width": 32, "height": 33, "x": 183, "y": 128, "pixelRatio": 1 },
+  "LS": { "width": 37, "height": 37, "x": 128, "y": 84, "pixelRatio": 1 },
+  "AD_G": { "width": 37, "height": 37, "x": 100, "y": 178, "pixelRatio": 1 },
 
-  "OBST_LT_svg": { "width": 29, "height": 50, "x": 150, "y": 161, "pixelRatio": 1 },
-  "OBST_svg": { "width": 29, "height": 40, "x": 179, "y": 161, "pixelRatio": 1 }
+  "lodka_odna": { "width": 33, "height": 33, "x": 179, "y": 92, "pixelRatio": 1 },
+  "lodka": { "width": 33, "height": 33, "x": 150, "y": 128, "pixelRatio": 1 },
+  "podcherk": { "width": 33, "height": 33, "x": 183, "y": 128, "pixelRatio": 1 },
+
+  "TACAN": { "width": 32, "height": 33, "x": 150, "y": 161, "pixelRatio": 1 },
+
+  "OBST": { "width": 29, "height": 40, "x": 150, "y": 194, "pixelRatio": 1 },
+  "OBST_LT": { "width": 29, "height": 50, "x": 182, "y": 161, "pixelRatio": 1 }
 }
