@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Bright – с фильтром и попапами</title>
+  <title>Bright – с кликабельными слоями + измерение</title>
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <script src="https://unpkg.com/maplibre-gl@5.14.0/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@5.14.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -19,9 +19,10 @@
       border-radius: 6px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.25);
       min-width: 240px;
-      font-size: 14px;
-      transition: all 0.2s ease;
+      max-height: 80vh;
       overflow: hidden;
+      transition: all 0.25s ease;
+      font-size: 14px;
     }
 
     #layer-panel.collapsed {
@@ -31,21 +32,25 @@
 
     #layer-header {
       padding: 10px 16px;
-      background: #f8f9fa;
       cursor: pointer;
       font-weight: bold;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      user-select: none;
+      color: white;
+      background: linear-gradient(135deg, #81d4fa 0%, #42a5f5 100%);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    #layer-header:hover { background: #e9ecef; }
+    #layer-header:hover {
+      background: linear-gradient(135deg, #64b5f6 0%, #2196f3 100%);
+    }
 
     #layer-content {
-      padding: 0 16px 12px 16px;
-      max-height: 70vh;
+      padding: 12px 16px;
+      max-height: calc(80vh - 42px);
       overflow-y: auto;
+      background: white;
     }
 
     .layer-item {
@@ -59,16 +64,115 @@
     }
     .layer-item label {
       cursor: pointer;
+      user-select: none;
       color: #444;
     }
 
-    /* Попапы */
-    .maplibregl-popup { max-width: 340px !important; }
+    /* Панель измерений */
+#measure-panel {
+  position: absolute;
+  top: 10px;
+  left: 310px;           /* было 270 → стало 310, можно поставить 320–340, если хочешь ещё правее */
+  z-index: 10;
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.28);
+  min-width: 260px;
+  max-height: 70vh;
+  overflow: hidden;
+  font-size: 13px;
+  border: 1px solid #b3d4fc;
+  transition: all 0.25s ease;   /* плавность */
+}
+
+#measure-panel.collapsed {
+  height: 42px !important;      /* фиксированная высота заголовка */
+  overflow: hidden;
+}
+
+#measure-header {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+#measure-content {
+  padding: 12px 14px;
+  background: white;
+}
+
+    #measure-btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    #measure-btn.active {
+      background: #d32f2f;
+    }
+
+    #clear-btn {
+      background: #666;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    #points-list {
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .point-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      background: #f8fbff;
+      border-radius: 4px;
+      border-left: 4px solid #42a5f5;
+    }
+
+    .total {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+      font-weight: bold;
+      color: #d81b60;
+    }
+
+    /* Попапы (полностью как в оригинале) */
+    .maplibregl-popup {
+      max-width: 340px !important;
+    }
     .maplibregl-popup-content {
       padding: 0;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .maplibregl-popup-tip {
+      border-top-color: inherit !important;
     }
     .popup-header {
       font-weight: bold;
@@ -84,16 +188,17 @@
       font-size: 18px;
       color: #555;
       padding: 4px 8px;
+      margin: -4px 0;
       border-radius: 4px;
     }
-    .popup-header .back-btn:hover { background: rgba(0,0,0,0.07); }
-
+    .popup-header .back-btn:hover {
+      background: rgba(0,0,0,0.07);
+    }
     .popup-body {
       padding: 12px 16px;
       max-height: 340px;
       overflow-y: auto;
     }
-
     .popup-layer-list {
       padding: 8px 0;
     }
@@ -129,12 +234,26 @@
   <div id="layer-panel">
     <div id="layer-header">
       <span>Слои <span id="layer-count">11/11</span></span>
-      <span>▼</span>
+      <span id="toggle-arrow">▼</span>
     </div>
     <div id="layer-content">
-      <!-- чекбоксы будут добавлены динамически -->
+      <!-- чекбоксы добавляются динамически -->
     </div>
   </div>
+
+  <!-- Панель измерений -->
+<div id="measure-panel">
+  <div id="measure-header">
+    <span>Измерение расстояния</span>
+    <span id="measure-toggle">▼</span>
+  </div>
+  <div id="measure-content">
+    <button id="measure-btn">Начать измерение</button>
+    <button id="clear-btn">Очистить маршрут</button>
+    <div id="points-list">Точки не добавлены</div>
+    <div id="total-distance" class="total">Общее: — км / — NM</div>
+  </div>
+</div>
 
   <script>
     const map = new maplibregl.Map({
@@ -3917,7 +4036,7 @@
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
 
-const sourceGroups = [
+    const sourceGroups = [
       { source: "FIRS",      label: "РПИ" },
       { source: "marshr",     label: "Маршруты" },
       { source: "zapretki",   label: "Зоны ограничения" },
@@ -3934,12 +4053,10 @@ const sourceGroups = [
     const totalLayers = sourceGroups.length;
     let enabledCount = totalLayers;
 
-    // ────────────────────────────────────────────────
-    // Инициализация панели слоёв
-    // ────────────────────────────────────────────────
     map.on('load', () => {
       const content = document.getElementById('layer-content');
       const countEl = document.getElementById('layer-count');
+      const arrowEl = document.getElementById('toggle-arrow');
 
       sourceGroups.forEach(group => {
         const div = document.createElement('div');
@@ -3955,8 +4072,7 @@ const sourceGroups = [
         label.textContent = group.label;
 
         checkbox.addEventListener('change', () => {
-          const visible = checkbox.checked;
-          toggleSourceLayers(group.source, visible);
+          toggleSourceLayers(group.source, checkbox.checked);
           updateCount();
         });
 
@@ -3965,13 +4081,15 @@ const sourceGroups = [
         content.appendChild(div);
       });
 
-      // Сворачивание/разворачивание
-      const header = document.getElementById('layer-header');
-      const panel = document.getElementById('layer-panel');
-
-      header.addEventListener('click', () => {
+      // сворачивание / разворачивание
+      document.getElementById('layer-header').addEventListener('click', () => {
+        const panel = document.getElementById('layer-panel');
         panel.classList.toggle('collapsed');
-        header.lastElementChild.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+
+        // меняем стрелку
+        arrowEl.textContent = panel.classList.contains('collapsed') ? '►' : '▼';
+
+        updateCount();
       });
 
       updateCount();
@@ -3989,16 +4107,16 @@ const sourceGroups = [
     }
 
     function updateCount() {
-      enabledCount = 0;
-      sourceGroups.forEach(group => {
-        const chk = document.getElementById(`chk-${group.source}`);
-        if (chk && chk.checked) enabledCount++;
-      });
+      enabledCount = sourceGroups.filter(g => {
+        const chk = document.getElementById(`chk-${g.source}`);
+        return chk && chk.checked;
+      }).length;
+
       document.getElementById('layer-count').textContent = `${enabledCount}/${totalLayers}`;
     }
 
     // ────────────────────────────────────────────────
-    // Попапы по ПРАВОЙ кнопке мыши (contextmenu)
+    // Логика попапов (полностью из оригинала)
     // ────────────────────────────────────────────────
     const clickableLayers = [
       { id: 'METpoly',        colorClass: 'layer-METpoly',        nameProp: 'NAME' },
@@ -4016,30 +4134,6 @@ const sourceGroups = [
     let currentFeatures = null;
     let currentLngLat = null;
 
-    // Отключаем стандартное контекстное меню браузера
-    map.getCanvas().addEventListener('contextmenu', e => e.preventDefault());
-
-    map.on('contextmenu', (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: clickableLayers.map(l => l.id)
-      });
-
-      if (features.length === 0) return;
-
-      if (currentPopup) {
-        currentPopup.remove();
-        currentPopup = null;
-      }
-
-      currentFeatures = features;
-      currentLngLat = e.lngLat;
-
-      if (features.length === 1) {
-        showDetail(features[0]);
-      } else {
-        showChooser();
-      }
-    });
 
     clickableLayers.forEach(layer => {
       map.on('mouseenter', layer.id, () => map.getCanvas().style.cursor = 'pointer');
@@ -4109,6 +4203,271 @@ const sourceGroups = [
       if (currentPopup) currentPopup.remove();
       showChooser();
     };
+
+    // ────────────────────────────────────────────────
+    // Измерения (с кнопкой очистки)
+    // ────────────────────────────────────────────────
+let measuring = false;
+let points = [];
+
+const measureBtn = document.getElementById('measure-btn');
+const clearBtn = document.getElementById('clear-btn');
+const pointsList = document.getElementById('points-list');
+const totalEl = document.getElementById('total-distance');
+
+// Сворачивание панели измерений
+document.getElementById('measure-header').addEventListener('click', function(e) {
+  e.stopPropagation();
+  const panel = document.getElementById('measure-panel');
+  panel.classList.toggle('collapsed');
+  document.getElementById('measure-toggle').textContent = 
+    panel.classList.contains('collapsed') ? '►' : '▼';
+});
+
+function degToDMS(deg, isLongitude = false) {
+  const abs = Math.abs(deg);
+  const d = Math.floor(abs);
+  const m = Math.floor((abs - d) * 60);
+  const s = ((abs - d) * 60 - m) * 60;
+  const dir = isLongitude ? (deg >= 0 ? 'E' : 'W') : (deg >= 0 ? 'N' : 'S');
+  const sFormatted = s.toFixed(1).padStart(4, '0');
+  return `${d}°${m.toString().padStart(2, '0')}'${sFormatted}'' ${dir}`;
+}
+
+function formatCoord(lngLat) {
+  return `φ ${degToDMS(lngLat.lat, false)}   λ ${degToDMS(lngLat.lng, true)}`;
+}
+
+function haversineDistance(c1, c2) {
+  const R = 6371e3; // метров
+  const φ1 = c1.lat * Math.PI / 180;
+  const φ2 = c2.lat * Math.PI / 180;
+  const Δφ = (c2.lat - c1.lat) * Math.PI / 180;
+  const Δλ = (c2.lng - c1.lng) * Math.PI / 180;
+
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function formatDistance(meters) {
+  if (!meters || meters < 1) return '—';
+  const km = (meters / 1000).toFixed(1);
+  const nm = (meters / 1852).toFixed(1);
+  return `${km} км / ${nm} NM`;
+}
+
+function updatePointsList() {
+  if (points.length === 0) {
+    pointsList.innerHTML = 'Точки не добавлены';
+    totalEl.innerHTML = 'Общее: — км / — NM';
+    return;
+  }
+
+  let html = '';
+  let cumulative = 0;
+
+  points.forEach((p, i) => {
+    let segment = '';
+    if (i > 0) {
+      const dist = haversineDistance(points[i-1], p);
+      cumulative += dist;
+      segment = `<span style="color:#d32f2f; font-weight:bold;"> → ${formatDistance(dist)}</span>`;
+    }
+
+    html += `<div class="point-item">
+      ${i+1}. ${formatCoord(p)}${segment}
+    </div>`;
+  });
+
+  pointsList.innerHTML = html;
+
+  const totalMeters = cumulative;
+  totalEl.innerHTML = `Общее: ${formatDistance(totalMeters)}`;
+}
+
+function drawMeasureLine() {
+  const geojson = {
+    type: 'FeatureCollection',
+    features: points.length >= 2 ? [{
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: points.map(p => [p.lng, p.lat])
+      }
+    }] : { type: 'FeatureCollection', features: [] }
+  };
+
+  if (!map.getSource('measure-line-source')) {
+    map.addSource('measure-line-source', { type: 'geojson', data: geojson });
+
+    // Линия + свечение — рисуем самыми первыми (внизу)
+    map.addLayer({
+      id: 'measure-line-glow',
+      type: 'line',
+      source: 'measure-line-source',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': '#ff6090',
+        'line-width': 10,
+        'line-opacity': 0.35,
+        'line-blur': 3
+      }
+    });
+
+    map.addLayer({
+      id: 'measure-line',
+      type: 'line',
+      source: 'measure-line-source',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': '#d81b60',
+        'line-width': 4,
+        'line-opacity': 0.9
+      }
+    });
+  } else {
+    map.getSource('measure-line-source').setData(geojson);
+  }
+}
+
+function drawMeasurePoints() {
+  const geojson = {
+    type: 'FeatureCollection',
+    features: points.map((p, i) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+      properties: { index: i + 1 }
+    }))
+  };
+
+  if (!map.getSource('measure-points-source')) {
+    map.addSource('measure-points-source', { type: 'geojson', data: geojson });
+
+    // Круги точек — поверх линии
+    map.addLayer({
+      id: 'measure-points-circle',
+      type: 'circle',
+      source: 'measure-points-source',
+      paint: {
+        'circle-radius': 7,
+        'circle-color': '#ffffff',
+        'circle-stroke-color': '#d81b60',
+        'circle-stroke-width': 3.5
+      }
+    }, 'measure-line');  // ← поверх линии (glow уже ниже)
+
+    // Номера (текст) — поверх кругов
+    map.addLayer({
+      id: 'measure-points-label',
+      type: 'symbol',
+      source: 'measure-points-source',
+      layout: {
+        'text-field': ['get', 'index'],
+        'text-font': ['Arial Unicode MS Bold'],
+        'text-size': 14,
+        'text-allow-overlap': true,
+        'text-ignore-placement': true   // ← важно, чтобы номера не прятались
+      },
+      paint: {
+        'text-color': '#d81b60',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 3
+      }
+    }, 'measure-points-circle');  // ← поверх кругов
+  } else {
+    map.getSource('measure-points-source').setData(geojson);
+  }
+
+  // Самый надёжный шаг — после обновления данных ПРИНУДИТЕЛЬНО поднимаем точки наверх
+  if (map.getLayer('measure-points-label')) {
+    map.moveLayer('measure-points-label');
+  }
+  if (map.getLayer('measure-points-circle')) {
+    map.moveLayer('measure-points-circle', 'measure-line');  // ← явно поверх линии
+  }
+}
+
+function addPoint(lngLat) {
+  points.push(lngLat);
+  drawMeasureLine();
+  drawMeasurePoints();
+  updatePointsList();
+}
+
+function clearMeasurement() {
+  points = [];
+  if (map.getSource('measure-line-source')) {
+    map.getSource('measure-line-source').setData({ type: 'FeatureCollection', features: [] });
+  }
+  if (map.getSource('measure-points-source')) {
+    map.getSource('measure-points-source').setData({ type: 'FeatureCollection', features: [] });
+  }
+  updatePointsList();
+}
+
+measureBtn.addEventListener('click', () => {
+  measuring = !measuring;
+  measureBtn.textContent = measuring ? 'Завершить' : 'Начать измерение';
+  measureBtn.classList.toggle('active', measuring);
+});
+
+clearBtn.addEventListener('click', () => {
+  clearMeasurement();
+  // если хотим сразу выйти из режима измерения:
+  // measuring = false;
+  // measureBtn.textContent = 'Начать измерение';
+  // measureBtn.classList.remove('active');
+});
+
+
+// Удаляем все предыдущие обработчики клика (на случай дублирования)
+map.off('click');
+
+// Единственный обработчик клика по карте
+map.on('click', (e) => {
+  // Если измерение активно — ТОЛЬКО добавляем точку измерения
+  if (measuring) {
+    addPoint(e.lngLat);
+    return;  // ← сразу выходим, НЕ ищем объекты и НЕ показываем попапы
+  }
+
+  // Если измерение НЕ активно — обычная работа с объектами
+  const features = map.queryRenderedFeatures(e.point, {
+    layers: clickableLayers.map(l => l.id)
+  });
+
+  if (features.length === 0) return;
+
+  if (currentPopup) {
+    currentPopup.remove();
+    currentPopup = null;
+  }
+
+  currentFeatures = features;
+  currentLngLat = e.lngLat;
+
+  if (features.length === 1) {
+    showDetail(features[0]);
+  } else {
+    showChooser();
+  }
+});
+
+// чтобы курсор менялся только в режиме измерения
+map.on('mousemove', (e) => {
+  map.getCanvas().style.cursor = measuring ? 'crosshair' : '';
+});
+
+// двойной клик — очистка (можно оставить или убрать)
+map.on('dblclick', () => {
+  if (measuring) {
+    clearMeasurement();
+  }
+});
+
+    // Панель измерений открыта по умолчанию
+    document.getElementById('measure-panel').classList.remove('collapsed');
   </script>
 </body>
 </html>
