@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Bright – с кликабельными слоями + измерение</title>
+  <title>Bright – с кликабельными слоями + измерение + погода</title>
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <script src="https://unpkg.com/maplibre-gl@5.14.0/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@5.14.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -10,10 +10,9 @@
     body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-    #layer-panel {
+    #layer-panel, #measure-panel, #weather-panel {
       position: absolute;
       top: 10px;
-      left: 10px;
       z-index: 10;
       background: white;
       border-radius: 6px;
@@ -25,12 +24,21 @@
       font-size: 14px;
     }
 
-    #layer-panel.collapsed {
+    #layer-panel   { left: 10px; }
+    #measure-panel { left: 310px; }
+    #weather-panel { 
+      left: 690px;
+      min-width: 280px;
+      background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+      border: 1px solid #a5d6a7;
+    }
+
+    #layer-panel.collapsed, #measure-panel.collapsed, #weather-panel.collapsed {
       height: 42px;
       padding: 0;
     }
 
-    #layer-header {
+    #layer-header, #measure-header, #weather-header {
       padding: 10px 16px;
       cursor: pointer;
       font-weight: bold;
@@ -38,15 +46,13 @@
       justify-content: space-between;
       align-items: center;
       color: white;
-      background: linear-gradient(135deg, #81d4fa 0%, #42a5f5 100%);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    #layer-header:hover {
-      background: linear-gradient(135deg, #64b5f6 0%, #2196f3 100%);
-    }
+    #layer-header   { background: linear-gradient(135deg, #81d4fa 0%, #42a5f5 100%); }
+    #measure-header { background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); }
+    #weather-header { background: linear-gradient(135deg, #66bb6a 0%, #388e3c 100%); }
 
-    #layer-content {
+    #layer-content, #measure-content, #weather-content {
       padding: 12px 16px;
       max-height: calc(80vh - 42px);
       overflow-y: auto;
@@ -62,50 +68,6 @@
       margin-right: 10px;
       accent-color: #1976d2;
     }
-    .layer-item label {
-      cursor: pointer;
-      user-select: none;
-      color: #444;
-    }
-
-    /* Панель измерений */
-#measure-panel {
-  position: absolute;
-  top: 10px;
-  left: 310px;           /* было 270 → стало 310, можно поставить 320–340, если хочешь ещё правее */
-  z-index: 10;
-  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
-  border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.28);
-  min-width: 260px;
-  max-height: 70vh;
-  overflow: hidden;
-  font-size: 13px;
-  border: 1px solid #b3d4fc;
-  transition: all 0.25s ease;   /* плавность */
-}
-
-#measure-panel.collapsed {
-  height: 42px !important;      /* фиксированная высота заголовка */
-  overflow: hidden;
-}
-
-#measure-header {
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-#measure-content {
-  padding: 12px 14px;
-  background: white;
-}
 
     #measure-btn {
       background: #1976d2;
@@ -118,10 +80,7 @@
       margin-bottom: 10px;
       width: 100%;
     }
-
-    #measure-btn.active {
-      background: #d32f2f;
-    }
+    #measure-btn.active { background: #d32f2f; }
 
     #clear-btn {
       background: #666;
@@ -159,7 +118,7 @@
       color: #d81b60;
     }
 
-    /* Попапы (полностью как в оригинале) */
+    /* Попапы */
     .maplibregl-popup {
       max-width: 340px !important;
     }
@@ -236,111 +195,147 @@
       <span>Слои <span id="layer-count">11/11</span></span>
       <span id="toggle-arrow">▼</span>
     </div>
-    <div id="layer-content">
-      <!-- чекбоксы добавляются динамически -->
+    <div id="layer-content"></div>
+  </div>
+
+  <div id="measure-panel">
+    <div id="measure-header">
+      <span>Измерение расстояния</span>
+      <span id="measure-toggle">▼</span>
+    </div>
+    <div id="measure-content">
+      <button id="measure-btn">Начать измерение</button>
+      <button id="clear-btn">Очистить маршрут</button>
+      <div id="points-list">Точки не добавлены</div>
+      <div id="total-distance" class="total">Общее: — км / — NM</div>
     </div>
   </div>
 
-  <!-- Панель измерений -->
-<div id="measure-panel">
-  <div id="measure-header">
-    <span>Измерение расстояния</span>
-    <span id="measure-toggle">▼</span>
+  <div id="weather-panel">
+    <div id="weather-header">
+      <span>Погода</span>
+      <span id="weather-toggle">▼</span>
+    </div>
+    <div id="weather-content">
+      <label style="display:flex; align-items:center; gap:10px; margin:12px 0; font-size:15px; font-weight:bold; color:#2e7d32;">
+        <input type="checkbox" id="weather-mode-chk">
+        Режим погоды (клик → погода в точке)
+      </label>
+
+      <div style="margin: 16px 0;">
+        <label style="display:block; margin-bottom: 6px; font-weight:bold; color:#444;">
+          Выберите слой погоды:
+        </label>
+        <select id="weather-layer-select" style="width:100%; padding:8px; font-size:14px; border-radius:4px; border:1px solid #ccc;">
+          <option value="temp_new">Температура</option>
+          <option value="clouds_new">Облачность</option>
+          <option value="precipitation_new">Осадки (дождь+снег)</option>
+          <option value="rain_new">Только дождь</option>
+          <option value="snow_new">Только снег</option>
+          <option value="pressure_new">Давление</option>
+          <option value="wind_new">Ветер</option>
+        </select>
+      </div>
+
+      <label style="display:flex; align-items:center; gap:10px; margin:12px 0; font-size:14px; color:#444;">
+        <input type="checkbox" id="weather-overlay-chk" checked>
+        Показывать выбранный слой погоды
+      </label>
+
+      <div style="font-size:12.5px; color:#666; line-height:1.4; margin-top:8px;">
+        OpenWeatherMap • прогноз до +96 ч (1-часовой шаг)
+      </div>
+    </div>
   </div>
-  <div id="measure-content">
-    <button id="measure-btn">Начать измерение</button>
-    <button id="clear-btn">Очистить маршрут</button>
-    <div id="points-list">Точки не добавлены</div>
-    <div id="total-distance" class="total">Общее: — км / — NM</div>
-  </div>
-</div>
 
   <script>
+    const API_KEY = '93907f758539cab6e5e8b50e4ad3e64b'; // ← замени на свой ключ
+
     const map = new maplibregl.Map({
       container: 'map',
       style: {
-  "version": 8,
-  "name": "Bright",
-  "metadata": {
-    "mapbox:autocomposite": false,
-    "mapbox:groups": {
-      "1444849242106.713": {"collapsed": false, "name": "Places"},
-      "1444849334699.1902": {"collapsed": true, "name": "Bridges"},
-      "1444849345966.4436": {"collapsed": false, "name": "Roads"},
-      "1444849354174.1904": {"collapsed": true, "name": "Tunnels"},
-      "1444849364238.8171": {"collapsed": false, "name": "Buildings"},
-      "1444849382550.77": {"collapsed": false, "name": "Water"},
-      "1444849388993.3071": {"collapsed": false, "name": "Land"}
-    },
-    "mapbox:type": "template",
-    "openmaptiles:mapbox:owner": "openmaptiles",
-    "openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t",
-    "openmaptiles:version": "3.x",
-    "maputnik:renderer": "mlgljs"
-  },
-  "center": [37.6184, 55.7512],
-  "zoom": 7,
-  "bearing": 0,
-  "pitch": 0,
-  "projection": {"type": ""},
-  "sources": {
-    "openmaptiles": {
-      "type": "vector",
-      "url": "https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=HBLKeT2UlbIUwg8YAx7V"
-    },
-    "FIRS": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/FIRS.geojson"
-    },
-    "marshr": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/marsh.geojson"
-    },
-    "zapretki": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/P.geojson"
-    },
-    "VVP": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/CTATMACTRAFIZ.geojson"
-    },
-    "MET": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/METEO.geojson"
-    },
-    "SectorFIR": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/SECTOR.geojson"
-    },
-    "RP": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson"
-    },
-    "OSM": {
-      "type": "raster",
-      "tiles": [
-        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      ],
-      "minzoom": 0,
-      "maxzoom": 24,
-      "scheme": "xyz",
-      "tileSize": 256
-    },
-    "RTS": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson"
-    },
-    "ADHPLS": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson"
-    },
-    "OBST": {
-      "type": "geojson",
-      "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson"
-    }
-  },
+        "version": 8,
+        "name": "Bright",
+        "metadata": {
+          "mapbox:autocomposite": false,
+          "mapbox:groups": {
+            "1444849242106.713": {"collapsed": false, "name": "Places"},
+            "1444849334699.1902": {"collapsed": true, "name": "Bridges"},
+            "1444849345966.4436": {"collapsed": false, "name": "Roads"},
+            "1444849354174.1904": {"collapsed": true, "name": "Tunnels"},
+            "1444849364238.8171": {"collapsed": false, "name": "Buildings"},
+            "1444849382550.77": {"collapsed": false, "name": "Water"},
+            "1444849388993.3071": {"collapsed": false, "name": "Land"}
+          },
+          "mapbox:type": "template",
+          "openmaptiles:mapbox:owner": "openmaptiles",
+          "openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t",
+          "openmaptiles:version": "3.x",
+          "maputnik:renderer": "mlgljs"
+        },
+        "center": [37.6184, 55.7512],
+        "zoom": 7,
+        "bearing": 0,
+        "pitch": 0,
+        "projection": {"type": ""},
+        "sources": {
+          "openmaptiles": {
+            "type": "vector",
+            "url": "https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=HBLKeT2UlbIUwg8YAx7V"
+          },
+          "FIRS": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/FIRS.geojson"
+          },
+          "marshr": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/marsh.geojson"
+          },
+          "zapretki": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/P.geojson"
+          },
+          "VVP": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/CTATMACTRAFIZ.geojson"
+          },
+          "MET": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/METEO.geojson"
+          },
+          "SectorFIR": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/SECTOR.geojson"
+          },
+          "RP": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson"
+          },
+          "OSM": {
+            "type": "raster",
+            "tiles": [
+              "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            ],
+            "minzoom": 0,
+            "maxzoom": 24,
+            "scheme": "xyz",
+            "tileSize": 256
+          },
+          "RTS": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson"
+          },
+          "ADHPLS": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson"
+          },
+          "OBST": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson"
+          }
+        },
   "sprite": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/style/style",
   "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
   "layers": [
@@ -4032,9 +4027,26 @@
 },
       });
 
-      map.addControl(new maplibregl.NavigationControl());
-      map.dragRotate.disable();
-      map.touchZoomRotate.disableRotation();
+map.addControl(new maplibregl.NavigationControl());
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+
+    // Переменные состояния
+    let measuring = false;
+    let points = [];
+    let weatherMode = false;
+    let weatherOverlayVisible = true;
+    let currentWeatherLayer = 'temp_new'; // начальное значение
+
+    let currentPopup = null;
+    let currentFeatures = null;
+    let currentLngLat = null;
+    let currentWeatherMarker = null;
+
+    const measureBtn = document.getElementById('measure-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const pointsList = document.getElementById('points-list');
+    const totalEl = document.getElementById('total-distance');
 
     const sourceGroups = [
       { source: "FIRS",      label: "РПИ" },
@@ -4054,9 +4066,24 @@
     let enabledCount = totalLayers;
 
     map.on('load', () => {
+      // Универсальный источник для любого слоя погоды
+      map.addSource('owm-weather', {
+        type: 'raster',
+        tiles: [`https://tile.openweathermap.org/map/${currentWeatherLayer}/{z}/{x}/{y}.png?appid=${API_KEY}`],
+        tileSize: 256,
+        attribution: '© OpenWeatherMap'
+      });
+
+      map.addLayer({
+        id: 'owm-weather-layer',
+        type: 'raster',
+        source: 'owm-weather',
+        paint: { 'raster-opacity': 0.65 },
+        layout: { visibility: weatherOverlayVisible ? 'visible' : 'none' }
+      }, 'building'); // после зданий — будет поверх подложки
+
+      // Панель слоёв
       const content = document.getElementById('layer-content');
-      const countEl = document.getElementById('layer-count');
-      const arrowEl = document.getElementById('toggle-arrow');
 
       sourceGroups.forEach(group => {
         const div = document.createElement('div');
@@ -4081,15 +4108,11 @@
         content.appendChild(div);
       });
 
-      // сворачивание / разворачивание
       document.getElementById('layer-header').addEventListener('click', () => {
         const panel = document.getElementById('layer-panel');
         panel.classList.toggle('collapsed');
-
-        // меняем стрелку
-        arrowEl.textContent = panel.classList.contains('collapsed') ? '►' : '▼';
-
-        updateCount();
+        document.getElementById('toggle-arrow').textContent = 
+          panel.classList.contains('collapsed') ? '►' : '▼';
       });
 
       updateCount();
@@ -4098,7 +4121,6 @@
     function toggleSourceLayers(sourceId, visible) {
       const style = map.getStyle();
       if (!style || !style.layers) return;
-
       style.layers.forEach(layer => {
         if (layer.source === sourceId) {
           map.setLayoutProperty(layer.id, 'visibility', visible ? 'visible' : 'none');
@@ -4111,12 +4133,340 @@
         const chk = document.getElementById(`chk-${g.source}`);
         return chk && chk.checked;
       }).length;
-
       document.getElementById('layer-count').textContent = `${enabledCount}/${totalLayers}`;
     }
 
+    // Панель измерений
+    document.getElementById('measure-header').addEventListener('click', () => {
+      document.getElementById('measure-panel').classList.toggle('collapsed');
+      document.getElementById('measure-toggle').textContent = 
+        document.getElementById('measure-panel').classList.contains('collapsed') ? '►' : '▼';
+    });
+
+    measureBtn.addEventListener('click', () => {
+      if (weatherMode) return;
+      measuring = !measuring;
+      measureBtn.textContent = measuring ? 'Завершить' : 'Начать измерение';
+      measureBtn.classList.toggle('active', measuring);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      points = [];
+      if (map.getSource('measure-line-source')) map.getSource('measure-line-source').setData({type:'FeatureCollection',features:[]});
+      if (map.getSource('measure-points-source')) map.getSource('measure-points-source').setData({type:'FeatureCollection',features:[]});
+      pointsList.innerHTML = 'Точки не добавлены';
+      totalEl.innerHTML = 'Общее: — км / — NM';
+    });
+
+    // Панель Погода — переключение слоёв
+    document.getElementById('weather-header').addEventListener('click', () => {
+      document.getElementById('weather-panel').classList.toggle('collapsed');
+      document.getElementById('weather-toggle').textContent = 
+        document.getElementById('weather-panel').classList.contains('collapsed') ? '►' : '▼';
+    });
+
+    document.getElementById('weather-mode-chk').addEventListener('change', (e) => {
+      weatherMode = e.target.checked;
+      if (weatherMode) {
+        measuring = false;
+        measureBtn.textContent = 'Начать измерение';
+        measureBtn.classList.remove('active');
+        clearMeasurement();
+      }
+    });
+
+    // Выбор слоя погоды
+    document.getElementById('weather-layer-select').addEventListener('change', (e) => {
+      currentWeatherLayer = e.target.value;
+      if (map.getSource('owm-weather')) {
+        map.getSource('owm-weather').setTiles([
+          `https://tile.openweathermap.org/map/${currentWeatherLayer}/{z}/{x}/{y}.png?appid=${API_KEY}`
+        ]);
+      }
+      // Если слой был выключен — включаем при смене
+      if (!weatherOverlayVisible) {
+        weatherOverlayVisible = true;
+        document.getElementById('weather-overlay-chk').checked = true;
+        map.setLayoutProperty('owm-weather-layer', 'visibility', 'visible');
+      }
+    });
+
+    // Вкл/выкл оверлея
+    document.getElementById('weather-overlay-chk').addEventListener('change', (e) => {
+      weatherOverlayVisible = e.target.checked;
+      if (map.getLayer('owm-weather-layer')) {
+        map.setLayoutProperty('owm-weather-layer', 'visibility', weatherOverlayVisible ? 'visible' : 'none');
+      }
+    });
+
     // ────────────────────────────────────────────────
-    // Логика попапов (полностью из оригинала)
+    // Курсор
+    // ────────────────────────────────────────────────
+    map.on('mousemove', () => {
+      map.getCanvas().style.cursor = (weatherMode || measuring) ? 'crosshair' : '';
+    });
+
+    // ────────────────────────────────────────────────
+    // Клик по карте — погода по точке или измерение/попапы
+    // ────────────────────────────────────────────────
+    map.on('click', async (e) => {
+      if (weatherMode) {
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+
+        if (currentWeatherMarker) currentWeatherMarker.remove();
+
+        try {
+          const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric&lang=ru`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          let content = '<div style="min-width:260px; line-height:1.5; font-size:14px;">';
+          if (data.cod === 200) {
+            const temp = data.main.temp.toFixed(1);
+            const feels_like = data.main.feels_like.toFixed(1);
+            const humidity = data.main.humidity;
+            const wind = data.wind.speed.toFixed(1);
+            const description = data.weather[0].description;
+            const icon = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+            content += `
+              <strong>Погода в точке</strong><br>
+              ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E<br><br>
+              <img src="${icon}" alt="иконка" style="width:60px; vertical-align:middle; margin-right:10px;">
+              <b>${description}</b><br>
+              Температура: <b>${temp} °C</b><br>
+              Ощущается: ${feels_like} °C<br>
+              Влажность: ${humidity} %<br>
+              Ветер: ${wind} м/с
+            `;
+          } else {
+            content += `<strong style="color:#d32f2f;">Ошибка: ${data.cod} — ${data.message || 'Нет данных'}</strong>`;
+          }
+          content += '</div>';
+
+          const popup = new maplibregl.Popup({ offset: 35, closeButton: true })
+            .setHTML(content);
+
+          currentWeatherMarker = new maplibregl.Marker({ color: '#d32f2f', scale: 1.1 })
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(map);
+
+          currentWeatherMarker.togglePopup();
+        } catch (error) {
+          console.error('Ошибка загрузки погоды:', error);
+          const errorPopup = new maplibregl.Popup({ offset: 35 })
+            .setHTML(`<div style="color:#d32f2f;">Не удалось загрузить погоду</div>`);
+
+          currentWeatherMarker = new maplibregl.Marker({ color: '#d32f2f' })
+            .setLngLat([lng, lat])
+            .setPopup(errorPopup)
+            .addTo(map);
+
+          currentWeatherMarker.togglePopup();
+        }
+
+        return;
+      }
+
+      // Обычный режим
+      if (measuring) {
+        points.push(e.lngLat);
+        drawMeasureLine();
+        drawMeasurePoints();
+        updatePointsList();
+        return;
+      }
+
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: clickableLayers.map(l => l.id)
+      });
+
+      if (features.length === 0) return;
+
+      if (currentPopup) currentPopup.remove();
+
+      currentFeatures = features;
+      currentLngLat = e.lngLat;
+
+      if (features.length === 1) {
+        showDetail(features[0]);
+      } else {
+        showChooser();
+      }
+    });
+
+    // ────────────────────────────────────────────────
+    // Функции измерения
+    // ────────────────────────────────────────────────
+    function degToDMS(deg, isLongitude = false) {
+      const abs = Math.abs(deg);
+      const d = Math.floor(abs);
+      const m = Math.floor((abs - d) * 60);
+      const s = ((abs - d) * 60 - m) * 60;
+      const dir = isLongitude ? (deg >= 0 ? 'E' : 'W') : (deg >= 0 ? 'N' : 'S');
+      const sFormatted = s.toFixed(1).padStart(4, '0');
+      return `${d}°${m.toString().padStart(2, '0')}'${sFormatted}'' ${dir}`;
+    }
+
+    function formatCoord(lngLat) {
+      return `φ ${degToDMS(lngLat.lat, false)}   λ ${degToDMS(lngLat.lng, true)}`;
+    }
+
+    function haversineDistance(c1, c2) {
+      const R = 6371e3;
+      const φ1 = c1.lat * Math.PI / 180;
+      const φ2 = c2.lat * Math.PI / 180;
+      const Δφ = (c2.lat - c1.lat) * Math.PI / 180;
+      const Δλ = (c2.lng - c1.lng) * Math.PI / 180;
+
+      const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function formatDistance(meters) {
+      if (!meters || meters < 1) return '—';
+      const km = (meters / 1000).toFixed(1);
+      const nm = (meters / 1852).toFixed(1);
+      return `${km} км / ${nm} NM`;
+    }
+
+    function updatePointsList() {
+      if (points.length === 0) {
+        pointsList.innerHTML = 'Точки не добавлены';
+        totalEl.innerHTML = 'Общее: — км / — NM';
+        return;
+      }
+
+      let html = '';
+      let cumulative = 0;
+
+      points.forEach((p, i) => {
+        let segment = '';
+        if (i > 0) {
+          const dist = haversineDistance(points[i-1], p);
+          cumulative += dist;
+          segment = `<span style="color:#d32f2f; font-weight:bold;"> → ${formatDistance(dist)}</span>`;
+        }
+
+        html += `<div class="point-item">
+          ${i+1}. ${formatCoord(p)}${segment}
+        </div>`;
+      });
+
+      pointsList.innerHTML = html;
+      totalEl.innerHTML = `Общее: ${formatDistance(cumulative)}`;
+    }
+
+    function drawMeasureLine() {
+      const geojson = {
+        type: 'FeatureCollection',
+        features: points.length >= 2 ? [{
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: points.map(p => [p.lng, p.lat])
+          }
+        }] : { type: 'FeatureCollection', features: [] }
+      };
+
+      if (!map.getSource('measure-line-source')) {
+        map.addSource('measure-line-source', { type: 'geojson', data: geojson });
+
+        map.addLayer({
+          id: 'measure-line-glow',
+          type: 'line',
+          source: 'measure-line-source',
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-color': '#ff6090',
+            'line-width': 10,
+            'line-opacity': 0.35,
+            'line-blur': 3
+          }
+        });
+
+        map.addLayer({
+          id: 'measure-line',
+          type: 'line',
+          source: 'measure-line-source',
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-color': '#d81b60',
+            'line-width': 4,
+            'line-opacity': 0.9
+          }
+        });
+      } else {
+        map.getSource('measure-line-source').setData(geojson);
+      }
+    }
+
+    function drawMeasurePoints() {
+      const geojson = {
+        type: 'FeatureCollection',
+        features: points.map((p, i) => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+          properties: { index: i + 1 }
+        }))
+      };
+
+      if (!map.getSource('measure-points-source')) {
+        map.addSource('measure-points-source', { type: 'geojson', data: geojson });
+
+        map.addLayer({
+          id: 'measure-points-circle',
+          type: 'circle',
+          source: 'measure-points-source',
+          paint: {
+            'circle-radius': 7,
+            'circle-color': '#ffffff',
+            'circle-stroke-color': '#d81b60',
+            'circle-stroke-width': 3.5
+          }
+        }, 'measure-line');
+
+        map.addLayer({
+          id: 'measure-points-label',
+          type: 'symbol',
+          source: 'measure-points-source',
+          layout: {
+            'text-field': ['get', 'index'],
+            'text-font': ['Arial Unicode MS Bold'],
+            'text-size': 14,
+            'text-allow-overlap': true,
+            'text-ignore-placement': true
+          },
+          paint: {
+            'text-color': '#d81b60',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 3
+          }
+        }, 'measure-points-circle');
+      } else {
+        map.getSource('measure-points-source').setData(geojson);
+      }
+    }
+
+    function addPoint(lngLat) {
+      points.push(lngLat);
+      drawMeasureLine();
+      drawMeasurePoints();
+      updatePointsList();
+    }
+
+    function clearMeasurement() {
+      points = [];
+      if (map.getSource('measure-line-source')) map.getSource('measure-line-source').setData({type:'FeatureCollection',features:[]});
+      if (map.getSource('measure-points-source')) map.getSource('measure-points-source').setData({type:'FeatureCollection',features:[]});
+      updatePointsList();
+    }
+
+    // ────────────────────────────────────────────────
+    // Попапы по объектам
     // ────────────────────────────────────────────────
     const clickableLayers = [
       { id: 'METpoly',        colorClass: 'layer-METpoly',        nameProp: 'NAME' },
@@ -4129,16 +4479,6 @@
       { id: 'OBST1R',         colorClass: 'layer-OBST1R',         nameProp: 'NAME' },
       { id: 'AD_point_name',  colorClass: 'layer-AD_point_name',  nameProp: 'NAME' }
     ];
-
-    let currentPopup = null;
-    let currentFeatures = null;
-    let currentLngLat = null;
-
-
-    clickableLayers.forEach(layer => {
-      map.on('mouseenter', layer.id, () => map.getCanvas().style.cursor = 'pointer');
-      map.on('mouseleave', layer.id, () => map.getCanvas().style.cursor = '');
-    });
 
     function showChooser() {
       let html = `<div class="popup-header">
@@ -4204,270 +4544,10 @@
       showChooser();
     };
 
-    // ────────────────────────────────────────────────
-    // Измерения (с кнопкой очистки)
-    // ────────────────────────────────────────────────
-let measuring = false;
-let points = [];
-
-const measureBtn = document.getElementById('measure-btn');
-const clearBtn = document.getElementById('clear-btn');
-const pointsList = document.getElementById('points-list');
-const totalEl = document.getElementById('total-distance');
-
-// Сворачивание панели измерений
-document.getElementById('measure-header').addEventListener('click', function(e) {
-  e.stopPropagation();
-  const panel = document.getElementById('measure-panel');
-  panel.classList.toggle('collapsed');
-  document.getElementById('measure-toggle').textContent = 
-    panel.classList.contains('collapsed') ? '►' : '▼';
-});
-
-function degToDMS(deg, isLongitude = false) {
-  const abs = Math.abs(deg);
-  const d = Math.floor(abs);
-  const m = Math.floor((abs - d) * 60);
-  const s = ((abs - d) * 60 - m) * 60;
-  const dir = isLongitude ? (deg >= 0 ? 'E' : 'W') : (deg >= 0 ? 'N' : 'S');
-  const sFormatted = s.toFixed(1).padStart(4, '0');
-  return `${d}°${m.toString().padStart(2, '0')}'${sFormatted}'' ${dir}`;
-}
-
-function formatCoord(lngLat) {
-  return `φ ${degToDMS(lngLat.lat, false)}   λ ${degToDMS(lngLat.lng, true)}`;
-}
-
-function haversineDistance(c1, c2) {
-  const R = 6371e3; // метров
-  const φ1 = c1.lat * Math.PI / 180;
-  const φ2 = c2.lat * Math.PI / 180;
-  const Δφ = (c2.lat - c1.lat) * Math.PI / 180;
-  const Δλ = (c2.lng - c1.lng) * Math.PI / 180;
-
-  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function formatDistance(meters) {
-  if (!meters || meters < 1) return '—';
-  const km = (meters / 1000).toFixed(1);
-  const nm = (meters / 1852).toFixed(1);
-  return `${km} км / ${nm} NM`;
-}
-
-function updatePointsList() {
-  if (points.length === 0) {
-    pointsList.innerHTML = 'Точки не добавлены';
-    totalEl.innerHTML = 'Общее: — км / — NM';
-    return;
-  }
-
-  let html = '';
-  let cumulative = 0;
-
-  points.forEach((p, i) => {
-    let segment = '';
-    if (i > 0) {
-      const dist = haversineDistance(points[i-1], p);
-      cumulative += dist;
-      segment = `<span style="color:#d32f2f; font-weight:bold;"> → ${formatDistance(dist)}</span>`;
-    }
-
-    html += `<div class="point-item">
-      ${i+1}. ${formatCoord(p)}${segment}
-    </div>`;
-  });
-
-  pointsList.innerHTML = html;
-
-  const totalMeters = cumulative;
-  totalEl.innerHTML = `Общее: ${formatDistance(totalMeters)}`;
-}
-
-function drawMeasureLine() {
-  const geojson = {
-    type: 'FeatureCollection',
-    features: points.length >= 2 ? [{
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: points.map(p => [p.lng, p.lat])
-      }
-    }] : { type: 'FeatureCollection', features: [] }
-  };
-
-  if (!map.getSource('measure-line-source')) {
-    map.addSource('measure-line-source', { type: 'geojson', data: geojson });
-
-    // Линия + свечение — рисуем самыми первыми (внизу)
-    map.addLayer({
-      id: 'measure-line-glow',
-      type: 'line',
-      source: 'measure-line-source',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': '#ff6090',
-        'line-width': 10,
-        'line-opacity': 0.35,
-        'line-blur': 3
-      }
+    clickableLayers.forEach(layer => {
+      map.on('mouseenter', layer.id, () => map.getCanvas().style.cursor = 'pointer');
+      map.on('mouseleave', layer.id, () => map.getCanvas().style.cursor = '');
     });
-
-    map.addLayer({
-      id: 'measure-line',
-      type: 'line',
-      source: 'measure-line-source',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': '#d81b60',
-        'line-width': 4,
-        'line-opacity': 0.9
-      }
-    });
-  } else {
-    map.getSource('measure-line-source').setData(geojson);
-  }
-}
-
-function drawMeasurePoints() {
-  const geojson = {
-    type: 'FeatureCollection',
-    features: points.map((p, i) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
-      properties: { index: i + 1 }
-    }))
-  };
-
-  if (!map.getSource('measure-points-source')) {
-    map.addSource('measure-points-source', { type: 'geojson', data: geojson });
-
-    // Круги точек — поверх линии
-    map.addLayer({
-      id: 'measure-points-circle',
-      type: 'circle',
-      source: 'measure-points-source',
-      paint: {
-        'circle-radius': 7,
-        'circle-color': '#ffffff',
-        'circle-stroke-color': '#d81b60',
-        'circle-stroke-width': 3.5
-      }
-    }, 'measure-line');  // ← поверх линии (glow уже ниже)
-
-    // Номера (текст) — поверх кругов
-    map.addLayer({
-      id: 'measure-points-label',
-      type: 'symbol',
-      source: 'measure-points-source',
-      layout: {
-        'text-field': ['get', 'index'],
-        'text-font': ['Arial Unicode MS Bold'],
-        'text-size': 14,
-        'text-allow-overlap': true,
-        'text-ignore-placement': true   // ← важно, чтобы номера не прятались
-      },
-      paint: {
-        'text-color': '#d81b60',
-        'text-halo-color': '#ffffff',
-        'text-halo-width': 3
-      }
-    }, 'measure-points-circle');  // ← поверх кругов
-  } else {
-    map.getSource('measure-points-source').setData(geojson);
-  }
-
-  // Самый надёжный шаг — после обновления данных ПРИНУДИТЕЛЬНО поднимаем точки наверх
-  if (map.getLayer('measure-points-label')) {
-    map.moveLayer('measure-points-label');
-  }
-  if (map.getLayer('measure-points-circle')) {
-    map.moveLayer('measure-points-circle', 'measure-line');  // ← явно поверх линии
-  }
-}
-
-function addPoint(lngLat) {
-  points.push(lngLat);
-  drawMeasureLine();
-  drawMeasurePoints();
-  updatePointsList();
-}
-
-function clearMeasurement() {
-  points = [];
-  if (map.getSource('measure-line-source')) {
-    map.getSource('measure-line-source').setData({ type: 'FeatureCollection', features: [] });
-  }
-  if (map.getSource('measure-points-source')) {
-    map.getSource('measure-points-source').setData({ type: 'FeatureCollection', features: [] });
-  }
-  updatePointsList();
-}
-
-measureBtn.addEventListener('click', () => {
-  measuring = !measuring;
-  measureBtn.textContent = measuring ? 'Завершить' : 'Начать измерение';
-  measureBtn.classList.toggle('active', measuring);
-});
-
-clearBtn.addEventListener('click', () => {
-  clearMeasurement();
-  // если хотим сразу выйти из режима измерения:
-  // measuring = false;
-  // measureBtn.textContent = 'Начать измерение';
-  // measureBtn.classList.remove('active');
-});
-
-
-// Удаляем все предыдущие обработчики клика (на случай дублирования)
-map.off('click');
-
-// Единственный обработчик клика по карте
-map.on('click', (e) => {
-  // Если измерение активно — ТОЛЬКО добавляем точку измерения
-  if (measuring) {
-    addPoint(e.lngLat);
-    return;  // ← сразу выходим, НЕ ищем объекты и НЕ показываем попапы
-  }
-
-  // Если измерение НЕ активно — обычная работа с объектами
-  const features = map.queryRenderedFeatures(e.point, {
-    layers: clickableLayers.map(l => l.id)
-  });
-
-  if (features.length === 0) return;
-
-  if (currentPopup) {
-    currentPopup.remove();
-    currentPopup = null;
-  }
-
-  currentFeatures = features;
-  currentLngLat = e.lngLat;
-
-  if (features.length === 1) {
-    showDetail(features[0]);
-  } else {
-    showChooser();
-  }
-});
-
-// чтобы курсор менялся только в режиме измерения
-map.on('mousemove', (e) => {
-  map.getCanvas().style.cursor = measuring ? 'crosshair' : '';
-});
-
-// двойной клик — очистка (можно оставить или убрать)
-map.on('dblclick', () => {
-  if (measuring) {
-    clearMeasurement();
-  }
-});
-
-    // Панель измерений открыта по умолчанию
-    document.getElementById('measure-panel').classList.remove('collapsed');
   </script>
 </body>
 </html>
