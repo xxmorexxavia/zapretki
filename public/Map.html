@@ -4153,7 +4153,7 @@ map.addControl(new maplibregl.NavigationControl());
     measureBtn.addEventListener('click', () => {
       if (weatherMode) return;
       measuring = !measuring;
-      measureBtn.textContent = measuring ? 'Завершить' : 'Начать измерение';
+      measureBtn.textContent = measuring ? 'Завершить' : 'Прокладка маршрута';
       measureBtn.classList.toggle('active', measuring);
     });
 
@@ -4176,7 +4176,7 @@ map.addControl(new maplibregl.NavigationControl());
       weatherMode = e.target.checked;
       if (weatherMode) {
         measuring = false;
-        measureBtn.textContent = 'Начать измерение';
+        measureBtn.textContent = 'Прокладка маршрута';
         measureBtn.classList.remove('active');
         clearMeasurement();
       }
