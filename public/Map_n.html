@@ -186,6 +186,57 @@
       border-left-color: #88ccff;
     }
 
+    .segment-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+    .seg-dist {
+      color: #d81b60;
+      font-weight: bold;
+      width: 100%;
+    }
+    body.night-mode .seg-dist {
+      color: #ff88aa;
+    }
+    .seg-tc {
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    body.night-mode .seg-tc {
+      background: #1a2e44;
+      color: #88ccff;
+    }
+    .seg-mc {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    body.night-mode .seg-mc {
+      background: #1a2e1f;
+      color: #66cc88;
+    }
+    .seg-decl {
+      background: #fff8e1;
+      color: #f57f17;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    body.night-mode .seg-decl {
+      background: #2e2a10;
+      color: #ffcc44;
+    }
+
     .total {
       margin-top: 12px;
       padding-top: 10px;
@@ -456,6 +507,89 @@
     body.night-mode .maplibregl-ctrl-geocoder--suggestions {
       box-shadow: 0 4px 16px rgba(0,0,0,0.5);
     }
+
+    body.night-mode #cursor-coords {
+      background: rgba(20,25,40,0.92);
+      color: #d0d9ff;
+    }
+    body.night-mode #coords-checkbox-panel {
+      background: rgba(20,25,40,0.9);
+      color: #d0d9ff;
+    }
+    body.night-mode #inspect-block {
+      border-top-color: #334466;
+    }
+    body.night-mode #inspect-result {
+      color: #c0d0ff;
+    }
+
+    /* Контекстное меню точки измерения */
+    #point-ctx-menu, #ad-ctx-menu {
+      position: absolute;
+      z-index: 9999;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      min-width: 210px;
+      padding: 6px 0;
+      font-size: 14px;
+      display: none;
+    }
+    body.night-mode #point-ctx-menu, body.night-mode #ad-ctx-menu {
+      background: #1a2338;
+      color: #d0d9ff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .ctx-menu-title {
+      padding: 6px 16px 4px;
+      font-size: 11.5px;
+      color: #999;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 4px;
+    }
+    body.night-mode .ctx-menu-title { border-bottom-color: #334466; }
+    .ctx-menu-item {
+      padding: 8px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.1s;
+    }
+    .ctx-menu-item:hover { background: rgba(0,0,0,0.06); }
+    body.night-mode .ctx-menu-item:hover { background: rgba(255,255,255,0.08); }
+
+    /* Режим перемещения точки */
+    #move-point-bar {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      padding: 10px 18px;
+      font-size: 14px;
+      display: none;
+      gap: 12px;
+      align-items: center;
+      white-space: nowrap;
+    }
+    body.night-mode #move-point-bar {
+      background: #1a2338;
+      color: #d0d9ff;
+    }
+    #move-point-bar button {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    #move-ok-btn  { background: #1976d2; color: white; }
+    #move-cancel-btn { background: #aaa; color: white; }
   </style>
 </head>
 <body>
@@ -487,8 +621,15 @@
     <div id="measure-content">
       <button id="measure-btn">Прокладка маршрута</button>
       <button id="clear-btn">Очистить маршрут</button>
+      <button id="export-kml-btn" onclick="exportKML()" style="background:#388e3c; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%; margin-top:6px; font-size:13px;">📥 Выгрузить в KML</button>
       <div id="points-list">Точки не добавлены</div>
       <div id="total-distance" class="total">Общее: — км / — NM</div>
+
+      <!-- Блок инспектора семантики (показывается после завершения маршрута) -->
+      <div id="inspect-block" style="display:none; margin-top:14px; border-top:1px solid #ddd; padding-top:10px;">
+        <div style="font-weight:bold; font-size:13px; color:#555; margin-bottom:6px;">🔍 Просмотр объектов</div>
+        <div id="inspect-result" style="font-size:12.5px; line-height:1.5; max-height:260px; overflow-y:auto;"></div>
+      </div>
     </div>
   </div>
 
@@ -546,6 +687,28 @@
     </div>
   </div>
 
+  <!-- Отображение координат под курсором -->
+  <div id="cursor-coords" style="
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    z-index: 999; background: rgba(255,255,255,0.92); color: #222;
+    padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25); pointer-events: none; display: none;
+    white-space: nowrap; backdrop-filter: blur(4px); letter-spacing: 0.03em;
+  "></div>
+
+  <!-- Галочка координаты у курсора — в нижнем левом углу -->
+  <div id="coords-checkbox-panel" style="
+    position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
+    z-index: 999; background: rgba(255,255,255,0.9); padding: 5px 14px;
+    border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+    font-size: 13px; backdrop-filter: blur(4px);
+  ">
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+      <input type="checkbox" id="cursor-coords-chk" style="accent-color:#1976d2;">
+      Координаты у курсора
+    </label>
+  </div>
+
   <div id="scheme-control" style="position: absolute; bottom: 20px; right: 20px; background: white; padding: 14px 18px; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.35); display: none; min-width: 260px; z-index: 999; font-size: 14px;">
     <div style="font-weight: bold; margin-bottom: 10px; color: #1976d2;">
       Схема: <span id="active-scheme-name" style="color:#000;"></span>
@@ -553,6 +716,28 @@
     <label style="display:block; margin-bottom: 6px;">Прозрачность: <span id="opacity-val">85</span>%</label>
     <input type="range" id="scheme-opacity-slider" min="0" max="100" value="85" style="width:100%; accent-color:#1976d2;">
     <button id="remove-active-scheme" style="margin-top:12px; width:100%; padding:9px; background:#d32f2f; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Удалить схему</button>
+  </div>
+
+  <!-- Контекстное меню точки измерения (маршрутные точки) -->
+  <div id="point-ctx-menu">
+    <div class="ctx-menu-title" id="ctx-menu-title">Точка №?</div>
+    <div class="ctx-menu-item" onclick="ctxMovePoint()">✋ Переместить точку</div>
+    <div class="ctx-menu-item" onclick="ctxSetRole('departure')">🛫 Назначить точкой вылета</div>
+    <div class="ctx-menu-item" onclick="ctxSetRole('destination')">🛬 Назначить аэродромом назначения</div>
+    <div class="ctx-menu-item" onclick="ctxDeletePoint()" style="color:#d32f2f;">🗑 Удалить точку</div>
+  </div>
+
+  <!-- Контекстное меню аэродрома вне маршрута -->
+  <div id="ad-ctx-menu" style="display:none;">
+    <div class="ctx-menu-title" id="ad-ctx-menu-title">Аэродром</div>
+    <div class="ctx-menu-item" onclick="ctxSetAlternate()">🔄 Назначить запасным аэродромом</div>
+  </div>
+
+  <!-- Панель подтверждения перемещения -->
+  <div id="move-point-bar" style="display:none; position:absolute; bottom:100px; left:50%; transform:translateX(-50%); z-index:9999; background:white; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); padding:10px 18px; font-size:14px; gap:12px; align-items:center; white-space:nowrap; flex-direction:row;">
+    <span>✋ Перетащите точку на новое место</span>
+    <button id="move-ok-btn" onclick="confirmMovePoint()">✔ ОК</button>
+    <button id="move-cancel-btn" onclick="cancelMovePoint()">✖ Отмена</button>
   </div>
 
   <!-- Геопоиск (всегда виден) -->
@@ -4429,6 +4614,7 @@
       } else {
         map.setTerrain(null);
         map.setLayoutProperty('hillshade-layer', 'visibility', 'none');
+        map.easeTo({ pitch: 0, duration: 800 });
         document.getElementById('btn-terrain').querySelector('span').textContent = '⛰️';
       }
     });
@@ -4438,6 +4624,7 @@
       if (terrainEnabled && map.getZoom() < 7) {
         map.setTerrain(null);
         map.setLayoutProperty('hillshade-layer', 'visibility', 'none');
+        map.easeTo({ pitch: 0, duration: 800 });
         terrainEnabled = false;
         document.getElementById('btn-terrain').querySelector('span').textContent = '⛰️';
       }
@@ -5224,17 +5411,414 @@
     document.getElementById('measure-btn').addEventListener('click', () => {
       if (weatherMode) return;
       measuring = !measuring;
-      measureBtn.textContent = measuring ? 'Завершить' : 'Прокладка маршрута';
-      measureBtn.classList.toggle('active', measuring);
+      if (measuring) {
+        measureBtn.textContent = 'Завершить';
+        measureBtn.classList.add('active');
+        document.getElementById('inspect-block').style.display = 'none';
+        document.getElementById('inspect-result').innerHTML = '';
+      } else {
+        measureBtn.textContent = 'Прокладка маршрута';
+        measureBtn.classList.remove('active');
+        clearSnap();
+      }
     });
 
     clearBtn.addEventListener('click', () => {
       points = [];
+      alternateAirports = [];
       if (map.getSource('measure-line-source')) map.getSource('measure-line-source').setData({type:'FeatureCollection',features:[]});
       if (map.getSource('measure-points-source')) map.getSource('measure-points-source').setData({type:'FeatureCollection',features:[]});
       pointsList.innerHTML = 'Точки не добавлены';
       totalEl.innerHTML = 'Общее: — км / — NM';
+      measuring = false;
+      measureBtn.textContent = 'Прокладка маршрута';
+      measureBtn.classList.remove('active');
+      document.getElementById('inspect-block').style.display = 'none';
+      document.getElementById('inspect-result').innerHTML = '';
     });
+
+    // ─── Контекстное меню точек измерения ────────────────────────────────
+    const ctxMenu = document.getElementById('point-ctx-menu');
+    const moveBar = document.getElementById('move-point-bar');
+    let ctxPointIndex = -1;   // индекс точки для меню
+    let movingPointIndex = -1; // индекс перемещаемой точки
+    let moveMarker = null;     // маркер-перетаскиватель
+
+    // (скрытие меню при клике вне — ниже в блоке alternateAirports)
+
+    // Найти ближайшую точку маршрута к пикселю экрана (радиус в px)
+    function findNearestMeasurePoint(clientX, clientY, thresholdPx) {
+      const mapCanvas = map.getCanvas();
+      const rect = mapCanvas.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      let best = -1, bestDist = Infinity;
+      points.forEach((p, i) => {
+        const pt = map.project([p.lng, p.lat]);
+        const d = Math.hypot(pt.x - px, pt.y - py);
+        if (d < thresholdPx && d < bestDist) { bestDist = d; best = i; }
+      });
+      return best;
+    }
+
+    function showCtxMenu(x, y, pointIdx) {
+      ctxPointIndex = pointIdx;
+      const p = points[pointIdx];
+      const name = p._pointName || (p._snapInfo && p._snapInfo.routeName) || formatCoord(p);
+      document.getElementById('ctx-menu-title').textContent = `Точка ${pointIdx + 1}: ${name}`;
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top  = y + 'px';
+      ctxMenu.style.display = 'block';
+    }
+
+    // ПКМ на карте
+    map.on('contextmenu', (e) => {
+      e.preventDefault();
+      ctxMenu.style.display = 'none';
+      adCtxMenu.style.display = 'none';
+
+      // Проверяем клик по маршрутной точке
+      if (measuring || points.length > 0) {
+        const idx = findNearestMeasurePoint(e.originalEvent.clientX, e.originalEvent.clientY, 24);
+        if (idx !== -1) {
+          showCtxMenu(e.originalEvent.clientX, e.originalEvent.clientY, idx);
+          return;
+        }
+      }
+
+      // Проверяем клик по аэродрому (вне маршрутных точек)
+      const adFeats = map.queryRenderedFeatures(e.point, { layers: ['AD_point_name'] });
+      if (adFeats.length > 0) {
+        const f = adFeats[0];
+        const coords = f.geometry.coordinates;
+        pendingAlternate = {
+          name: f.properties.NAME || f.properties.DESIGNATOR || 'Аэродром',
+          lat: parseSemCoord(f.properties.LATITUDE) ?? coords[1],
+          lng: parseSemCoord(f.properties.LONGITUDE) ?? coords[0],
+          props: f.properties
+        };
+        document.getElementById('ad-ctx-menu-title').textContent =
+          `${f.properties.NAME || ''} ${f.properties.DESIGNATOR ? '(' + f.properties.DESIGNATOR + ')' : ''}`.trim();
+        adCtxMenu.style.left = e.originalEvent.clientX + 'px';
+        adCtxMenu.style.top  = e.originalEvent.clientY + 'px';
+        adCtxMenu.style.display = 'block';
+      }
+    });
+
+    // Долгое касание на сенсорном экране (500 мс)
+    let touchHoldTimer = null;
+    map.getCanvas().addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      touchHoldTimer = setTimeout(() => {
+        ctxMenu.style.display = 'none';
+        adCtxMenu.style.display = 'none';
+        // Проверяем маршрутную точку
+        if (measuring || points.length > 0) {
+          const idx = findNearestMeasurePoint(touch.clientX, touch.clientY, 30);
+          if (idx !== -1) {
+            showCtxMenu(touch.clientX, touch.clientY, idx);
+            return;
+          }
+        }
+        // Проверяем аэродром
+        const mapCanvas = map.getCanvas();
+        const rect = mapCanvas.getBoundingClientRect();
+        const pt = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        const adFeats = map.queryRenderedFeatures([pt.x, pt.y], { layers: ['AD_point_name'] });
+        if (adFeats.length > 0) {
+          const f = adFeats[0];
+          const coords = f.geometry.coordinates;
+          pendingAlternate = {
+            name: f.properties.NAME || f.properties.DESIGNATOR || 'Аэродром',
+            lat: parseSemCoord(f.properties.LATITUDE) ?? coords[1],
+            lng: parseSemCoord(f.properties.LONGITUDE) ?? coords[0],
+            props: f.properties
+          };
+          document.getElementById('ad-ctx-menu-title').textContent =
+            `${f.properties.NAME || ''} ${f.properties.DESIGNATOR ? '(' + f.properties.DESIGNATOR + ')' : ''}`.trim();
+          adCtxMenu.style.left = touch.clientX + 'px';
+          adCtxMenu.style.top  = touch.clientY + 'px';
+          adCtxMenu.style.display = 'block';
+        }
+      }, 500);
+    }, { passive: true });
+    map.getCanvas().addEventListener('touchend', () => { clearTimeout(touchHoldTimer); });
+    map.getCanvas().addEventListener('touchmove', () => { clearTimeout(touchHoldTimer); });
+
+    // ── Действия контекстного меню ──
+
+    window.ctxMovePoint = function() {
+      ctxMenu.style.display = 'none';
+      if (ctxPointIndex === -1) return;
+      movingPointIndex = ctxPointIndex;
+      const p = points[movingPointIndex];
+
+      // Элемент маркера-перетаскивателя
+      const el = document.createElement('div');
+      el.style.cssText = 'width:22px;height:22px;border-radius:50%;background:#ff6090;border:3px solid white;box-shadow:0 0 8px rgba(0,0,0,0.5);cursor:grab;transition:background 0.15s;';
+      moveMarker = new maplibregl.Marker({ element: el, draggable: true })
+        .setLngLat([p.lng, p.lat])
+        .addTo(map);
+
+      // Snap-индикатор (маленькая точка рядом)
+      let moveSnapMarker = null;
+      let moveSnapInfo = null; // текущий snap при перетаскивании
+
+      function clearMoveSnap() {
+        if (moveSnapMarker) { moveSnapMarker.remove(); moveSnapMarker = null; }
+        moveSnapInfo = null;
+        el.style.background = '#ff6090';
+      }
+
+      moveMarker.on('drag', () => {
+        const ll = moveMarker.getLngLat();
+
+        // Проверяем snap к RP/RTS
+        const namedPt = findNearestNamedPoint(ll, 22);
+        if (namedPt) {
+          moveSnapInfo = { type: 'named', data: namedPt };
+          el.style.background = '#1976d2'; // синий — привязан к точке
+          // Показываем snap-маркер
+          if (!moveSnapMarker) {
+            const se = document.createElement('div');
+            se.style.cssText = 'width:12px;height:12px;border-radius:50%;background:#1976d2;border:2px solid white;pointer-events:none;';
+            moveSnapMarker = new maplibregl.Marker({ element: se, offset: [14, -14] })
+              .setLngLat([namedPt.lngLat.lng, namedPt.lngLat.lat]).addTo(map);
+          } else {
+            moveSnapMarker.setLngLat([namedPt.lngLat.lng, namedPt.lngLat.lat]);
+          }
+        } else {
+          // Проверяем snap к линии маршрута
+          const routeSnap = findNearestRoutePoint(ll, 25);
+          if (routeSnap) {
+            moveSnapInfo = { type: 'route', data: routeSnap };
+            el.style.background = '#9c27b0'; // фиолетовый — привязан к маршруту
+            if (!moveSnapMarker) {
+              const se = document.createElement('div');
+              se.style.cssText = 'width:12px;height:12px;border-radius:50%;background:#9c27b0;border:2px solid white;pointer-events:none;';
+              moveSnapMarker = new maplibregl.Marker({ element: se, offset: [14, -14] })
+                .setLngLat([routeSnap.lngLat.lng, routeSnap.lngLat.lat]).addTo(map);
+            } else {
+              moveSnapMarker.setLngLat([routeSnap.lngLat.lng, routeSnap.lngLat.lat]);
+            }
+          } else {
+            clearMoveSnap();
+          }
+        }
+
+        // Временно обновляем позицию для перерисовки линии
+        const pos = moveSnapInfo
+          ? (moveSnapInfo.type === 'named' ? moveSnapInfo.data.lngLat : moveSnapInfo.data.lngLat)
+          : { lng: ll.lng, lat: ll.lat };
+        const tmp = new maplibregl.LngLat(pos.lng, pos.lat);
+        tmp._role = points[movingPointIndex]._role;
+        points[movingPointIndex] = tmp;
+        drawMeasureLine();
+        drawMeasurePoints();
+      });
+
+      moveMarker.on('dragend', () => {
+        if (moveSnapMarker) { moveSnapMarker.remove(); moveSnapMarker = null; }
+      });
+
+      // Сохраняем ссылку на clearMoveSnap для confirmMovePoint
+      moveMarker._clearSnap = clearMoveSnap;
+      moveMarker._getSnapInfo = () => moveSnapInfo;
+
+      moveBar.style.display = 'flex';
+      map.dragPan.disable();
+    };
+
+    window.confirmMovePoint = function() {
+      if (movingPointIndex === -1 || !moveMarker) return;
+      const role = points[movingPointIndex]._role;
+      const snapInfo = moveMarker._getSnapInfo ? moveMarker._getSnapInfo() : null;
+
+      let newPt;
+
+      if (snapInfo && snapInfo.type === 'named') {
+        // Привязка к RP / RTS точке
+        const d = snapInfo.data;
+        newPt = new maplibregl.LngLat(d.lngLat.lng, d.lngLat.lat);
+        newPt._pointName = d.name;
+        newPt._pointType = d.type;
+        newPt._lat = d.lat;
+        newPt._lng = d.lng;
+      } else if (snapInfo && snapInfo.type === 'route') {
+        // Привязка к линии маршрута
+        const d = snapInfo.data;
+        newPt = new maplibregl.LngLat(d.lngLat.lng, d.lngLat.lat);
+        newPt._snapInfo = d;
+      } else {
+        // Свободная точка — проверяем AD через queryRenderedFeatures
+        const ll = moveMarker.getLngLat();
+        newPt = new maplibregl.LngLat(ll.lng, ll.lat);
+        // Пробуем найти аэродром под маркером
+        const px = map.project([ll.lng, ll.lat]);
+        const adFeats = map.queryRenderedFeatures(
+          [[ px.x - 12, px.y - 12 ], [ px.x + 12, px.y + 12 ]],
+          { layers: ['AD_point_name'] }
+        );
+        if (adFeats.length > 0) {
+          const f = adFeats[0];
+          const coords = f.geometry.coordinates;
+          newPt = new maplibregl.LngLat(coords[0], coords[1]);
+          newPt._pointName = f.properties.NAME || '';
+          newPt._pointType = 'AD';
+          newPt._lat = parseSemCoord(f.properties.LATITUDE) ?? coords[1];
+          newPt._lng = parseSemCoord(f.properties.LONGITUDE) ?? coords[0];
+        }
+      }
+
+      newPt._role = role;
+      points[movingPointIndex] = newPt;
+
+      if (moveMarker._clearSnap) moveMarker._clearSnap();
+      moveMarker.remove(); moveMarker = null;
+      movingPointIndex = -1;
+      moveBar.style.display = 'none';
+      map.dragPan.enable();
+      drawMeasureLine();
+      drawMeasurePoints();
+      updatePointsList();
+    };
+
+    window.cancelMovePoint = function() {
+      if (moveMarker) { moveMarker.remove(); moveMarker = null; }
+      // Восстанавливаем исходную позицию
+      if (movingPointIndex !== -1) {
+        drawMeasureLine();
+        drawMeasurePoints();
+      }
+      movingPointIndex = -1;
+      moveBar.style.display = 'none';
+      map.dragPan.enable();
+    };
+
+    window.ctxSetRole = function(role) {
+      ctxMenu.style.display = 'none';
+      if (ctxPointIndex === -1) return;
+      points.forEach(p => { if (p._role === role) delete p._role; });
+      points[ctxPointIndex]._role = role;
+      updatePointsList();
+    };
+
+    // Удаление маршрутной точки из списка
+    window.deletePoint = function(idx) {
+      points.splice(idx, 1);
+      if (map.getSource('measure-line-source')) map.getSource('measure-line-source').setData({type:'FeatureCollection',features:[]});
+      if (map.getSource('measure-points-source')) map.getSource('measure-points-source').setData({type:'FeatureCollection',features:[]});
+      drawMeasureLine();
+      drawMeasurePoints();
+      updatePointsList();
+    };
+
+    // ─── Запасные аэродромы (вне маршрута) ───────────────────────────
+    let alternateAirports = []; // { name, lat, lng, props }
+    let adCtxMenu = document.getElementById('ad-ctx-menu');
+    let pendingAlternate = null; // временно хранит данные AD для назначения
+
+    window.deleteAlternate = function(idx) {
+      alternateAirports.splice(idx, 1);
+      updatePointsList();
+    };
+
+    window.ctxSetAlternate = function() {
+      adCtxMenu.style.display = 'none';
+      if (!pendingAlternate) return;
+      // Не добавлять дубликаты
+      if (!alternateAirports.find(a => a.name === pendingAlternate.name)) {
+        alternateAirports.push(pendingAlternate);
+      }
+      pendingAlternate = null;
+      updatePointsList();
+    };
+
+    // Скрывать оба меню при клике вне
+    document.addEventListener('click', (e) => {
+      if (!ctxMenu.contains(e.target)) ctxMenu.style.display = 'none';
+      if (!adCtxMenu.contains(e.target)) adCtxMenu.style.display = 'none';
+    });
+
+    // ─── Экспорт маршрута в KML ───────────────────────────────────────
+    window.exportKML = function() {
+      if (points.length === 0) {
+        alert('Маршрут пуст — нечего выгружать.');
+        return;
+      }
+
+      const roleColors = {
+        departure:   'ff00b300',
+        destination: 'ff0000ff',
+        alternate:   'ff00d7ff',
+        default:     'ff888888'
+      };
+
+      const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+      let placemarks = '';
+
+      // Маршрутные точки
+      points.forEach((p, i) => {
+        const role = p._role || 'default';
+        let name = p._pointName || (p._snapInfo && p._snapInfo.routeName) || formatCoord(p);
+        const roleLabel = { departure:'Вылет', destination:'Назначение' }[role] || '';
+        const fullName = roleLabel ? `${name} [${roleLabel}]` : name;
+
+        let desc = formatCoord(p);
+        if (i > 0) {
+          const prev = points[i - 1];
+          const prevName = prev._pointName || (prev._snapInfo && prev._snapInfo.routeName) || formatCoord(prev);
+          const tc = trueBearing(prev, p);
+          const tcRev = (tc + 180) % 360;
+          const midLat = (prev.lat + p.lat) / 2;
+          const midLng = (prev.lng + p.lng) / 2;
+          const decl = magneticDeclination(midLat, midLng);
+          const mc = ((tc - decl) + 360) % 360;
+          const mcRev = ((tcRev - decl) + 360) % 360;
+          const dist = haversineDistance(prev, p);
+          desc += `\nУчасток: ${prevName} → ${name}\nДлина: ${formatDistance(dist)}\nИК: ${formatBearing(tc)}  МК: ${formatBearing(mc)}\nОИК: ${formatBearing(tcRev)}  ОМК: ${formatBearing(mcRev)}`;
+        }
+
+        placemarks += `\n    <Placemark>\n      <name>${esc(fullName)}</name>\n      <description>${esc(desc)}</description>\n      <styleUrl>#style_${role}</styleUrl>\n      <Point><coordinates>${p.lng},${p.lat},0</coordinates></Point>\n    </Placemark>`;
+      });
+
+      // Запасные аэродромы
+      alternateAirports.forEach(a => {
+        const coordStr = formatCoord({lat: a.lat, lng: a.lng});
+        placemarks += `\n    <Placemark>\n      <name>${esc(a.name)} [Запасной]</name>\n      <description>${esc(coordStr)}</description>\n      <styleUrl>#style_alternate</styleUrl>\n      <Point><coordinates>${a.lng},${a.lat},0</coordinates></Point>\n    </Placemark>`;
+      });
+
+      const lineCoords = points.map(p => `${p.lng},${p.lat},0`).join('\n          ');
+
+      const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Маршрут</name>
+    <Style id="style_default"><IconStyle><color>ff888888</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href></Icon></IconStyle></Style>
+    <Style id="style_departure"><IconStyle><color>ff00b300</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href></Icon></IconStyle></Style>
+    <Style id="style_destination"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href></Icon></IconStyle></Style>
+    <Style id="style_alternate"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png</href></Icon></IconStyle></Style>
+    <Style id="style_route_line"><LineStyle><color>ff0000ff</color><width>3</width></LineStyle></Style>
+    <Placemark>
+      <name>Маршрут</name>
+      <styleUrl>#style_route_line</styleUrl>
+      <LineString><tessellate>1</tessellate><coordinates>
+          ${lineCoords}
+        </coordinates></LineString>
+    </Placemark>
+${placemarks}
+  </Document>
+</kml>`;
+
+      const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'route.kml';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    };
 
     document.getElementById('weather-mode-chk').addEventListener('change', (e) => {
       weatherMode = e.target.checked;
@@ -5267,8 +5851,152 @@
       }
     });
 
-    map.on('mousemove', () => {
+    // ─── Координаты у курсора ────────────────────────────────────────
+    const cursorCoordsEl = document.getElementById('cursor-coords');
+    const cursorCoordsChk = document.getElementById('cursor-coords-chk');
+    let showCursorCoords = false;
+
+    cursorCoordsChk.addEventListener('change', (e) => {
+      showCursorCoords = e.target.checked;
+      if (!showCursorCoords) cursorCoordsEl.style.display = 'none';
+    });
+
+    map.on('mousemove', (e) => {
       map.getCanvas().style.cursor = (weatherMode || measuring) ? 'crosshair' : '';
+      if (showCursorCoords) {
+        cursorCoordsEl.style.display = 'block';
+        cursorCoordsEl.textContent = formatCoord(e.lngLat);
+      }
+    });
+
+    map.on('mouseleave', () => {
+      cursorCoordsEl.style.display = 'none';
+    });
+
+    // ─── Прилипание к точкам маршрута ENROUTE_MVL ────────────────────
+    let snapMarker = null;
+    let snapLngLat = null;
+    let snapInfo = null; // { name, routeName }
+
+    function clearSnap() {
+      if (snapMarker) { snapMarker.remove(); snapMarker = null; }
+      snapLngLat = null;
+      snapInfo = null;
+    }
+
+    // Загружаем данные маршрутов для snap-узлов
+    let marshrData = null;
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/marsh.geojson')
+      .then(r => r.json())
+      .then(d => { marshrData = d; })
+      .catch(e => console.error('Ошибка загрузки marsh.geojson:', e));
+
+    // Загружаем RP-точки и RTS для snap-приоритета при измерении
+    let rpData = null;
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson')
+      .then(r => r.json())
+      .then(d => { rpData = d; })
+      .catch(e => console.error('Ошибка загрузки RP.geojson:', e));
+
+    let rtsData = null;
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson')
+      .then(r => r.json())
+      .then(d => { rtsData = d; })
+      .catch(e => console.error('Ошибка загрузки RTS.geojson:', e));
+
+    // Поиск ближайшей именованной точки (RP / RTS) в пикселях
+    function findNearestNamedPoint(lngLat, thresholdPx) {
+      const clickPx = map.project([lngLat.lng, lngLat.lat]);
+      let best = null, bestDist = Infinity;
+
+      const checkDataset = (dataset, typeLabel) => {
+        if (!dataset) return;
+        dataset.features.forEach(f => {
+          if (!f.geometry || f.geometry.type !== 'Point') return;
+          const coords = f.geometry.coordinates;
+          const px = map.project(coords);
+          const dx = px.x - clickPx.x, dy = px.y - clickPx.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < thresholdPx && d < bestDist) {
+            bestDist = d;
+            best = {
+              lngLat: { lng: coords[0], lat: coords[1] },
+              name: f.properties.NAME || '',
+              lat: parseSemCoord(f.properties.LATITUDE) ?? coords[1],
+              lng: parseSemCoord(f.properties.LONGITUDE) ?? coords[0],
+              type: typeLabel
+            };
+          }
+        });
+      };
+
+      checkDataset(rpData, 'RP');
+      checkDataset(rtsData, 'RTS');
+      return best;
+    }
+
+    function findNearestRoutePoint(lngLat, thresholdPx) {
+      if (!marshrData) return null;
+      const clickPx = map.project([lngLat.lng, lngLat.lat]);
+      let best = null, bestDist = Infinity;
+
+      // Проекция точки на отрезок (в пикселях экрана)
+      function projectPointOnSegment(px, py, ax, ay, bx, by) {
+        const dx = bx - ax, dy = by - ay;
+        const lenSq = dx*dx + dy*dy;
+        if (lenSq === 0) return { x: ax, y: ay, t: 0 };
+        let t = ((px - ax)*dx + (py - ay)*dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        return { x: ax + t*dx, y: ay + t*dy, t };
+      }
+
+      marshrData.features.forEach(f => {
+        if (!f.geometry) return;
+        const routeName = f.properties && f.properties.NAME ? f.properties.NAME : '';
+
+        const processLine = (coords) => {
+          for (let i = 0; i < coords.length - 1; i++) {
+            const aPx = map.project(coords[i]);
+            const bPx = map.project(coords[i + 1]);
+            const proj = projectPointOnSegment(
+              clickPx.x, clickPx.y,
+              aPx.x, aPx.y, bPx.x, bPx.y
+            );
+            const dx = proj.x - clickPx.x, dy = proj.y - clickPx.y;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d < thresholdPx && d < bestDist) {
+              bestDist = d;
+              // Интерполируем географические координаты
+              const t = proj.t;
+              const snapLng = coords[i][0] + t * (coords[i+1][0] - coords[i][0]);
+              const snapLat = coords[i][1] + t * (coords[i+1][1] - coords[i][1]);
+              best = { lngLat: { lng: snapLng, lat: snapLat }, routeName, featureProps: f.properties };
+            }
+          }
+        };
+
+        if (f.geometry.type === 'LineString') processLine(f.geometry.coordinates);
+        else if (f.geometry.type === 'MultiLineString') f.geometry.coordinates.forEach(processLine);
+      });
+
+      return best;
+    }
+
+    map.on('mousemove', (e) => {
+      if (!measuring) { clearSnap(); return; }
+      const snap = findNearestRoutePoint(e.lngLat, 25);
+      if (snap) {
+        snapLngLat = snap.lngLat;
+        snapInfo = snap;
+        const el = document.createElement('div');
+        el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#d81b60;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);pointer-events:none;';
+        if (snapMarker) snapMarker.remove();
+        snapMarker = new maplibregl.Marker({ element: el, offset: [0, 0] })
+          .setLngLat([snap.lngLat.lng, snap.lngLat.lat])
+          .addTo(map);
+      } else {
+        clearSnap();
+      }
     });
 
     map.on('click', async (e) => {
@@ -5367,7 +6095,42 @@
       }
 
       if (measuring) {
-        points.push(e.lngLat);
+        // Шаг 1: приоритет — именованные точки RP и RTS (ищем в радиусе 22 px)
+        const namedPt = findNearestNamedPoint(e.lngLat, 22);
+        if (namedPt) {
+          const lngLat = new maplibregl.LngLat(namedPt.lngLat.lng, namedPt.lngLat.lat);
+          lngLat._pointName = namedPt.name;
+          lngLat._lat = namedPt.lat;
+          lngLat._lng = namedPt.lng;
+          lngLat._pointType = namedPt.type;
+          points.push(lngLat);
+          clearSnap();
+        }
+        // Шаг 2: клик по AD_point_name
+        else {
+          const adFeats = map.queryRenderedFeatures(e.point, { layers: ['AD_point_name'] });
+          if (adFeats.length > 0) {
+            const f = adFeats[0];
+            const coords = f.geometry.coordinates;
+            const lngLat = new maplibregl.LngLat(coords[0], coords[1]);
+            lngLat._pointName = f.properties.NAME || '';
+            lngLat._lat = parseSemCoord(f.properties.LATITUDE) ?? coords[1];
+            lngLat._lng = parseSemCoord(f.properties.LONGITUDE) ?? coords[0];
+            lngLat._pointType = 'AD';
+            points.push(lngLat);
+          }
+          // Шаг 3: прилипание к линии маршрута (snap активен через mousemove)
+          else if (snapLngLat) {
+            const lngLat = new maplibregl.LngLat(snapLngLat.lng, snapLngLat.lat);
+            lngLat._snapInfo = snapInfo;
+            points.push(lngLat);
+            clearSnap();
+          }
+          // Шаг 4: обычная точка на карте
+          else {
+            points.push(e.lngLat);
+          }
+        }
         drawMeasureLine();
         drawMeasurePoints();
         updatePointsList();
@@ -5405,8 +6168,50 @@
       return `${d}°${m.toString().padStart(2, '0')}'${sFormatted}'' ${dir}`;
     }
 
+    // Формат: ggmmN/SgggmmE/W  например 4620N07805W
+    // Парсит строку координаты из семантики форматов:
+    // ggmmssN / gggmmssE  (8-9 символов с буквой на конце)
+    // или просто десятичное число
+    // Возвращает десятичные градусы (float)
+    function parseSemCoord(val) {
+      if (val == null) return null;
+      const s = String(val).trim();
+      // Формат с буквой на конце: 56012100N или 034142000E
+      const m = s.match(/^(\d+)([NSEWnsew])$/);
+      if (m) {
+        const digits = m[1];
+        const dir = m[2].toUpperCase();
+        const isLon = dir === 'E' || dir === 'W';
+        // lon: 3 цифры градусы, lat: 2 цифры градусы
+        const degLen = isLon ? 3 : 2;
+        const deg = parseInt(digits.substring(0, degLen), 10);
+        const min = parseInt(digits.substring(degLen, degLen + 2), 10);
+        // секунды — остаток (может быть 2 или 4 цифры)
+        const secStr = digits.substring(degLen + 2);
+        const sec = secStr.length > 0 ? parseInt(secStr.substring(0, 2), 10) : 0;
+        const dec = deg + min / 60 + sec / 3600;
+        return (dir === 'S' || dir === 'W') ? -dec : dec;
+      }
+      // Просто число
+      const n = parseFloat(s);
+      return isNaN(n) ? null : n;
+    }
+
     function formatCoord(lngLat) {
-      return `φ ${degToDMS(lngLat.lat, false)}   λ ${degToDMS(lngLat.lng, true)}`;
+      const lat = lngLat.lat, lng = lngLat.lng;
+      const latAbs = Math.abs(lat);
+      const latD = Math.floor(latAbs);
+      const latM = Math.round((latAbs - latD) * 60);
+      const latDir = lat >= 0 ? 'N' : 'S';
+
+      const lngAbs = Math.abs(lng);
+      const lngD = Math.floor(lngAbs);
+      const lngM = Math.round((lngAbs - lngD) * 60);
+      const lngDir = lng >= 0 ? 'E' : 'W';
+
+      const latStr = latD.toString().padStart(2, '0') + latM.toString().padStart(2, '0') + latDir;
+      const lngStr = lngD.toString().padStart(3, '0') + lngM.toString().padStart(2, '0') + lngDir;
+      return latStr + lngStr;
     }
 
     function haversineDistance(c1, c2) {
@@ -5421,6 +6226,102 @@
       return R * c;
     }
 
+    // Истинный курс (TC) от точки c1 к точке c2, градусы 0-360
+    function trueBearing(c1, c2) {
+      const φ1 = c1.lat * Math.PI / 180;
+      const φ2 = c2.lat * Math.PI / 180;
+      const Δλ = (c2.lng - c1.lng) * Math.PI / 180;
+      const y = Math.sin(Δλ) * Math.cos(φ2);
+      const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+      const θ = Math.atan2(y, x);
+      return ((θ * 180 / Math.PI) + 360) % 360;
+    }
+
+    // ─── Магнитное склонение из WMM GeoJSON (сетка 1°×1°) ───────────────
+    // Загружаем данные невидимо — только для вычислений, не добавляем слой на карту
+    let wmmGrid = null; // Map: "lat_lng" → declination (float)
+
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/wmm.geojson')
+      .then(r => r.json())
+      .then(data => {
+        wmmGrid = new Map();
+        let sample = [];
+        data.features.forEach(f => {
+          if (!f.geometry || f.geometry.type !== 'Point') return;
+          const coords = f.geometry.coordinates;
+          const lng = coords[0];
+          const lat = coords[1];
+          const val = parseFloat(f.properties.ObjName);
+          if (!isNaN(val)) {
+            const key = `${Math.round(lat)}_${Math.round(lng)}`;
+            wmmGrid.set(key, val);
+            if (sample.length < 10) sample.push({ lat, lng, val });
+          }
+        });
+        // Определяем: это склонение (-180..+180) или абсолютный азимут (0..360)?
+        const vals = sample.map(s => s.val);
+        const hasNegative = vals.some(v => v < 0);
+        const maxVal = Math.max(...vals);
+        console.log(`🧭 WMM загружен: ${wmmGrid.size} точек, примеры:`, sample.slice(0,3));
+        console.log(`   hasNegative=${hasNegative}, maxVal=${maxVal.toFixed(2)}`);
+        if (!hasNegative && maxVal > 90) {
+          console.warn('⚠️ ObjName похоже на абсолютный азимут (0-360), а не склонение (-180..+180). Потребуется коррекция формулы МК.');
+        }
+      })
+      .catch(e => console.error('Ошибка загрузки WMM:', e));
+
+    // Билинейная интерполяция по сетке 1°×1°
+    function magneticDeclination(lat, lng) {
+      if (!wmmGrid || wmmGrid.size === 0) {
+        // Фоллбэк: упрощённая аппроксимация пока данные не загружены
+        const latR = lat * Math.PI / 180;
+        const lngR = lng * Math.PI / 180;
+        return -11.0 * Math.sin(latR) * Math.cos(lngR + 1.22) +
+                3.0  * Math.cos(2 * latR) * Math.sin(2 * lngR + 0.5) +
+                1.5  * Math.sin(latR) * Math.cos(3 * lngR) +
+                0.8  * Math.cos(latR - 0.4) * Math.sin(lngR + 2.8);
+      }
+
+      // Четыре угловые точки ячейки сетки
+      const lat0 = Math.floor(lat);
+      const lat1 = lat0 + 1;
+      const lng0 = Math.floor(lng);
+      const lng1 = lng0 + 1;
+
+      const d00 = wmmGrid.get(`${lat0}_${lng0}`);
+      const d01 = wmmGrid.get(`${lat0}_${lng1}`);
+      const d10 = wmmGrid.get(`${lat1}_${lng0}`);
+      const d11 = wmmGrid.get(`${lat1}_${lng1}`);
+
+      // Если все 4 точки есть — билинейная интерполяция
+      if (d00 != null && d01 != null && d10 != null && d11 != null) {
+        const tx = lng - lng0; // доля по долготе [0..1]
+        const ty = lat - lat0; // доля по широте  [0..1]
+        const d0 = d00 + tx * (d01 - d00); // интерп. по нижней строке
+        const d1 = d10 + tx * (d11 - d10); // интерп. по верхней строке
+        return d0 + ty * (d1 - d0);        // интерп. по широте
+      }
+
+      // Если не все 4 есть — берём ближайшую доступную точку
+      const candidates = [
+        [d00, Math.hypot(lat - lat0, lng - lng0)],
+        [d01, Math.hypot(lat - lat0, lng - lng1)],
+        [d10, Math.hypot(lat - lat1, lng - lng0)],
+        [d11, Math.hypot(lat - lat1, lng - lng1)],
+      ].filter(([v]) => v != null);
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => a[1] - b[1]);
+        return candidates[0][0];
+      }
+
+      // Крайний фоллбэк
+      return 0;
+    }
+
+    function formatBearing(deg) {
+      return deg.toFixed(0).padStart(3, '0') + '°';
+    }
+
     function formatDistance(meters) {
       if (!meters || meters < 1) return '—';
       const km = (meters / 1000).toFixed(1);
@@ -5428,10 +6329,75 @@
       return `${km} км / ${nm} NM`;
     }
 
+    // Показ семантики точки в панели измерения
+    window.showPointSemantics = function(idx) {
+      const p = points[idx];
+      if (!p) return;
+      const inspectResult = document.getElementById('inspect-result');
+      const inspectBlock = document.getElementById('inspect-block');
+      if (!inspectResult || !inspectBlock) return;
+
+      inspectBlock.style.display = 'block';
+
+      let props = null;
+      let sourceLabel = '';
+
+      // Ищем свойства точки в загруженных данных
+      if (p._pointType === 'RP' || (!p._pointType && p._pointName)) {
+        if (rpData) {
+          const f = rpData.features.find(f =>
+            f.geometry && f.geometry.type === 'Point' &&
+            f.properties && f.properties.NAME === p._pointName
+          );
+          if (f) { props = f.properties; sourceLabel = 'Маршрутная точка (RP)'; }
+        }
+      }
+      if (!props && p._pointType === 'RTS') {
+        if (rtsData) {
+          const f = rtsData.features.find(f =>
+            f.geometry && f.geometry.type === 'Point' &&
+            f.properties && f.properties.NAME === p._pointName
+          );
+          if (f) { props = f.properties; sourceLabel = 'РТС'; }
+        }
+      }
+      if (!props && p._pointType === 'AD') {
+        // Ищем в allSearchableFeatures по имени
+        const item = allSearchableFeatures.find(it =>
+          it.layerDef.source === 'ADHPLS' &&
+          (it.feature.properties.NAME === p._pointName)
+        );
+        if (item) { props = item.feature.properties; sourceLabel = 'Аэродром / ПП'; }
+      }
+      if (!props && p._snapInfo) {
+        // Берём свойства именно той фичи, по которой кликнули
+        if (p._snapInfo.featureProps) {
+          props = p._snapInfo.featureProps;
+          sourceLabel = 'Маршрут (ENROUTE)';
+        } else {
+          props = { NAME: p._snapInfo.routeName, Координаты: formatCoord(p) };
+          sourceLabel = 'Маршрут (ENROUTE)';
+        }
+      }
+
+      if (!props) {
+        inspectResult.innerHTML = `<i style="color:#888; font-size:12px;">Семантика не найдена</i>`;
+        return;
+      }
+
+      let html = `<div style="font-weight:bold; font-size:12px; color:#1976d2; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #e0e0e0;">${sourceLabel}</div>`;
+      Object.entries(props).forEach(([key, val]) => {
+        if (val == null || val === '') return;
+        html += `<div style="padding:2px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:12px;"><b>${key}:</b> ${val}</div>`;
+      });
+      inspectResult.innerHTML = html;
+    };
+
     function updatePointsList() {
       if (points.length === 0) {
         pointsList.innerHTML = 'Точки не добавлены';
         totalEl.innerHTML = 'Общее: — км / — NM';
+        document.getElementById('inspect-block').style.display = 'none';
         return;
       }
 
@@ -5439,19 +6405,86 @@
       let cumulative = 0;
 
       points.forEach((p, i) => {
-        let segment = '';
+        let segmentHtml = '';
         if (i > 0) {
-          const dist = haversineDistance(points[i-1], p);
+          const prev = points[i - 1];
+          const dist = haversineDistance(prev, p);
           cumulative += dist;
-          segment = `<span style="color:#d81b60; font-weight:bold;"> → ${formatDistance(dist)}</span>`;
+
+          const tc = trueBearing(prev, p);
+          const tcRev = (tc + 180) % 360; // обратный истинный курс
+          const midLat = (prev.lat + p.lat) / 2;
+          const midLng = (prev.lng + p.lng) / 2;
+          const decl = magneticDeclination(midLat, midLng);
+          const mc = ((tc - decl) + 360) % 360;
+          const mcRev = ((tcRev - decl) + 360) % 360; // обратный магнитный курс
+          const declSign = decl >= 0 ? '+' : '';
+
+          segmentHtml = `
+            <div class="segment-info">
+              <span class="seg-dist">&#8594; ${formatDistance(dist)}</span>
+              <span class="seg-tc" title="Истинный курс прямой">ИК&nbsp;${formatBearing(tc)}</span>
+              <span class="seg-mc" title="Магнитный курс прямой">МК&nbsp;${formatBearing(mc)}</span>
+              <span class="seg-tc" title="Истинный курс обратный" style="opacity:0.7;">ОИК&nbsp;${formatBearing(tcRev)}</span>
+              <span class="seg-mc" title="Магнитный курс обратный" style="opacity:0.7;">ОМК&nbsp;${formatBearing(mcRev)}</span>
+              <span class="seg-decl" title="Магнитное склонение">&delta;&nbsp;${declSign}${decl.toFixed(1)}&deg;</span>
+            </div>`;
         }
 
-        html += `<div class="point-item">
-          <strong>${i+1}.</strong> ${formatCoord(p)}${segment}
+        // Определяем подпись точки
+        const roleLabels = {
+          departure:   { text: 'Вылет',        color: '#1976d2', bg: '#e3f2fd' },
+          destination: { text: 'Назначение',   color: '#2e7d32', bg: '#e8f5e9' },
+          alternate:   { text: 'Запасной',     color: '#f57c00', bg: '#fff3e0' }
+        };
+        const roleBadge = p._role && roleLabels[p._role]
+          ? `<span style="margin-left:6px;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:bold;background:${roleLabels[p._role].bg};color:${roleLabels[p._role].color};">${roleLabels[p._role].text}</span>`
+          : '';
+
+        let pointLabel = '';
+        if (p._pointName) {
+          const icon = p._pointType === 'AD' ? '🛫' : p._pointType === 'RTS' ? '📡' : '📍';
+          const coordStr = formatCoord({ lat: parseFloat(p._lat !== undefined ? p._lat : p.lat), lng: parseFloat(p._lng !== undefined ? p._lng : p.lng) });
+          pointLabel = `<span
+            onclick="showPointSemantics(${i})"
+            style="color:#1976d2; font-weight:bold; font-size:13px; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;"
+            title="Нажмите для просмотра семантики"
+          >${icon} ${p._pointName}</span>${roleBadge}
+          <div style="font-size:11.5px; color:#888; margin-top:2px; font-family:monospace;">${coordStr}</div>`;
+        } else if (p._snapInfo && p._snapInfo.routeName) {
+          pointLabel = `<span
+            onclick="showPointSemantics(${i})"
+            style="color:#9c27b0; font-weight:bold; font-size:13px; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;"
+            title="Нажмите для просмотра семантики"
+          >✈ ${p._snapInfo.routeName}</span>${roleBadge}
+          <div style="font-size:11.5px; color:#888; margin-top:2px;">${formatCoord(p)}</div>`;
+        } else {
+          pointLabel = formatCoord(p) + roleBadge;
+        }
+
+        html += `<div class="point-item" style="position:relative;">
+          <span style="position:absolute;top:6px;right:4px;cursor:pointer;color:#bbb;font-size:15px;line-height:1;" onclick="deletePoint(${i})" title="Удалить точку">✕</span>
+          <strong>${i + 1}.</strong> ${pointLabel}${segmentHtml}
         </div>`;
       });
 
       pointsList.innerHTML = html;
+
+      // Блок запасных аэродромов (отдельно, вне маршрутных точек)
+      const alts = alternateAirports;
+      if (alts.length > 0) {
+        let altHtml = `<div style="margin-top:10px; padding-top:8px; border-top:1px dashed #f57c00;">
+          <div style="font-size:11px; color:#f57c00; font-weight:bold; margin-bottom:4px;">🔄 ЗАПАСНЫЕ АЭРОДРОМЫ</div>`;
+        alts.forEach((a, ai) => {
+          altHtml += `<div style="font-size:13px; padding:3px 0; display:flex; justify-content:space-between; align-items:center;">
+            <span>🛬 ${a.name} <span style="font-size:11px; color:#888; font-family:monospace;">${formatCoord({lat: a.lat, lng: a.lng})}</span></span>
+            <span style="cursor:pointer; color:#bbb; margin-left:8px;" onclick="deleteAlternate(${ai})" title="Удалить запасной">✕</span>
+          </div>`;
+        });
+        altHtml += `</div>`;
+        pointsList.innerHTML += altHtml;
+      }
+
       totalEl.innerHTML = `Общее: <span style="color:#d81b60; font-weight:bold;">${formatDistance(cumulative)}</span>`;
     }
 
@@ -5608,8 +6641,19 @@
     };
 
     clickableLayers.forEach(layer => {
-      map.on('mouseenter', layer.id, () => map.getCanvas().style.cursor = 'pointer');
-      map.on('mouseleave', layer.id, () => map.getCanvas().style.cursor = '');
+      map.on('mouseenter', layer.id, () => {
+        if (!measuring) map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', layer.id, () => {
+        if (!measuring) map.getCanvas().style.cursor = '';
+      });
+    });
+
+    // Cursor for ENROUTE_MVL during measuring
+    ['ENROUTE_MVL', 'ENROUTE_MVL_BUF'].forEach(lid => {
+      map.on('mouseenter', lid, () => {
+        if (measuring) map.getCanvas().style.cursor = 'crosshair';
+      });
     });
   </script>
 </body>
