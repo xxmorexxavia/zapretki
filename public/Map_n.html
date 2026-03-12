@@ -913,6 +913,26 @@
   <script>
     const MAPTILER_KEY = 'HBLKeT2UlbIUwg8YAx7V';
 
+    // ── Глобальная функция скрытия лоадера ──────────────────────────
+    let _loaderHidden = false;
+    function hideLoader() {
+      if (_loaderHidden) return;
+      _loaderHidden = true;
+      const loader = document.getElementById('map-loader');
+      if (!loader) return;
+      const bar    = document.getElementById('loader-bar');
+      const status = document.getElementById('loader-status');
+      if (bar)    bar.style.width = '100%';
+      if (status) status.textContent = 'Готово';
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        setTimeout(() => { if (loader.parentNode) loader.remove(); }, 700);
+      }, 400);
+    }
+
+    // Страховка: скрыть лоадер максимум через 10 сек в любом случае
+    setTimeout(hideLoader, 10000);
+
     // Прогресс лоадера
     const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','ADHPLS','OBST'];
     const _loaderLoaded  = new Set();
@@ -4814,6 +4834,9 @@
       if (e.isSourceLoaded && e.sourceId) _loaderProgress(e.sourceId);
     });
 
+    // Скрываем лоадер если карта выдала ошибку
+    map.on('error', () => setTimeout(hideLoader, 1000));
+
     map.on('load', async () => {
       // Сначала добавляем погоду и все highlight-слои (твои аэро-слои уже здесь — они будут сверху)
       map.addSource('owm-weather', {
@@ -4904,33 +4927,11 @@
       updateCount();
       toggleSourceLayers('OSM', false);
 
-      // loadAllSearchableFeatures — не блокируем лоадер, запускаем параллельно
       loadAllSearchableFeatures().then(setupSearchPanel);
 
-      // Скрываем лоадер
-      let loaderHidden = false;
-      const hideLoader = () => {
-        if (loaderHidden) return;
-        loaderHidden = true;
-        const loader = document.getElementById('map-loader');
-        if (!loader) return;
-        document.getElementById('loader-status').textContent = 'Готово';
-        document.getElementById('loader-bar').style.width = '100%';
-        setTimeout(() => {
-          loader.classList.add('hidden');
-          setTimeout(() => { if (loader.parentNode) loader.remove(); }, 700);
-        }, 300);
-      };
-
-      // Вариант 1: карта уже готова
-      if (map.loaded() && map.areTilesLoaded()) {
-        setTimeout(hideLoader, 500);
-      } else {
-        // Вариант 2: ждём idle
-        map.once('idle', () => setTimeout(hideLoader, 300));
-        // Вариант 3: страховка — максимум 8 секунд
-        setTimeout(hideLoader, 8000);
-      }
+      // Скрываем лоадер по idle, но не позже чем через 6 сек
+      map.once('idle', hideLoader);
+      setTimeout(hideLoader, 6000);
 
       makeDraggable(document.getElementById('layer-panel'), document.getElementById('layer-header'));
       makeDraggable(document.getElementById('measure-panel'), document.getElementById('measure-header'));
