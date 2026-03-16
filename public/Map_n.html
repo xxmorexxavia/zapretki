@@ -673,7 +673,244 @@
       transition: width 0.4s ease;
     }
 
+
+    /* ═══════════════════════════════════════════════════════
+       ГРАФИЧЕСКИЙ РЕДАКТОР — стили
+    ═══════════════════════════════════════════════════════ */
+    #draw-panel {
+      position: absolute; top: 10px; left: 80px; z-index: 20;
+      background: white; border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.28);
+      width: 300px; max-width: calc(100vw - 110px);
+      max-height: 82vh; overflow: hidden; font-size: 13px;
+      display: none; opacity: 0; transform: translateY(-10px);
+      transition: opacity 0.25s, transform 0.25s, background 0.4s, color 0.4s;
+    }
+    #draw-panel.visible { display: block; opacity: 1; transform: none; }
+    body.night-mode #draw-panel { background: #1e2a3a; color: #cdd; }
+    #draw-panel-header {
+      padding: 10px 16px; cursor: move; font-weight: bold;
+      display: flex; justify-content: space-between; align-items: center;
+      color: white; background: linear-gradient(135deg,#1565c0 0%,#0d47a1 100%);
+      user-select: none;
+    }
+    #draw-panel-body { padding: 10px 12px; overflow-y: auto; max-height: calc(82vh - 44px); }
+    .draw-item {
+      display: flex; align-items: center; gap: 8px; padding: 7px 8px;
+      border-radius: 6px; margin-bottom: 4px; background: #f5f7fa;
+      cursor: default; border: 1px solid #e0e4ea; transition: background 0.15s;
+    }
+    body.night-mode .draw-item { background: #253040; border-color: #334; }
+    .draw-item:hover { background: #e3eeff; }
+    .draw-item-name { flex: 1; font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .draw-item-type { font-size: 10px; color: #888; white-space: nowrap; }
+    .draw-item-actions button {
+      border: none; background: none; cursor: pointer;
+      padding: 2px 6px; border-radius: 4px; font-size: 14px; transition: background 0.1s;
+    }
+    .draw-item-actions button:hover { background: rgba(0,0,0,0.08); }
+    #draw-add-menu {
+      position: fixed; z-index: 9999; background: white; border-radius: 7px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22); min-width: 190px; display: none;
+      border: 1px solid #e0e0e0;
+    }
+    body.night-mode #draw-add-menu { background: #1e2a3a; border-color: #334; }
+    #draw-ctx-menu {
+      position: fixed; z-index: 9999; background: white; border-radius: 7px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22); min-width: 160px; display: none;
+      border: 1px solid #e0e0e0;
+    }
+    body.night-mode #draw-ctx-menu { background: #1e2a3a; border-color: #334; }
+    .draw-menu-title {
+      padding: 8px 14px; font-weight: bold; font-size: 12px; color: #1565c0;
+      border-bottom: 1px solid #e8e8f0; user-select: none;
+    }
+    .draw-menu-item {
+      padding: 9px 16px; cursor: pointer; font-size: 13px; transition: background 0.12s;
+    }
+    .draw-menu-item:hover { background: #e3eeff; }
+    body.night-mode .draw-menu-item:hover { background: #2a3d55; }
+    .draw-menu-item.danger { color: #d32f2f; }
+    #draw-form-overlay {
+      display: none; position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
+    }
+    #draw-form-overlay.open { display: flex; }
+    #draw-form {
+      background: white; border-radius: 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+      width: 430px; max-width: 98vw; max-height: 90vh; overflow-y: auto;
+      padding: 20px 22px; font-size: 13px;
+    }
+    body.night-mode #draw-form { background: #1e2a3a; color: #cdd; }
+    #draw-form h3 { margin: 0 0 14px; font-size: 15px; color: #1565c0; }
+    body.night-mode #draw-form h3 { color: #64b5f6; }
+    .df-row { margin-bottom: 10px; }
+    .df-row label { display: block; font-size: 11.5px; color: #666; margin-bottom: 3px; }
+    body.night-mode .df-row label { color: #9ab; }
+    .df-row input, .df-row select, .df-row textarea {
+      width: 100%; box-sizing: border-box; padding: 6px 9px;
+      border: 1px solid #ccc; border-radius: 5px; font-size: 13px; font-family: inherit;
+    }
+    body.night-mode .df-row input,
+    body.night-mode .df-row select,
+    body.night-mode .df-row textarea { background: #253040; border-color: #445; color: #cdd; }
+    .df-row textarea { resize: vertical; min-height: 56px; }
+    .df-row-inline { display: flex; gap: 8px; }
+    .df-row-inline .df-row { flex: 1; }
+    .df-section { font-weight: bold; font-size: 12px; color: #1565c0;
+      margin: 14px 0 7px; padding-bottom: 4px; border-bottom: 1px solid #e0e8ff; }
+    body.night-mode .df-section { color: #64b5f6; border-bottom-color: #334; }
+    .df-btns { display: flex; gap: 10px; margin-top: 16px; }
+    .df-btn-save {
+      flex: 1; background: linear-gradient(135deg,#1565c0,#0d47a1);
+      color: white; border: none; padding: 9px; border-radius: 6px;
+      cursor: pointer; font-weight: bold; font-size: 13px;
+    }
+    .df-btn-cancel {
+      flex: 1; background: #eee; border: none; padding: 9px;
+      border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    body.night-mode .df-btn-cancel { background: #334; color: #cdd; }
+    .df-points-list { margin-bottom: 4px; }
+    .df-point-row {
+      display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+      background: #f5f7fa; border-radius: 5px; margin-bottom: 4px;
+      font-size: 11.5px; font-family: monospace; border: 1px solid #e0e4ea;
+    }
+    body.night-mode .df-point-row { background: #253040; border-color: #334; }
+    .df-point-row span { flex: 1; }
+    .df-point-row button { border: none; background: none; cursor: pointer;
+      color: #d32f2f; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+    .draw-item.geom-active {
+      background: #e3f0ff !important;
+      border-color: #1565c0 !important;
+      box-shadow: 0 0 0 2px rgba(21,101,192,0.25);
+    }
+    body.night-mode .draw-item.geom-active {
+      background: #1a2d45 !important;
+      border-color: #64b5f6 !important;
+    }
+    /* ── ПРОЕКТ ─────────────────────────────────────────────── */
+    #project-menu {
+      position: absolute; top: 10px; left: 10px; z-index: 30;
+      background: white; border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      width: 270px; overflow: hidden; display: none;
+      opacity: 0; transform: translateY(-8px);
+      transition: opacity 0.2s, transform 0.2s; font-size: 13px;
+    }
+    #project-menu.visible { display: block; opacity: 1; transform: none; }
+    body.night-mode #project-menu { background: #1e2a3a; }
+    #project-menu-header {
+      padding: 11px 16px; font-weight: bold; color: white;
+      background: linear-gradient(135deg,#2e7d32,#1b5e20);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: move; user-select: none;
+    }
+    .project-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 16px; cursor: pointer;
+      border-bottom: 1px solid #f0f0f0; transition: background 0.12s;
+    }
+    body.night-mode .project-item { border-bottom-color: #2a3a4a; }
+    .project-item:last-child { border-bottom: none; }
+    .project-item:hover { background: #e8f5e9; }
+    body.night-mode .project-item:hover { background: #1a3a2a; }
+    .project-item-icon { font-size: 20px; width: 28px; text-align: center; }
+    .project-item-label { font-weight: 600; color: #222; }
+    body.night-mode .project-item-label { color: #cdd; }
+    .project-item-desc { font-size: 11px; color: #888; margin-top: 1px; }
+    #project-info {
+      padding: 8px 16px; font-size: 11px; color: #2e7d32;
+      background: #e8f5e9; display: none; text-align: center;
+    }
+    body.night-mode #project-info { background: #1a3a2a; color: #81c784; }
+
+    /* ── ЭКСПОРТ ──────────────────────────────────────────── */
+    #export-menu {
+      position: absolute;
+      top: 10px; left: 80px;
+      z-index: 30;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      width: 260px;
+      overflow: hidden;
+      display: none;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s, transform 0.2s;
+      font-size: 13px;
+    }
+    #export-menu.visible { display: block; opacity: 1; transform: none; }
+    body.night-mode #export-menu { background: #1e2a3a; }
+    #export-menu-header {
+      padding: 11px 16px;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(135deg,#1565c0,#0d47a1);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: move; user-select: none;
+    }
+    .export-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 16px; cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.12s;
+      font-size: 13px;
+    }
+    body.night-mode .export-item { border-bottom-color: #2a3a4a; }
+    .export-item:last-child { border-bottom: none; }
+    .export-item:hover { background: #e8f0fe; }
+    body.night-mode .export-item:hover { background: #1a2d45; }
+    .export-item-icon { font-size: 20px; width: 28px; text-align: center; }
+    .export-item-text { flex: 1; }
+    .export-item-label { font-weight: 600; color: #222; }
+    body.night-mode .export-item-label { color: #cdd; }
+    .export-item-desc { font-size: 11px; color: #888; margin-top: 1px; }
+    #export-status {
+      padding: 8px 16px;
+      font-size: 12px; color: #1565c0;
+      text-align: center; display: none;
+      background: #e8f0fe;
+    }
+    body.night-mode #export-status { background: #1a2d45; color: #64b5f6; }
+
+    .exp-scale-btn {
+      padding:4px 6px; border-radius:5px; border:1px solid #ccc;
+      background:#f5f5f5; color:#555; font-size:11px; font-weight:500;
+      cursor:pointer; transition:all .15s; white-space:nowrap;
+    }
+    .exp-scale-btn:hover { border-color:#1565c0; color:#1565c0; background:#e8f0fe; }
+    .exp-scale-btn.active { border-color:#1565c0; background:#1565c0; color:white; }
+    body.night-mode .exp-scale-btn { background:#253040; border-color:#445; color:#9ab; }
+    body.night-mode .exp-scale-btn.active { background:#1565c0; border-color:#1565c0; color:white; }
+    #exp-scale-input:focus { border-color:#0d47a1; }
+    body.night-mode #exp-scale-input { background:#253040; border-color:#1565c0; color:#64b5f6; }
+    #exp-mode-screen, #exp-mode-region {
+      transition: all .15s;
+    }
+    body.night-mode #exp-mode-screen,
+    body.night-mode #exp-mode-region {
+      background:#253040 !important; border-color:#445 !important; color:#9ab !important;
+    }
+    body.night-mode #exp-mode-screen.active-mode {
+      background:#1565c0 !important; border-color:#1565c0 !important; color:white !important;
+    }
+    body.night-mode #exp-mode-region.active-mode {
+      background:#1565c0 !important; border-color:#1565c0 !important; color:white !important;
+    }
+
+    #export-menu-header {
+    #draw-hint {
+      display: none; position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%); background: rgba(21,101,192,0.92);
+      color: white; border-radius: 20px; padding: 8px 22px;
+      font-size: 13px; z-index: 9998; pointer-events: none; white-space: nowrap;
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -695,6 +932,9 @@
     <button id="btn-night"     title="Ночной режим"        class="tool-btn"><span>🌙</span></button>
     <button id="btn-terrain"   title="3D-рельеф вкл/выкл"  class="tool-btn"><span>⛰️</span></button>
     <button id="btn-notam"     title="NOTAM"               class="tool-btn"><span>📋</span></button>
+    <button id="btn-draw"     title="Графический редактор" class="tool-btn"><span>✏️</span></button>
+    <button id="btn-project"  title="Проект"               class="tool-btn"><span>📁</span></button>
+    <button id="btn-export"   title="Экспорт / Печать"      class="tool-btn"><span>🖨️</span></button>
   </div>
 
   <div id="layer-panel">
@@ -948,6 +1188,7 @@
 
     const map = new maplibregl.Map({
       container: 'map',
+      preserveDrawingBuffer: true,   // необходимо для экспорта PNG/JPEG/PDF
       style: {
         "version": 8,
         "name": "Bright",
@@ -7564,6 +7805,1839 @@ ${placemarks}
     // Draggable для NOTAM панели
     makeDraggable(document.getElementById('notam-panel'), document.getElementById('notam-header'));
 
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  ГРАФИЧЕСКИЙ РЕДАКТОР
+    // ═══════════════════════════════════════════════════════════════════
+    (function initDrawEditor() {
+
+      const DRAW_SOURCE = 'draw-geojson';
+      let drawItems      = [];
+      let drawMode       = null;
+      let drawTemp       = [];
+      let drawEditId     = null;
+      let drawCtxId      = null;
+      let _drawLng       = 0, _drawLat = 0;
+      let _drawPanelOpen = false;
+      // Редактирование геометрии
+      let geomEditId     = null;   // id элемента в режиме геом.редактирования
+      let geomMarkers    = [];     // maplibre Marker[]
+      let geomDragging   = false;
+
+      // ── Утилиты ─────────────────────────────────────────────────────
+      let _uid = Date.now();
+      function nextId() { return 'di-'+(++_uid); }
+
+      function haversineKm(lat1,lon1,lat2,lon2) {
+        const R=6371,d2r=Math.PI/180;
+        const dLat=(lat2-lat1)*d2r,dLon=(lon2-lon1)*d2r;
+        const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
+        return R*2*Math.asin(Math.sqrt(a));
+      }
+      function bearingDeg(lat1,lon1,lat2,lon2) {
+        const d2r=Math.PI/180,dLon=(lon2-lon1)*d2r;
+        const y=Math.sin(dLon)*Math.cos(lat2*d2r);
+        const x=Math.cos(lat1*d2r)*Math.sin(lat2*d2r)-Math.sin(lat1*d2r)*Math.cos(lat2*d2r)*Math.cos(dLon);
+        return(Math.atan2(y,x)*180/Math.PI+360)%360;
+      }
+      function destPoint(lat,lon,bearDeg,distKm) {
+        const R=6371,d2r=Math.PI/180,r2d=180/Math.PI;
+        const d=distKm/R,b=bearDeg*d2r;
+        const lat2=Math.asin(Math.sin(lat*d2r)*Math.cos(d)+Math.cos(lat*d2r)*Math.sin(d)*Math.cos(b));
+        const lon2=lon*d2r+Math.atan2(Math.sin(b)*Math.sin(d)*Math.cos(lat*d2r),Math.cos(d)-Math.sin(lat*d2r)*Math.sin(lat2));
+        return[lon2*r2d,lat2*r2d];
+      }
+      function circleRing(lon,lat,r,n=64){
+        const pts=[];
+        for(let i=0;i<=n;i++) pts.push(destPoint(lat,lon,(i/n)*360,r));
+        return pts;
+      }
+      function arcPoints(lon,lat,r,b0,angle,n=48){
+        const pts=[];
+        for(let i=0;i<=n;i++) pts.push(destPoint(lat,lon,b0+(i/n)*angle,r));
+        return pts;
+      }
+
+      // ── Стрелки и точки ──────────────────────────────────────────
+      // rev=true  → стрелка на НАЧАЛЕ линии, направление ПРОТИВ построения
+      // rev=false → стрелка на КОНЦЕ  линии, направление ПО  построению
+      // lenDeg  — длина стрелки в градусах (~0.001 = ~100м)
+      // widthDeg — ширина основания стрелки
+      function arrowFeature(pts, color, rev, lenDeg, widthDeg) {
+        if (pts.length < 2) return null;
+        lenDeg   = lenDeg   || 0.012; // вытянутая стрелка ~1.3км
+        widthDeg = widthDeg || 0.004; // ширина основания
+
+        // Для начала линии (rev=true): tip = pts[0], направление от pts[1] к pts[0]
+        // Для конца  линии (rev=false): tip = pts[last], направление от pts[last-1] к pts[last]
+        const i1 = rev ? 0             : pts.length-1;
+        const i0 = rev ? 1             : pts.length-2;
+        const [x1,y1] = pts[i1]; // острие
+        const [x0,y0] = pts[i0]; // предыдущая точка
+
+        // Угол направления ОСТРИЯ (от x0,y0 к x1,y1)
+        const ang = Math.atan2(y1-y0, x1-x0);
+
+        // Для начала (rev=true) острие смотрит ПРОТИВ построения → разворачиваем на π
+        const tipAng = rev ? ang + Math.PI : ang;
+
+        // Острие
+        const tip = [x1, y1];
+        // База стрелки — назад от острия на lenDeg
+        const baseX = x1 - Math.cos(tipAng) * lenDeg;
+        const baseY = y1 - Math.sin(tipAng) * lenDeg;
+        // Два крыла основания
+        const perpAng = tipAng + Math.PI/2;
+        const l1 = [baseX + Math.cos(perpAng)*widthDeg, baseY + Math.sin(perpAng)*widthDeg];
+        const l2 = [baseX - Math.cos(perpAng)*widthDeg, baseY - Math.sin(perpAng)*widthDeg];
+
+        return {type:'Feature',properties:{_dt:'arrow',lc:color,lw:2,ls:'solid'},
+          geometry:{type:'Polygon',coordinates:[[tip,l1,l2,tip]]}};
+      }
+
+      // Точка (circle) на конце линии
+      function capCircleFeature(coord, color, sizeDeg) {
+        sizeDeg = sizeDeg || 0.003;
+        const ring = circleRing(coord[0], coord[1], sizeDeg * 111, 24);
+        return {type:'Feature',properties:{_dt:'fill',fc:color,fo:1.0,lc:color,lw:1,ls:'solid'},
+          geometry:{type:'Polygon',coordinates:[ring]}};
+      }
+
+      // ── itemToFeatures ───────────────────────────────────────────────
+      function itemToFeatures(item) {
+        const s = item.style||{};
+        const bp = {
+          lc:s.lineColor||'#1565c0', lw:s.lineWidth||2, ls:s.lineStyle||'solid',
+          fc:s.fillColor||'#1565c0', fo:s.fillOpacity??0.15,
+          tc:s.fontColor||'#222',    bc:s.bgColor||'#ffffff',
+          fs:s.fontSize||14,         txt:item.text||''
+        };
+        const pts = item.points||[];
+        const feats = [];
+
+        if (item.type==='text') {
+          if (!pts[0]) return [];
+          return [{type:'Feature',properties:{...bp,_dt:'text'},
+            geometry:{type:'Point',coordinates:pts[0]}}];
+        }
+
+        if (item.type==='line') {
+          if (pts.length<2) return [];
+          feats.push({type:'Feature',properties:{...bp,_dt:'line'},
+            geometry:{type:'LineString',coordinates:pts}});
+          // Стрелки
+          const capColor = s.capColor || bp.lc;
+          const aLen = s.arrowLen   || 0.012;
+          const aWid = s.arrowWidth || 0.004;
+          const cSz  = s.capSize    || 0.003;
+          if (s.endCap==='arrow')   { const f=arrowFeature(pts,capColor,false,aLen,aWid); if(f) feats.push(f); }
+          if (s.startCap==='arrow') { const f=arrowFeature(pts,capColor,true, aLen,aWid); if(f) feats.push(f); }
+          if (s.endCap==='circle')   feats.push(capCircleFeature(pts[pts.length-1],capColor,cSz));
+          if (s.startCap==='circle') feats.push(capCircleFeature(pts[0],           capColor,cSz));
+          return feats;
+        }
+
+        if (item.type==='polygon') {
+          if (pts.length<3) return [];
+          const ring=[...pts,pts[0]];
+          return [
+            {type:'Feature',properties:{...bp,_dt:'fill'},  geometry:{type:'Polygon',    coordinates:[ring]}},
+            {type:'Feature',properties:{...bp,_dt:'outline'},geometry:{type:'LineString',coordinates:ring}}
+          ];
+        }
+
+        if (item.type==='circle') {
+          if (pts.length<1) return [];
+          // Поддержка явного радиуса (км) или второй точки
+          const r = s.radiusKm!=null
+            ? s.radiusKm
+            : (pts.length>=2 ? haversineKm(pts[0][1],pts[0][0],pts[1][1],pts[1][0]) : 1);
+          const ring=circleRing(pts[0][0],pts[0][1],r);
+          return [
+            {type:'Feature',properties:{...bp,_dt:'fill'},  geometry:{type:'Polygon',    coordinates:[ring]}},
+            {type:'Feature',properties:{...bp,_dt:'outline'},geometry:{type:'LineString',coordinates:ring}}
+          ];
+        }
+
+        if (item.type==='arc'||item.type==='arc3') {
+          if (pts.length<2) return [];
+          const r  = haversineKm(pts[0][1],pts[0][0],pts[1][1],pts[1][0]);
+          const b0 = bearingDeg(pts[0][1],pts[0][0],pts[1][1],pts[1][0]);
+          const a  = s.angle||45;
+          return [{type:'Feature',properties:{...bp,_dt:'line'},
+            geometry:{type:'LineString',coordinates:arcPoints(pts[0][0],pts[0][1],r,b0,a)}}];
+        }
+
+        if (item.type==='sector') {
+          if (pts.length<2) return [];
+          const r  = haversineKm(pts[0][1],pts[0][0],pts[1][1],pts[1][0]);
+          const b0 = bearingDeg(pts[0][1],pts[0][0],pts[1][1],pts[1][0]);
+          const a  = s.angle||45;
+          const arc=arcPoints(pts[0][0],pts[0][1],r,b0,a);
+          const ring=[pts[0],...arc,pts[0]];
+          return [
+            {type:'Feature',properties:{...bp,_dt:'fill'},  geometry:{type:'Polygon',    coordinates:[ring]}},
+            {type:'Feature',properties:{...bp,_dt:'outline'},geometry:{type:'LineString',coordinates:ring}}
+          ];
+        }
+        return [];
+      }
+
+      // ── Источник и слои ─────────────────────────────────────────────
+      function drawInit() {
+        if (map.getSource(DRAW_SOURCE)) return;
+        map.addSource(DRAW_SOURCE,{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+
+        map.addLayer({id:'draw-fill',type:'fill',source:DRAW_SOURCE,
+          filter:['==',['get','_dt'],'fill'],
+          paint:{'fill-color':['get','fc'],'fill-opacity':['get','fo']}
+        });
+        map.addLayer({id:'draw-arrow-fill',type:'fill',source:DRAW_SOURCE,
+          filter:['==',['get','_dt'],'arrow'],
+          paint:{'fill-color':['get','lc'],'fill-opacity':1}
+        });
+        map.addLayer({id:'draw-line',type:'line',source:DRAW_SOURCE,
+          filter:['in',['get','_dt'],['literal',['line','outline']]],
+          paint:{
+            'line-color':['get','lc'],'line-width':['get','lw'],
+            'line-dasharray':['case',
+              ['==',['get','ls'],'dashed'],['literal',[6,4]],
+              ['==',['get','ls'],'dotted'],['literal',[1,3]],
+              ['literal',[1]]]
+          }
+        });
+        map.addLayer({id:'draw-text',type:'symbol',source:DRAW_SOURCE,
+          filter:['==',['get','_dt'],'text'],
+          layout:{
+            'text-field':['get','txt'],
+            'text-font':['literal',['Open Sans Regular','Arial Unicode MS Regular']],
+            'text-size':['get','fs'],'text-anchor':'center','text-allow-overlap':true
+          },
+          paint:{'text-color':['get','tc'],'text-halo-color':['get','bc'],'text-halo-width':4}
+        });
+
+        document.getElementById('btn-draw').addEventListener('click',()=>{
+          _drawPanelOpen=!_drawPanelOpen;
+          const panel=document.getElementById('draw-panel');
+          if(_drawPanelOpen){
+            panel.style.display='block';
+            setTimeout(()=>{panel.style.opacity='1';panel.style.transform='none';},10);
+            document.getElementById('btn-draw').classList.add('active');
+          } else {
+            panel.style.opacity='0';panel.style.transform='translateY(-10px)';
+            setTimeout(()=>{panel.style.display='none';},260);
+            document.getElementById('btn-draw').classList.remove('active');
+            stopGeomEdit();
+          }
+        });
+
+        makeDraggable(document.getElementById('draw-panel'),document.getElementById('draw-panel-header'));
+        renderDrawList();
+      }
+
+      function drawRefresh(){
+        const src=map.getSource(DRAW_SOURCE);
+        if(!src) return;
+        src.setData({type:'FeatureCollection',features:drawItems.flatMap(itemToFeatures)});
+      }
+
+      // ── Список ──────────────────────────────────────────────────────
+      const ICONS  = {text:'📝',line:'📐',polygon:'⬡',circle:'⭕',arc:'⌒',arc3:'⌒',sector:'🥧'};
+      const LABELS = {text:'Текст',line:'Линия',polygon:'Многоугольник',
+                      circle:'Окружность',arc:'Дуга',arc3:'Дуга (3т.)',sector:'Сектор'};
+
+      function renderDrawList(){
+        const list=document.getElementById('draw-items-list');
+        const empty=document.getElementById('draw-empty');
+        if(!drawItems.length){list.innerHTML='';empty.style.display='block';return;}
+        empty.style.display='none';
+        list.innerHTML=drawItems.map(item=>`
+          <div class="draw-item" id="ditem-${item.id}">
+            <span style="font-size:15px;">${ICONS[item.type]||'▪'}</span>
+            <span class="draw-item-name" title="${escHtml(item.name||'')}">${escHtml(item.name||'Без названия')}</span>
+            <span class="draw-item-type">${LABELS[item.type]||''}</span>
+            <div class="draw-item-actions">
+              <button title="Редакт. геометрию" onclick="startGeomEdit('${item.id}')" style="color:#1565c0;">⊹</button>
+              <button title="Действия" onclick="drawItemMenu(event,'${item.id}')">⋮</button>
+            </div>
+          </div>`).join('');
+      }
+
+      // ── Контекстное меню элемента ────────────────────────────────────
+      window.drawItemMenu=function(e,id){
+        e.stopPropagation();
+        drawCtxId=id;
+        const item=drawItems.find(i=>i.id===id);
+        document.getElementById('draw-ctx-title').textContent=(ICONS[item?.type]||'')+' '+(item?.name||'Элемент');
+        const menu=document.getElementById('draw-ctx-menu');
+        menu.style.left=e.clientX+'px'; menu.style.top=e.clientY+'px'; menu.style.display='block';
+      };
+      window.drawCtxEdit=function(){
+        document.getElementById('draw-ctx-menu').style.display='none';
+        openDrawForm(drawCtxId);
+      };
+      window.drawCtxZoom=function(){
+        document.getElementById('draw-ctx-menu').style.display='none';
+        const item=drawItems.find(i=>i.id===drawCtxId);
+        if(!item?.points?.length) return;
+        const lngs=item.points.map(p=>p[0]),lats=item.points.map(p=>p[1]);
+        map.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],
+          {padding:100,duration:700,maxZoom:14});
+      };
+      window.drawCtxDelete=function(){
+        document.getElementById('draw-ctx-menu').style.display='none';
+        if(!confirm('Удалить элемент?')) return;
+        if(geomEditId===drawCtxId) stopGeomEdit();
+        drawItems=drawItems.filter(i=>i.id!==drawCtxId);
+        drawRefresh(); renderDrawList();
+      };
+
+      // ── Редактирование геометрии (перетаскивание точек) ──────────────
+      window.startGeomEdit = function(id) {
+        stopGeomEdit();
+        const item = drawItems.find(i=>i.id===id);
+        if (!item) return;
+        // для окружности с radiusKm — добавляем виртуальную точку радиуса
+        let pts = item.points;
+        if (item.type==='circle' && item.style?.radiusKm!=null && pts.length===1) {
+          pts = [pts[0], destPoint(pts[0][1],pts[0][0],90,item.style.radiusKm)];
+        }
+        if (!pts.length) return;
+
+        geomEditId = id;
+        // Подсветить строку в списке
+        document.querySelectorAll('.draw-item').forEach(el=>el.classList.remove('geom-active'));
+        const el=document.getElementById('ditem-'+id);
+        if(el) el.classList.add('geom-active');
+
+        setDrawHint('Перетащите точки для изменения геометрии • Esc — выйти');
+
+        // Создаём маркеры-драгеры для каждой точки
+        const ptLabels = {
+          circle:['Центр','Радиус'], arc:['Центр','Точка дуги'],
+          arc3:['Центр','Начало','Конец'], sector:['Центр','Точка']
+        };
+        const labels = ptLabels[item.type]||[];
+
+        pts.forEach((coord, i) => {
+          const el = document.createElement('div');
+          el.style.cssText = `width:14px;height:14px;border-radius:50%;
+            background:${i===0?'#e53935':'#1565c0'};
+            border:2.5px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);
+            cursor:grab;position:relative;`;
+          const lbl = document.createElement('div');
+          lbl.textContent = labels[i]||`${i+1}`;
+          lbl.style.cssText = 'position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;color:#fff;background:rgba(21,101,192,0.85);border-radius:3px;padding:1px 4px;pointer-events:none;';
+          el.appendChild(lbl);
+
+          const marker = new maplibregl.Marker({element:el, draggable:true})
+            .setLngLat(coord)
+            .addTo(map);
+
+          marker.on('drag', () => {
+            const lng = marker.getLngLat();
+            const item2 = drawItems.find(i=>i.id===geomEditId);
+            if (!item2) return;
+            if (item2.type==='circle' && item2.style?.radiusKm!=null && i===1) {
+              // Виртуальная точка радиуса — обновляем radiusKm
+              item2.style.radiusKm = haversineKm(item2.points[0][1],item2.points[0][0],lng.lat,lng.lng);
+            } else {
+              item2.points[i] = [lng.lng, lng.lat];
+            }
+            drawRefresh();
+          });
+
+          marker.on('dragend', () => {
+            // Обновить label точки в форме если открыта
+            const overlay = document.getElementById('draw-form-overlay');
+            if (overlay.classList.contains('open') && drawEditId===geomEditId) {
+              openDrawForm(geomEditId);
+            }
+          });
+
+          // ПКМ по маркеру — удалить точку
+          el.addEventListener('contextmenu', ev => {
+            ev.preventDefault(); ev.stopPropagation();
+            const item2 = drawItems.find(it=>it.id===geomEditId);
+            if (!item2) return;
+            if (item2.points.length<=1) {
+              if (confirm('Удалить весь элемент?')) {
+                stopGeomEdit();
+                drawItems=drawItems.filter(it=>it.id!==geomEditId);
+                geomEditId=null; drawRefresh(); renderDrawList();
+              }
+              return;
+            }
+            if (confirm(`Удалить точку ${labels[i]||i+1}? При удалении точки удаляется весь элемент.`)) {
+              stopGeomEdit();
+              drawItems=drawItems.filter(it=>it.id!==geomEditId);
+              geomEditId=null; drawRefresh(); renderDrawList();
+            }
+          });
+
+          geomMarkers.push(marker);
+        });
+
+        // Для линии/полигона — показать кнопку "Добавить точку"
+        if (['line','polygon'].includes(item.type)) {
+          setDrawHint('Перетащите точки • ПКМ на карте — добавить точку • Esc — выйти');
+        }
+      };
+
+      function stopGeomEdit() {
+        geomMarkers.forEach(m=>m.remove());
+        geomMarkers=[];
+        document.querySelectorAll('.draw-item').forEach(el=>el.classList.remove('geom-active'));
+        setDrawHint(null);
+        if (geomEditId) geomEditId=null;
+      }
+
+      // ── Форма редактирования стиля ───────────────────────────────────
+      function openDrawForm(id) {
+        drawEditId=id;
+        const item=drawItems.find(i=>i.id===id);
+        if(!item) return;
+        const s=item.style||{};
+        const TITLES={text:'Текстовый элемент',line:'Линия',polygon:'Многоугольник',
+          circle:'Окружность',arc:'Дуга',arc3:'Дуга (по 3 точкам)',sector:'Сектор окружности'};
+        document.getElementById('df-title').textContent=TITLES[item.type]||'Элемент';
+
+        const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v??'';};
+        set('df-name',         item.name||'');
+        set('df-text-content', item.text||'');
+        set('df-font',         s.font||'Arial');
+        set('df-font-size',    s.fontSize||14);
+        set('df-font-color',   s.fontColor||'#222222');
+        set('df-text-align',   s.textAlign||'center');
+        set('df-bg-color',     s.bgColor||'#ffffff');
+        set('df-bg-opacity',   s.bgOpacity??0.85);
+        set('df-border-style', s.borderStyle||'none');
+        set('df-border-color', s.borderColor||'#1565c0');
+        set('df-border-width', s.borderWidth||1);
+        set('df-line-style',   s.lineStyle||'solid');
+        set('df-line-color',   s.lineColor||'#1565c0');
+        set('df-line-width',   s.lineWidth||2);
+        set('df-start-cap',    s.startCap||'none');
+        set('df-end-cap',      s.endCap||'none');
+        set('df-cap-color',    s.capColor||s.lineColor||'#1565c0');
+        set('df-arrow-len',    s.arrowLen  != null ? s.arrowLen   : 0.012);
+        set('df-arrow-width',  s.arrowWidth!= null ? s.arrowWidth : 0.004);
+        set('df-cap-size',     s.capSize   != null ? s.capSize    : 0.003);
+        set('df-fill-color',   s.fillColor||'#1565c0');
+        set('df-fill-opacity', s.fillOpacity??0.15);
+        set('df-angle',        s.angle||45);
+        // Радиус окружности
+        const rKm = s.radiusKm!=null ? s.radiusKm
+          : (item.points?.length>=2 ? haversineKm(item.points[0][1],item.points[0][0],item.points[1][1],item.points[1][0]) : 1);
+        set('df-radius-km', rKm.toFixed(2));
+
+        const show=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none';};
+        const t=item.type;
+        show('df-text-block',   t==='text');
+        show('df-points-block', t!=='text');
+        show('df-line-block',   ['line','arc','arc3','polygon','circle','sector'].includes(t));
+        show('df-arrows-block', t==='line');
+        // Показываем блок размеров только если есть хотя бы одна стрелка/точка
+        const hasCap = ()=>{
+          const sc=document.getElementById('df-start-cap')?.value;
+          const ec=document.getElementById('df-end-cap')?.value;
+          return sc!=='none'||ec!=='none';
+        };
+        show('df-cap-params-block', t==='line');
+        if (t==='line') setTimeout(window.drawUpdateCapVis, 10);
+        show('df-fill-block',   ['polygon','circle','sector'].includes(t));
+        show('df-angle-block',  ['arc','arc3','sector'].includes(t));
+        show('df-radius-block', t==='circle');
+
+        // Список точек
+        const plist=document.getElementById('df-points-list');
+        if(t!=='text'&&plist){
+          const ptLabels={circle:['Центр'],arc:['Центр','Точка дуги'],
+            arc3:['Центр','Начало дуги','Конец дуги'],sector:['Центр','Точка сектора']};
+          const plabels=ptLabels[t]||[];
+          const pts = t==='circle' ? [item.points[0]] : (item.points||[]);
+          plist.innerHTML=pts.map((p,i)=>`
+            <div class="df-point-row">
+              <span>${plabels[i]||'Точка '+(i+1)}: ${p[1].toFixed(5)}°N, ${p[0].toFixed(5)}°E</span>
+              <button title="Удалить" onclick="drawFormDelPoint(${i})">✕</button>
+            </div>`).join('');
+        }
+
+        document.getElementById('draw-form-overlay').classList.add('open');
+      }
+
+      window.drawFormDelPoint=function(idx){
+        const item=drawItems.find(i=>i.id===drawEditId);
+        if(!item) return;
+        if(confirm('При удалении точки удаляется весь элемент. Удалить?')){
+          if(geomEditId===drawEditId) stopGeomEdit();
+          drawItems=drawItems.filter(i=>i.id!==drawEditId);
+          drawRefresh(); renderDrawList(); drawFormCancel();
+        }
+      };
+
+      window.drawFormSave=function(){
+        const item=drawItems.find(i=>i.id===drawEditId);
+        if(!item){drawFormCancel();return;}
+        const get=id=>{const el=document.getElementById(id);return el?el.value:null;};
+        item.name=get('df-name')||'Без названия';
+        if(item.type==='text') item.text=get('df-text-content')||'';
+        item.style={
+          font:       get('df-font'),       fontSize:   +get('df-font-size'),
+          fontColor:  get('df-font-color'), textAlign:  get('df-text-align'),
+          bgColor:    get('df-bg-color'),   bgOpacity:  +get('df-bg-opacity'),
+          borderStyle:get('df-border-style'),borderColor:get('df-border-color'),
+          borderWidth:+get('df-border-width'),
+          lineStyle:  get('df-line-style'), lineColor:  get('df-line-color'),
+          lineWidth:  +get('df-line-width'),
+          startCap:   get('df-start-cap'),  endCap:      get('df-end-cap'),
+          capColor:   get('df-cap-color'),
+          arrowLen:   +get('df-arrow-len'),
+          arrowWidth: +get('df-arrow-width'),
+          capSize:    +get('df-cap-size'),
+          fillColor:  get('df-fill-color'), fillOpacity:+get('df-fill-opacity'),
+          angle:      +get('df-angle'),
+          radiusKm:   item.type==='circle' ? +get('df-radius-km') : undefined,
+        };
+        // Если задан radiusKm — убираем вторую точку радиуса, оставляем только центр
+        if(item.type==='circle' && item.style.radiusKm!=null){
+          item.points = [item.points[0]];
+        }
+        drawRefresh(); renderDrawList(); drawFormCancel();
+        // Обновить маркеры геом.редактора
+        if(geomEditId===drawEditId){ stopGeomEdit(); startGeomEdit(drawEditId); }
+      };
+
+      window.drawFormCancel=function(){
+        drawEditId=null;
+        document.getElementById('draw-form-overlay').classList.remove('open');
+      };
+
+      // Показываем/скрываем параметры стрелки vs точки в зависимости от выбора
+      window.drawUpdateCapVis = function() {
+        const sc = document.getElementById('df-start-cap')?.value;
+        const ec = document.getElementById('df-end-cap')?.value;
+        const hasArrow  = sc==='arrow'  || ec==='arrow';
+        const hasCircle = sc==='circle' || ec==='circle';
+        const ap = document.getElementById('df-arrow-params');
+        const cp = document.getElementById('df-circle-params');
+        if (ap) ap.style.display = hasArrow  ? '' : 'none';
+        if (cp) cp.style.display = hasCircle ? '' : 'none';
+      };
+
+      // ── Рисование ───────────────────────────────────────────────────
+      function setDrawHint(msg){
+        const el=document.getElementById('draw-hint');
+        if(!msg){el.style.display='none';return;}
+        el.textContent=msg; el.style.display='block';
+      }
+
+      const HINTS={
+        line:   ['ПКМ — добавить точку • Enter — завершить • Esc — отмена'],
+        polygon:['ПКМ — добавить точки (мин.3) • Enter — завершить'],
+        circle: ['ПКМ — укажите точку радиуса (или задайте радиус в форме)'],
+        arc:    ['ПКМ — укажите вторую точку'],
+        arc3:   ['ПКМ — укажите начало дуги','ПКМ — укажите конец дуги'],
+        sector: ['ПКМ — укажите вторую точку'],
+      };
+
+      window.drawStart=function(type){
+        document.getElementById('draw-add-menu').style.display='none';
+        stopGeomEdit();
+        if(type==='text'){
+          const item={id:nextId(),type:'text',name:'Текст',text:'Введите текст',
+            points:[[_drawLng,_drawLat]],
+            style:{font:'Arial',fontSize:14,fontColor:'#222222',textAlign:'center',
+                   bgColor:'#ffffff',bgOpacity:0.85,borderStyle:'none',
+                   borderColor:'#1565c0',borderWidth:1}};
+          drawItems.push(item); drawRefresh(); renderDrawList(); openDrawForm(item.id);
+          return;
+        }
+        drawMode=type; drawTemp=[[_drawLng,_drawLat]];
+        setDrawHint((HINTS[type]||[])[0]||'ПКМ — добавить точки');
+        map.getCanvas().style.cursor='crosshair';
+      };
+
+      // Превью
+      map.on('mousemove',e=>{
+        if(!drawMode) return;
+        const pts=[...drawTemp,[e.lngLat.lng,e.lngLat.lat]];
+        let geom=null;
+        if(drawMode==='line'&&pts.length>=2) geom={type:'LineString',coordinates:pts};
+        else if(drawMode==='polygon'&&pts.length>=3) geom={type:'LineString',coordinates:[...pts,pts[0]]};
+        else if(['circle','arc','arc3','sector'].includes(drawMode)&&pts.length>=2){
+          const r=haversineKm(pts[0][1],pts[0][0],pts[1][1],pts[1][0]);
+          geom={type:'LineString',coordinates:circleRing(pts[0][0],pts[0][1],r,48)};
+        }
+        if(!geom) return;
+        const data={type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:geom}]};
+        if(!map.getSource('draw-prev-src')){
+          map.addSource('draw-prev-src',{type:'geojson',data});
+          map.addLayer({id:'draw-prev',type:'line',source:'draw-prev-src',
+            paint:{'line-color':'#1976d2','line-width':1.5,'line-opacity':0.6,
+              'line-dasharray':[6,3]}});
+        } else { map.getSource('draw-prev-src').setData(data); }
+      });
+
+      function clearPreview(){
+        if(map.getLayer('draw-prev')) map.removeLayer('draw-prev');
+        if(map.getSource('draw-prev-src')) map.removeSource('draw-prev-src');
+      }
+
+      function finishDraw(){
+        if(!drawMode) return;
+        const type=drawMode,pts=[...drawTemp];
+        drawMode=null; drawTemp=[];
+        map.getCanvas().style.cursor=''; setDrawHint(null); clearPreview();
+        const minPts={line:2,polygon:3,circle:2,arc:2,arc3:3,sector:2};
+        if(pts.length<(minPts[type]||2)){alert('Недостаточно точек');return;}
+        const item={id:nextId(),type,name:'Без названия',points:pts,
+          style:{lineColor:'#1565c0',lineWidth:2,lineStyle:'solid',
+                 fillColor:'#1565c0',fillOpacity:0.15,angle:45,
+                 startCap:'none',endCap:(type==='line'?'arrow':'none')}};
+        drawItems.push(item); drawRefresh(); renderDrawList(); openDrawForm(item.id);
+      }
+
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Enter'&&drawMode&&['line','polygon'].includes(drawMode)) finishDraw();
+        if(e.key==='Escape'){
+          if(drawMode){drawMode=null;drawTemp=[];map.getCanvas().style.cursor='';setDrawHint(null);clearPreview();}
+          else if(geomEditId) stopGeomEdit();
+        }
+      });
+
+      // ── Contextmenu ──────────────────────────────────────────────────
+      map.on('contextmenu',e=>{
+        _drawLng=e.lngLat.lng; _drawLat=e.lngLat.lat;
+
+        // В режиме рисования — добавляем точку
+        if(drawMode){
+          drawTemp.push([_drawLng,_drawLat]);
+          const need={circle:2,arc:2,arc3:3,sector:2};
+          if(need[drawMode]&&drawTemp.length>=need[drawMode]){
+            finishDraw();
+          } else {
+            const step=drawTemp.length;
+            setDrawHint((HINTS[drawMode]||[])[step-1]||'ПКМ — ещё точки • Enter — завершить');
+          }
+          return;
+        }
+
+        // В режиме геом.редактирования линии/полигона — добавить точку
+        if(geomEditId){
+          const item=drawItems.find(i=>i.id===geomEditId);
+          if(item&&['line','polygon'].includes(item.type)){
+            item.points.push([_drawLng,_drawLat]);
+            drawRefresh();
+            stopGeomEdit(); startGeomEdit(geomEditId);
+            return;
+          }
+        }
+
+        // Показываем меню добавления если панель открыта
+        if(_drawPanelOpen){
+          setTimeout(()=>{
+            const menu=document.getElementById('draw-add-menu');
+            menu.style.left=(e.originalEvent.clientX+5)+'px';
+            menu.style.top=e.originalEvent.clientY+'px';
+            menu.style.display='block';
+          },10);
+        }
+      });
+
+      document.addEventListener('click',()=>{
+        document.getElementById('draw-add-menu').style.display='none';
+        document.getElementById('draw-ctx-menu').style.display='none';
+      });
+
+      if(map.loaded()) drawInit();
+      else map.once('load',drawInit);
+
+      // Экспортируем в window для доступа из модуля проекта
+      window._drawItems      = drawItems;
+      window._drawInit       = drawInit;
+      window._drawRefresh    = drawRefresh;
+      window._renderDrawList = renderDrawList;
+
+    })();
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ЭКСПОРТ / ПЕЧАТЬ
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn  = document.getElementById('btn-export');
+      const menu = document.getElementById('export-menu');
+      let menuOpen = false;
+
+      // ── Состояние экспорта ────────────────────────────────────────
+      // Картографический масштаб: знаменатель (500000 = 1:500 000)
+      let exportDenominator = 500000;
+      // Физический размер 1 CSS-пикселя в мм (по определению CSS)
+      const MM_PER_CSS_PX = 25.4 / 96;
+      let exportMode   = 'screen'; // 'screen' | 'region'
+      let exportRegion = null;    // {x,y,w,h} в пикселях экрана
+
+      // ── Открытие/закрытие меню ────────────────────────────────────
+      btn.addEventListener('click', () => {
+        menuOpen = !menuOpen;
+        if (menuOpen) {
+          menu.style.display = 'block';
+          setTimeout(() => menu.classList.add('visible'), 10);
+          btn.classList.add('active');
+          updateSizeHint();
+        } else {
+          closeExportMenu();
+        }
+      });
+
+      function closeExportMenu() {
+        menuOpen = false;
+        menu.classList.remove('visible');
+        setTimeout(() => { if (!menuOpen) menu.style.display = 'none'; }, 220);
+        btn.classList.remove('active');
+      }
+
+      document.addEventListener('click', e => {
+        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+          if (menuOpen) closeExportMenu();
+        }
+      });
+
+      makeDraggable(menu, document.getElementById('export-menu-header'));
+
+      // Обновляем подсказку при изменении zoom
+      map.on('zoomend', updateSizeHint);
+      map.on('moveend', updateSizeHint);
+
+      // ── Картографический масштаб ──────────────────────────────────
+      //
+      // Реальный масштаб карты на экране:
+      //   S_экран = (earth_circumference * cos(lat)) / (256 * 2^zoom * metersPerPixel)
+      // metersPerPixel при 96 dpi = 0.000264583 м/пкс
+      //
+      // Нам нужно получить множитель пикселей для захвата:
+      //   pixelMultiplier = screenDenominator / targetDenominator * (EXPORT_DPI/96)
+      //
+      // ── Ключевая формула ───────────────────────────────────────────
+      // Метров на CSS-пиксель при заданном zoom и широте (Web Mercator, тайл 512px у MapLibre)
+      // MapLibre GL использует тайлы 512px (не 256!) → делитель 512, а не 256
+      // MapLibre GL использует 512px тайлы (не 256px как Leaflet)
+      // Поэтому константа = 156543.03392 / 2 = 78271.51696
+      const MAPLIBRE_K = 78271.51696;
+
+      function mPerCssPx(zoom, lat) {
+        return (MAPLIBRE_K * Math.cos(lat * Math.PI / 180)) / Math.pow(2, zoom);
+      }
+
+      // Знаменатель масштаба на экране (без округления — точное число)
+      // 1 CSS-пиксель на экране с DPI=screenDPI соответствует 0.0254/screenDPI метров на бумаге
+      function getScreenDenominatorExact() {
+        const zoom = map.getZoom();
+        const lat  = map.getCenter().lat;
+        const dpi  = 96; // CSS-пиксели всегда 96 dpi по определению CSS
+        return mPerCssPx(zoom, lat) / (0.0254 / dpi);
+      }
+
+      // Округляем только для показа пользователю
+      function getScreenDenominator() {
+        return Math.round(getScreenDenominatorExact());
+      }
+
+      // zoom при котором масштаб = 1:denom (точно, без округления)
+      function denomToZoom(denom) {
+        const lat    = map.getCenter().lat;
+        const dpi    = 96;
+        const mPerPx = denom * (0.0254 / dpi);   // метров на CSS-пиксель при нужном масштабе
+        // mPerCssPx(zoom) = mPerPx → zoom = log2(156543 * cos(lat) / mPerPx)
+        return Math.log2(
+          (MAPLIBRE_K * Math.cos(lat * Math.PI / 180)) / mPerPx
+        );
+        // Не округляем! easeTo принимает дробный zoom и устанавливает его точно.
+      }
+
+      // Размер карты в CSS-пикселях (из реального layout элемента)
+      function getMapCssSizePx() {
+        const rect = map.getCanvas().getBoundingClientRect();
+        return { w: rect.width, h: rect.height };
+      }
+
+      // Физический размер карты в мм (CSS px → мм, 96dpi по CSS-стандарту)
+      function getExportSizeMm() {
+        const sz = getMapCssSizePx();
+        return { w: sz.w * MM_PER_CSS_PX, h: sz.h * MM_PER_CSS_PX };
+      }
+
+      function getPixelMultiplier() { return 1; }
+
+      function updateCurrentScaleDisplay() {
+        const el = document.getElementById('exp-current-scale');
+        if (!el) return;
+        const d = getScreenDenominator();
+        const fmt = new Intl.NumberFormat('ru-RU').format(d);
+        el.textContent = `Текущий масштаб экрана: 1 : ${fmt}`;
+      }
+
+      function updateSizeHint() {
+        updateCurrentScaleDisplay();
+        const hint = document.getElementById('exp-size-hint');
+        if (!hint) return;
+
+        // Размер в мм — через CSS px (не зависит от DPR)
+        let wMm, hMm, pxW, pxH;
+        if (exportMode === 'region' && exportRegion) {
+          // exportRegion.x/y/w/h — экранные CSS px
+          wMm = exportRegion.w * MM_PER_CSS_PX;
+          hMm = exportRegion.h * MM_PER_CSS_PX;
+          pxW = exportRegion.cw; pxH = exportRegion.ch;
+        } else {
+          const sz = getExportSizeMm();
+          wMm = sz.w; hMm = sz.h;
+          const c = map.getCanvas();
+          pxW = c.width; pxH = c.height;
+        }
+        const mpx = ((pxW * pxH) / 1e6).toFixed(1);
+        const dpr = window.devicePixelRatio || 1;
+        const rect = map.getCanvas().getBoundingClientRect();
+        const c = map.getCanvas();
+        hint.innerHTML =
+          `Размер на бумаге: ${wMm.toFixed(1)} × ${hMm.toFixed(1)} мм<br>` +
+          `PNG: ${pxW} × ${pxH} пкс<br>` +
+          `<span style="color:#e53935;font-size:10px">` +
+          `DPR=${dpr} | rect=${rect.width.toFixed(0)}×${rect.height.toFixed(0)} CSS px` +
+          ` | canvas=${c.width}×${c.height} px` +
+          `</span>`;
+      }
+
+      function applyScalePresets(denom) {
+        exportDenominator = denom;
+        document.querySelectorAll('.exp-scale-btn').forEach(b => {
+          b.classList.toggle('active', b._preset === denom);
+        });
+        updateSizeHint();
+      }
+
+      // Применяем масштаб к карте — плавный flyTo нужного zoom
+      function flyToScale(denom) {
+        applyScalePresets(denom);
+        const targetZoom = denomToZoom(denom);
+        if (!isFinite(targetZoom)) return;
+        // Zoom не округляем — передаём точное значение чтобы масштаб был ровным
+        const clampedZoom = Math.max(0, Math.min(22, targetZoom));
+
+        // Показываем статус после завершения анимации
+        const statusEl = document.getElementById('exp-apply-status');
+        if (statusEl) statusEl.style.display = 'none';
+
+        map.easeTo({ zoom: clampedZoom, duration: 600 });
+
+        map.once('moveend', () => {
+          updateSizeHint();
+          if (statusEl) {
+            const fmt = new Intl.NumberFormat('ru-RU').format(denom);
+            statusEl.textContent = `✓ Карта приведена к 1 : ${fmt}`;
+            statusEl.style.display = 'block';
+            // Скрываем через 3 секунды
+            clearTimeout(statusEl._timer);
+            statusEl._timer = setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+          }
+        });
+      }
+
+      window.onExportScaleInput = function() {
+        const v = parseInt(document.getElementById('exp-scale-input').value);
+        if (v >= 1000) {
+          flyToScale(v);
+        }
+      };
+
+      // Для пресетов — немедленный flyTo
+      window.pickScalePreset = function(denom) {
+        document.getElementById('exp-scale-input').value = denom;
+        flyToScale(denom);
+      };
+
+      // Привязываем _preset к кнопкам после загрузки
+      document.querySelectorAll('.exp-scale-btn').forEach(b => {
+        const m = b.textContent.replace(/[\s]/g,'').match(/1:([\d\s]+)/);
+        if (m) b._preset = parseInt(m[1].replace(/\s/g,''));
+      });
+      // Подсвечиваем дефолтный пресет 1:500 000
+      document.querySelectorAll('.exp-scale-btn').forEach(b => {
+        if (b._preset === 500000) b.classList.add('active');
+      });
+
+      // ── Режим области ─────────────────────────────────────────────
+      window.setExportMode = function(mode) {
+        exportMode = mode;
+        const btnS = document.getElementById('exp-mode-screen');
+        const btnR = document.getElementById('exp-mode-region');
+        const hint = document.getElementById('exp-region-hint');
+
+        if (mode === 'screen') {
+          btnS.style.cssText += ';border-color:#1565c0;background:#e8f0fe;color:#1565c0;';
+          btnR.style.cssText += ';border-color:#ccc;background:#f5f5f5;color:#555;';
+          hint.style.display = 'none';
+          exportRegion = null;
+          updateSizeHint();
+        } else {
+          btnR.style.cssText += ';border-color:#1565c0;background:#e8f0fe;color:#1565c0;';
+          btnS.style.cssText += ';border-color:#ccc;background:#f5f5f5;color:#555;';
+          hint.style.display = 'block';
+          closeExportMenu();
+          startRegionSelect();
+        }
+      };
+
+      // ── Выделение региона ─────────────────────────────────────────
+      let _regStart = null;
+
+      function startRegionSelect() {
+        const overlay = document.getElementById('export-region-overlay');
+        overlay.style.display = 'block';
+        document.getElementById('exp-overlay-hint').style.display = 'block';
+        document.getElementById('exp-sel-box').style.display = 'none';
+        setDimmer(0,0,0,0, true); // всё затемнено
+
+        overlay.addEventListener('mousedown', onRegionDown);
+        overlay.addEventListener('touchstart', onRegionTouchStart, {passive:false});
+      }
+
+      window.cancelExportRegion = function() {
+        const overlay = document.getElementById('export-region-overlay');
+        overlay.style.display = 'none';
+        overlay.removeEventListener('mousedown', onRegionDown);
+        exportMode = 'screen';
+        exportRegion = null;
+        document.getElementById('exp-region-hint').style.display = 'none';
+        const btnS = document.getElementById('exp-mode-screen');
+        const btnR = document.getElementById('exp-mode-region');
+        btnS.style.cssText += ';border-color:#1565c0;background:#e8f0fe;color:#1565c0;';
+        btnR.style.cssText += ';border-color:#ccc;background:#f5f5f5;color:#555;';
+        updateSizeHint();
+      };
+
+      function onRegionDown(e) {
+        e.preventDefault();
+        const x = e.clientX, y = e.clientY;
+        _regStart = {x, y};
+        document.getElementById('exp-overlay-hint').style.display = 'none';
+
+        const onMove = ev => { drawSelection(_regStart, {x:ev.clientX, y:ev.clientY}); };
+        const onUp   = ev => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          finishRegionSelect(_regStart, {x:ev.clientX, y:ev.clientY});
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      }
+
+      function onRegionTouchStart(e) {
+        e.preventDefault();
+        const t = e.touches[0];
+        _regStart = {x: t.clientX, y: t.clientY};
+        document.getElementById('exp-overlay-hint').style.display = 'none';
+
+        const onMove = ev => {
+          const t2 = ev.touches[0];
+          drawSelection(_regStart, {x:t2.clientX, y:t2.clientY});
+        };
+        const onEnd = ev => {
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onEnd);
+          const t2 = ev.changedTouches[0];
+          finishRegionSelect(_regStart, {x:t2.clientX, y:t2.clientY});
+        };
+        document.addEventListener('touchmove', onMove, {passive:false});
+        document.addEventListener('touchend', onEnd);
+      }
+
+      function drawSelection(a, b) {
+        const x = Math.min(a.x,b.x), y = Math.min(a.y,b.y);
+        const w = Math.abs(b.x-a.x),  h = Math.abs(b.y-a.y);
+        const box = document.getElementById('exp-sel-box');
+        box.style.display = 'block';
+        box.style.left = x+'px'; box.style.top  = y+'px';
+        box.style.width= w+'px'; box.style.height= h+'px';
+        setDimmer(x, y, w, h, false);
+      }
+
+      // 4 полосы затемнения вокруг выделения
+      function setDimmer(x, y, w, h, full) {
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const top    = document.getElementById('exp-dim-top');
+        const bottom = document.getElementById('exp-dim-bottom');
+        const left   = document.getElementById('exp-dim-left');
+        const right  = document.getElementById('exp-dim-right');
+        if (full) {
+          top.style.cssText    = 'position:absolute;background:rgba(0,0,0,0.45);top:0;left:0;right:0;bottom:0;';
+          bottom.style.height  = '0';
+          left.style.height    = '0';
+          right.style.height   = '0';
+        } else {
+          top.style.cssText    = `position:absolute;background:rgba(0,0,0,0.45);top:0;left:0;right:0;height:${y}px;`;
+          bottom.style.cssText = `position:absolute;background:rgba(0,0,0,0.45);top:${y+h}px;left:0;right:0;bottom:0;`;
+          left.style.cssText   = `position:absolute;background:rgba(0,0,0,0.45);top:${y}px;left:0;width:${x}px;height:${h}px;`;
+          right.style.cssText  = `position:absolute;background:rgba(0,0,0,0.45);top:${y}px;left:${x+w}px;right:0;height:${h}px;`;
+        }
+      }
+
+      function finishRegionSelect(a, b) {
+        const overlay = document.getElementById('export-region-overlay');
+        overlay.style.display = 'none';
+        overlay.removeEventListener('mousedown', onRegionDown);
+        overlay.removeEventListener('touchstart', onRegionTouchStart);
+
+        const x = Math.min(a.x,b.x), y = Math.min(a.y,b.y);
+        const w = Math.abs(b.x-a.x),  h = Math.abs(b.y-a.y);
+
+        if (w < 20 || h < 20) {
+          cancelExportRegion();
+          return;
+        }
+
+        // Координаты в пространстве devicePixelRatio (для canvas)
+        const dpr = window.devicePixelRatio || 1;
+        const mapRect = map.getCanvas().getBoundingClientRect();
+        exportRegion = {
+          // положение относительно canvas карты
+          cx: Math.round((x - mapRect.left) * dpr),
+          cy: Math.round((y - mapRect.top)  * dpr),
+          cw: Math.round(w * dpr),
+          ch: Math.round(h * dpr),
+          // положение на экране (для подсказки)
+          x, y, w, h
+        };
+
+        const hint = document.getElementById('exp-region-hint');
+        hint.style.display = 'block';
+        document.getElementById('exp-region-status').textContent =
+          `Выбрано: ${Math.round(w)} × ${Math.round(h)} px`;
+        updateSizeHint();
+
+        // Снова открываем меню
+        menu.style.display = 'block';
+        setTimeout(() => menu.classList.add('visible'), 10);
+        menuOpen = true;
+        btn.classList.add('active');
+      }
+
+      // ── Захват карты ─────────────────────────────────────────────
+      // Вшивает DPI в PNG через pHYs chunk — Illustrator и другие редакторы
+      // будут показывать правильный физический размер
+      function setPngDpi(canvas, dpi) {
+        return new Promise(resolve => {
+          canvas.toBlob(blob => {
+            blob.arrayBuffer().then(buf => {
+              const src = new Uint8Array(buf);
+              const ppm = Math.round(dpi / 0.0254); // pixels per metre
+
+              // Строим pHYs chunk (21 байт: 4 len + 4 type + 9 data + 4 crc)
+              const phys = new Uint8Array(21);
+              phys[0]=0; phys[1]=0; phys[2]=0; phys[3]=9;           // length=9
+              phys[4]=112;phys[5]=72;phys[6]=89;phys[7]=115;        // 'pHYs'
+              for(let i=0;i<4;i++) phys[8+i]=(ppm>>(24-i*8))&0xff;  // X ppm
+              for(let i=0;i<4;i++) phys[12+i]=(ppm>>(24-i*8))&0xff; // Y ppm
+              phys[16]=1;                                             // unit=metre
+
+              // CRC32 по type+data (байты 4..16)
+              const t=new Uint32Array(256);
+              for(let i=0;i<256;i++){let v=i;for(let j=0;j<8;j++)v=v&1?(0xedb88320^(v>>>1)):v>>>1;t[i]=v;}
+              let c=0xffffffff;
+              for(let i=4;i<17;i++)c=t[(c^phys[i])&0xff]^(c>>>8);
+              c=(c^0xffffffff)>>>0;
+              phys[17]=(c>>24)&0xff;phys[18]=(c>>16)&0xff;
+              phys[19]=(c>>8)&0xff; phys[20]=c&0xff;
+
+              // Вставляем pHYs сразу после IHDR (offset 33 = 8 sig + 25 IHDR)
+              const out = new Uint8Array(src.length + 21);
+              out.set(src.slice(0, 33));
+              out.set(phys, 33);
+              out.set(src.slice(33), 54);
+              resolve(URL.createObjectURL(new Blob([out], {type:'image/png'})));
+            });
+          }, 'image/png');
+        });
+      }
+
+            function captureMap(callback) {
+        const status = document.getElementById('export-status');
+        status.style.display = 'block';
+        status.textContent = '⏳ Создание снимка...';
+
+        const handler = () => {
+          const glCanvas = map.getCanvas();
+          const W = glCanvas.width;
+          const H = glCanvas.height;
+
+          const gl = glCanvas.getContext('webgl2') || glCanvas.getContext('webgl')
+            || (map._painter && map._painter._context && map._painter._context.gl);
+
+          // Читаем пиксели и переворачиваем по Y
+          const buf = new Uint8Array(W * H * 4);
+          gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+
+          const fullCanvas = document.createElement('canvas');
+          fullCanvas.width = W; fullCanvas.height = H;
+          const ctx = fullCanvas.getContext('2d');
+          const imgData = ctx.createImageData(W, H);
+          for (let row = 0; row < H; row++) {
+            const src = (H - 1 - row) * W * 4;
+            imgData.data.set(buf.subarray(src, src + W * 4), row * W * 4);
+          }
+          ctx.putImageData(imgData, 0, 0);
+
+          // Вырезаем регион если нужно
+          let srcX=0, srcY=0, srcW=W, srcH=H;
+          if (exportMode === 'region' && exportRegion) {
+            srcX = Math.max(0, exportRegion.cx);
+            srcY = Math.max(0, exportRegion.cy);
+            srcW = Math.min(exportRegion.cw, W - srcX);
+            srcH = Math.min(exportRegion.ch, H - srcY);
+          }
+
+          // Захватываем пиксели 1:1 — масштаб управляется zoom карты
+          const out = document.createElement('canvas');
+          out.width = srcW; out.height = srcH;
+          const ctx2 = out.getContext('2d');
+          ctx2.drawImage(fullCanvas, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+
+          status.style.display = 'none';
+          callback(out, srcW, srcH);
+        };
+
+        map.once('render', handler);
+        map.triggerRepaint();
+      }
+
+      // ── Форматирование имени файла ────────────────────────────────
+      window.dateStamp = function() {
+        const d = new Date();
+        return d.getFullYear().toString()
+          + String(d.getMonth()+1).padStart(2,'0')
+          + String(d.getDate()).padStart(2,'0') + '_'
+          + String(d.getHours()).padStart(2,'0')
+          + String(d.getMinutes()).padStart(2,'0');
+      };
+
+      // ── Экспорт ───────────────────────────────────────────────────
+      window.exportMap = function(fmt) {
+        closeExportMenu();
+        const name = 'aviakominf_' + window.dateStamp();
+
+        captureMap((outCanvas, W, H) => {
+          if (fmt === 'png') {
+            // DPI=96 → Illustrator и другие редакторы покажут правильный размер
+            setPngDpi(outCanvas, 96).then(url => {
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = name + '.png';
+              a.click();
+            });
+
+          } else if (fmt === 'jpeg') {
+            const c = document.createElement('canvas');
+            c.width = W; c.height = H;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, W, H);
+            ctx.drawImage(outCanvas, 0, 0);
+            c.toBlob(blob => {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = name + '.jpg';
+              a.click();
+            }, 'image/jpeg', 0.93);
+
+          } else if (fmt === 'pdf') {
+            const dataURL = outCanvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            // Физический размер в мм — из CSS px (не из физических пикселей canvas)
+            let physW, physH;
+            if (exportMode === 'region' && exportRegion) {
+              physW = exportRegion.w * MM_PER_CSS_PX;
+              physH = exportRegion.h * MM_PER_CSS_PX;
+            } else {
+              const sz = getExportSizeMm(); physW = sz.w; physH = sz.h;
+            }
+            // Создаём PDF нужного размера (не A4 — а под реальный размер карты)
+            const landscape = physW >= physH;
+            const pdf = new jsPDF({
+              orientation: landscape ? 'landscape' : 'portrait',
+              unit: 'mm',
+              format: [Math.max(physW, physH), Math.min(physW, physH)]
+            });
+            // Изображение занимает ровно весь лист
+            pdf.addImage(dataURL, 'PNG', 0, 0, physW, physH);
+            const center = map.getCenter();
+            const fmt2 = new Intl.NumberFormat('ru-RU').format(exportDenominator);
+            const stamp = `Авиакоминфо | 1:${fmt2} | ${new Date().toLocaleString('ru')} | `
+              + `${center.lat.toFixed(4)}°N ${center.lng.toFixed(4)}°E`;
+            pdf.setFontSize(6); pdf.setTextColor(120);
+            pdf.text(stamp, physW/2, physH-2, { align:'center' });
+            pdf.save(name + '.pdf');
+
+          } else if (fmt === 'print') {
+            // Печать реального масштаба через PDF:
+            // Браузер не может гарантировать масштаб при печати HTML/PNG —
+            // он всегда предлагает «вписать в страницу».
+            // PDF содержит физические размеры напрямую и печатается 1:1.
+            let physW, physH;
+            if (exportMode === 'region' && exportRegion) {
+              physW = exportRegion.w * MM_PER_CSS_PX;
+              physH = exportRegion.h * MM_PER_CSS_PX;
+            } else {
+              const sz = getExportSizeMm(); physW = sz.w; physH = sz.h;
+            }
+
+            const fmt2 = new Intl.NumberFormat('ru-RU').format(exportDenominator);
+            const dataURL = outCanvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+
+            // Создаём PDF с размером страницы = физическому размеру карты
+            const landscape = physW >= physH;
+            const pdf = new jsPDF({
+              orientation: landscape ? 'landscape' : 'portrait',
+              unit: 'mm',
+              format: [Math.max(physW, physH), Math.min(physW, physH)]
+            });
+            pdf.addImage(dataURL, 'PNG', 0, 0, physW, physH);
+
+            // Метка масштаба
+            const center = map.getCenter();
+            const stamp = `1:${fmt2} | ${new Date().toLocaleString('ru')} | ${center.lat.toFixed(4)}°N ${center.lng.toFixed(4)}°E`;
+            pdf.setFontSize(6); pdf.setTextColor(150);
+            pdf.text(stamp, physW / 2, physH - 2, { align: 'center' });
+
+            // Открываем PDF в новой вкладке для печати
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            const printWin = window.open(pdfUrl, '_blank');
+            if (!printWin) {
+              // Если попапы заблокированы — скачиваем PDF
+              const a = document.createElement('a');
+              a.href = pdfUrl;
+              a.download = 'print_' + window.dateStamp() + '.pdf';
+              a.click();
+              alert('Попапы заблокированы — PDF сохранён для печати.\nОткройте его и нажмите Ctrl+P, выбрав масштаб 100%.');
+            }
+          }
+        });
+      };
+
+    }); // DOMContentLoaded
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ПРОЕКТ — сохранение/загрузка маршрута и фигур
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn  = document.getElementById('btn-project');
+      const menu = document.getElementById('project-menu');
+      let open = false;
+
+      btn.addEventListener('click', () => {
+        open = !open;
+        if (open) {
+          menu.style.display = 'block';
+          setTimeout(() => menu.classList.add('visible'), 10);
+          btn.classList.add('active');
+          showProjectInfo();
+        } else closeMenu();
+      });
+
+      function closeMenu() {
+        open = false;
+        menu.classList.remove('visible');
+        setTimeout(() => { if (!open) menu.style.display = 'none'; }, 220);
+        btn.classList.remove('active');
+      }
+
+      document.addEventListener('click', e => {
+        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target))
+          if (open) closeMenu();
+      });
+
+      makeDraggable(menu, document.getElementById('project-menu-header'));
+
+      function showProjectInfo() {
+        const el = document.getElementById('project-info');
+        const rCount = typeof points !== 'undefined' ? points.length : 0;
+        const dCount = window._drawItems ? window._drawItems.length : 0;
+        if (rCount > 0 || dCount > 0) {
+          el.style.display = 'block';
+          el.textContent = `Маршрут: ${rCount} точек  •  Фигур: ${dCount}`;
+        } else {
+          el.style.display = 'none';
+        }
+      }
+
+      // ── Сохранение ───────────────────────────────────────────────
+      window.projectSave = function() {
+        closeMenu();
+
+        // Сериализуем точки маршрута с сохранением всех метаданных
+        const routeData = (typeof points !== 'undefined' ? points : []).map(p => {
+          const obj = { lng: p.lng, lat: p.lat };
+          if (p._pointName)  obj._pointName  = p._pointName;
+          if (p._snapInfo)   obj._snapInfo   = p._snapInfo;
+          if (p._role)       obj._role       = p._role;
+          if (p._pointType)  obj._pointType  = p._pointType;
+          if (p._altitude !== undefined) obj._altitude = p._altitude;
+          if (p._speed    !== undefined) obj._speed    = p._speed;
+          return obj;
+        });
+
+        // Запасные аэродромы
+        const altData = typeof alternateAirports !== 'undefined'
+          ? alternateAirports.map(a => ({...a})) : [];
+
+        // Фигуры рисования
+        const drawData = window._drawItems
+          ? JSON.parse(JSON.stringify(window._drawItems)) : [];
+
+        const project = {
+          version: 1,
+          savedAt: new Date().toISOString(),
+          route: routeData,
+          alternates: altData,
+          draw: drawData,
+          mapCenter: map.getCenter(),
+          mapZoom: map.getZoom()
+        };
+
+        const json = JSON.stringify(project, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'aviakominf_' + window.dateStamp() + '.avkproj';
+        a.click();
+      };
+
+      // ── Загрузка ─────────────────────────────────────────────────
+      window.projectLoad = function() {
+        closeMenu();
+        document.getElementById('project-file-input').click();
+      };
+
+      document.getElementById('project-file-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const project = JSON.parse(ev.target.result);
+            console.log('[project] parsed:', project.version, 'draw:', project.draw && project.draw.length, 'route:', project.route && project.route.length);
+            applyProject(project);
+          } catch(err) {
+            alert('Ошибка чтения файла проекта: ' + err.message);
+          }
+          e.target.value = '';
+        };
+        reader.readAsText(file);
+      });
+
+      function applyProject(project) {
+        console.log('[project] applyProject called, version:', project && project.version);
+        if (!project || project.version !== 1) {
+          alert('Неверный формат файла проекта: version=' + (project && project.version));
+          return;
+        }
+        console.log('[project] draw items count:', project.draw && project.draw.length);
+
+        // ── Восстанавливаем маршрут ───────────────────────────────
+        if (typeof points !== 'undefined' && Array.isArray(project.route)) {
+          // Очищаем текущий маршрут
+          points.length = 0;
+          if (typeof alternateAirports !== 'undefined') alternateAirports.length = 0;
+
+          // Восстанавливаем точки
+          project.route.forEach(p => {
+            const pt = { lng: p.lng, lat: p.lat };
+            if (p._pointName)  pt._pointName  = p._pointName;
+            if (p._snapInfo)   pt._snapInfo   = p._snapInfo;
+            if (p._role)       pt._role       = p._role;
+            if (p._pointType)  pt._pointType  = p._pointType;
+            if (p._altitude !== undefined) pt._altitude = p._altitude;
+            if (p._speed    !== undefined) pt._speed    = p._speed;
+            points.push(pt);
+          });
+
+          // Восстанавливаем запасные аэродромы
+          if (typeof alternateAirports !== 'undefined' && Array.isArray(project.alternates)) {
+            project.alternates.forEach(a => alternateAirports.push({...a}));
+          }
+
+          // Обновляем маршрут на карте
+          if (typeof drawMeasureLine  === 'function') drawMeasureLine();
+          if (typeof drawMeasurePoints=== 'function') drawMeasurePoints();
+          if (typeof updatePointsList === 'function') updatePointsList();
+
+          // Включаем режим измерения если есть точки
+          if (points.length > 0 && !measuring) {
+            measuring = true;
+            if (typeof map !== 'undefined') {
+              map.getCanvas().style.cursor = 'crosshair';
+            }
+            // Показываем панель маршрута
+            const panel = document.getElementById('measure-panel');
+            if (panel && !panel.classList.contains('visible'))
+              panel.classList.add('visible');
+          }
+        }
+
+        // ── Восстанавливаем фигуры ────────────────────────────────
+        console.log('[project] before draw check, draw:', project.draw, 'isArray:', Array.isArray(project.draw), 'len:', project.draw && project.draw.length);
+        if (Array.isArray(project.draw) && project.draw.length > 0) {
+          console.log('[project] entering draw restore block');
+
+          const doDrawRestore = () => {
+            // window._drawItems экспортирован из IIFE initDrawEditor
+            const di = window._drawItems;
+            if (!di) { console.warn('[project] _drawItems not ready'); return; }
+
+            // Мутируем тот же массив — редактор увидит изменения
+            di.splice(0, di.length);
+            project.draw.forEach(item => di.push(item));
+
+            // Убеждаемся что источник и слои созданы
+            if (typeof window._drawInit === 'function') window._drawInit();
+
+            // Обновляем данные на карте
+            if (typeof window._drawRefresh    === 'function') window._drawRefresh();
+            if (typeof window._renderDrawList === 'function') window._renderDrawList();
+
+            // Открываем панель
+            const panel = document.getElementById('draw-panel');
+            if (panel) {
+              panel.style.display = 'block';
+              setTimeout(() => { panel.style.opacity='1'; panel.style.transform='none'; }, 10);
+            }
+            document.getElementById('btn-draw').classList.add('active');
+          };
+
+          // Вызываем напрямую — map уже загружена к моменту загрузки проекта
+          console.log('[project] calling doDrawRestore, map.loaded()=', map.loaded());
+          doDrawRestore();
+        }
+
+        // ── Позиционируем карту ───────────────────────────────────
+        if (project.mapCenter && project.mapZoom) {
+          map.flyTo({
+            center: [project.mapCenter.lng, project.mapCenter.lat],
+            zoom: project.mapZoom,
+            duration: 800
+          });
+        }
+
+        // Уведомление
+        const info = document.getElementById('project-info');
+        info.style.display = 'block';
+        info.textContent = `✓ Загружено: ${project.route.length} точек маршрута, ${project.draw.length} фигур`;
+        setTimeout(() => { info.style.display = 'none'; }, 4000);
+      }
+
+      // ── Очистка всего ─────────────────────────────────────────────
+      window.projectClear = function() {
+        if (!confirm('Очистить маршрут и все фигуры?')) return;
+        closeMenu();
+
+        // Очищаем маршрут
+        if (typeof points !== 'undefined') {
+          points.length = 0;
+          if (typeof alternateAirports !== 'undefined') alternateAirports.length = 0;
+          if (typeof drawMeasureLine  === 'function') drawMeasureLine();
+          if (typeof drawMeasurePoints=== 'function') drawMeasurePoints();
+          if (typeof updatePointsList === 'function') updatePointsList();
+        }
+
+        // Очищаем фигуры
+        if (typeof drawItems !== 'undefined') {
+          drawItems.length = 0;
+          if (typeof drawRefresh    === 'function') drawRefresh();
+          if (typeof renderDrawList === 'function') renderDrawList();
+        }
+      };
+
+    });
+
   </script>
+
+  <!-- ═══ ПРОЕКТ ═══ -->
+  <div id="project-menu">
+    <div id="project-menu-header">
+      <span>📁 Проект</span><span>▼</span>
+    </div>
+    <div id="project-info"></div>
+    <div class="project-item" onclick="projectSave()">
+      <span class="project-item-icon">💾</span>
+      <div>
+        <div class="project-item-label">Сохранить проект</div>
+        <div class="project-item-desc">Маршрут + фигуры в файл .avkproj</div>
+      </div>
+    </div>
+    <div class="project-item" onclick="projectLoad()">
+      <span class="project-item-icon">📂</span>
+      <div>
+        <div class="project-item-label">Загрузить проект</div>
+        <div class="project-item-desc">Восстановить маршрут и фигуры</div>
+      </div>
+    </div>
+    <div class="project-item" onclick="projectClear()">
+      <span class="project-item-icon">🗑️</span>
+      <div>
+        <div class="project-item-label">Очистить всё</div>
+        <div class="project-item-desc">Удалить маршрут и все фигуры</div>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="project-file-input" accept=".avkproj,.json" style="display:none">
+
+  <!-- ═══ ЭКСПОРТ / ПЕЧАТЬ ═══ -->
+  <div id="export-menu">
+    <div id="export-menu-header">
+      <span>🖨️ Редактирование</span>
+      <span>▼</span>
+    </div>
+    <div id="export-status">⏳ Подготовка изображения...</div>
+
+    <!-- Настройки -->
+    <div style="padding:10px 14px 4px; border-bottom:1px solid #eee;">
+
+      <!-- Область захвата -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Область</div>
+        <div style="display:flex;gap:6px;">
+          <button id="exp-mode-screen" onclick="setExportMode('screen')"
+            style="flex:1;padding:6px 4px;border-radius:5px;border:2px solid #1565c0;background:#e8f0fe;
+            color:#1565c0;font-size:12px;font-weight:600;cursor:pointer;">🖥 На экране</button>
+          <button id="exp-mode-region" onclick="setExportMode('region')"
+            style="flex:1;padding:6px 4px;border-radius:5px;border:2px solid #ccc;background:#f5f5f5;
+            color:#555;font-size:12px;font-weight:600;cursor:pointer;">✂️ Выделить</button>
+        </div>
+        <div id="exp-region-hint" style="display:none;margin-top:6px;font-size:11px;color:#1565c0;
+          background:#e8f0fe;padding:5px 8px;border-radius:5px;line-height:1.5;">
+          Нажмите и перетащите на карте для выделения области.<br>
+          <span id="exp-region-status">Область не выбрана</span>
+        </div>
+      </div>
+
+      <!-- Масштаб -->
+      <div>
+        <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Масштаб печати</div>
+
+        <!-- Текущий масштаб карты -->
+        <div style="font-size:11px;color:#555;margin-bottom:6px;" id="exp-current-scale">
+          Текущий масштаб экрана: —
+        </div>
+
+        <!-- Поле ввода + кнопка применить -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="font-size:13px;white-space:nowrap;color:#444;">1 :</span>
+          <input id="exp-scale-input" type="number" min="1000" max="100000000" step="1000"
+            value="500000"
+            style="flex:1;padding:5px 8px;border:2px solid #1565c0;border-radius:5px;
+            font-size:13px;font-weight:600;color:#1565c0;outline:none;min-width:0;"
+            onkeydown="if(event.key==='Enter') onExportScaleInput()"
+            onchange="onExportScaleInput()">
+          <button onclick="onExportScaleInput()"
+            style="padding:5px 10px;background:#1565c0;color:white;border:none;
+            border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;
+            font-weight:600;flex-shrink:0;">
+            ↕ Применить
+          </button>
+        </div>
+        <div id="exp-apply-status" style="font-size:11px;color:#2e7d32;display:none;
+          margin-bottom:4px;padding:3px 6px;background:#e8f5e9;border-radius:4px;">
+          ✓ Карта приведена к масштабу
+        </div>
+
+        <!-- Быстрые пресеты -->
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+          <button class="exp-scale-btn" onclick="pickScalePreset(50000)">1:50 000</button>
+          <button class="exp-scale-btn" onclick="pickScalePreset(100000)">1:100 000</button>
+          <button class="exp-scale-btn" onclick="pickScalePreset(200000)">1:200 000</button>
+          <button class="exp-scale-btn" onclick="pickScalePreset(500000)">1:500 000</button>
+          <button class="exp-scale-btn" onclick="pickScalePreset(1000000)">1:1 000 000</button>
+          <button class="exp-scale-btn" onclick="pickScalePreset(2000000)">1:2 000 000</button>
+        </div>
+
+        <!-- Подсказка: размер файла -->
+        <div style="font-size:10.5px;color:#aaa;line-height:1.5;" id="exp-size-hint">Размер файла: —</div>
+      </div>
+    </div>
+
+    <!-- Форматы -->
+    <div class="export-item" onclick="exportMap('png')">
+      <span class="export-item-icon">🖼️</span>
+      <div class="export-item-text">
+        <div class="export-item-label">Сохранить PNG</div>
+        <div class="export-item-desc">Без потерь качества</div>
+      </div>
+    </div>
+    <div class="export-item" onclick="exportMap('jpeg')">
+      <span class="export-item-icon">📷</span>
+      <div class="export-item-text">
+        <div class="export-item-label">Сохранить JPEG</div>
+        <div class="export-item-desc">Меньший размер файла</div>
+      </div>
+    </div>
+    <div class="export-item" onclick="exportMap('pdf')">
+      <span class="export-item-icon">📄</span>
+      <div class="export-item-text">
+        <div class="export-item-label">Сохранить PDF</div>
+        <div class="export-item-desc">A4 альбомный</div>
+      </div>
+    </div>
+    <div class="export-item" onclick="exportMap('print')">
+      <span class="export-item-icon">🖨️</span>
+      <div class="export-item-text">
+        <div class="export-item-label">Печать</div>
+        <div class="export-item-desc">Диалог печати браузера</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Оверлей выделения региона -->
+  <div id="export-region-overlay" style="
+    display:none; position:fixed; inset:0; z-index:9990;
+    cursor:crosshair;
+  ">
+    <!-- Затемнение (4 полосы вокруг выделения) -->
+    <div id="exp-dim-top"    style="position:absolute;background:rgba(0,0,0,0.45);top:0;left:0;right:0;"></div>
+    <div id="exp-dim-bottom" style="position:absolute;background:rgba(0,0,0,0.45);bottom:0;left:0;right:0;"></div>
+    <div id="exp-dim-left"   style="position:absolute;background:rgba(0,0,0,0.45);"></div>
+    <div id="exp-dim-right"  style="position:absolute;background:rgba(0,0,0,0.45);"></div>
+    <!-- Рамка выделения -->
+    <div id="exp-sel-box" style="
+      position:absolute; border:2px solid #1565c0;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.5);
+      display:none;
+    "></div>
+    <!-- Подсказка -->
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      background:rgba(21,101,192,0.9);color:white;padding:10px 20px;border-radius:8px;
+      font-size:14px;pointer-events:none;" id="exp-overlay-hint">
+      Нажмите и перетащите для выделения области
+    </div>
+    <!-- Кнопка отмены -->
+    <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);
+      background:white;border-radius:8px;padding:6px 16px;font-size:13px;
+      cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);color:#d32f2f;font-weight:bold;z-index:1;"
+      onclick="cancelExportRegion()">✕ Отмена</div>
+  </div>
+
+  <!-- ═══ ГРАФИЧЕСКИЙ РЕДАКТОР ═══ -->
+
+  <!-- Меню добавления нового элемента (ПКМ на карте) -->
+  <div id="draw-add-menu">
+    <div class="draw-menu-title">✏️ Добавить элемент</div>
+    <div class="draw-menu-item" onclick="drawStart('text')">📝 Текстовый элемент</div>
+    <div class="draw-menu-item" onclick="drawStart('line')">📐 Линия</div>
+    <div class="draw-menu-item" onclick="drawStart('arc')">⌒ Дуга</div>
+    <div class="draw-menu-item" onclick="drawStart('arc3')">⌒ Дуга (по 3 точкам)</div>
+    <div class="draw-menu-item" onclick="drawStart('polygon')">⬡ Многоугольник</div>
+    <div class="draw-menu-item" onclick="drawStart('circle')">⭕ Окружность</div>
+    <div class="draw-menu-item" onclick="drawStart('sector')">🥧 Сектор окружности</div>
+  </div>
+
+  <!-- Контекстное меню элемента -->
+  <div id="draw-ctx-menu">
+    <div class="draw-menu-title" id="draw-ctx-title">Элемент</div>
+    <div class="draw-menu-item" onclick="drawCtxEdit()">✏️ Редактировать</div>
+    <div class="draw-menu-item" onclick="drawCtxZoom()">🎯 Показать на карте</div>
+    <div class="draw-menu-item danger" onclick="drawCtxDelete()">🗑 Удалить</div>
+  </div>
+
+  <!-- Подсказка при рисовании -->
+  <div id="draw-hint"></div>
+
+  <!-- Форма создания / редактирования -->
+  <div id="draw-form-overlay">
+    <div id="draw-form">
+      <h3 id="df-title">Элемент</h3>
+
+      <div class="df-row">
+        <label>Название</label>
+        <input id="df-name" type="text" placeholder="Название элемента">
+      </div>
+
+      <!-- Текст -->
+      <div id="df-text-block">
+        <div class="df-section">Текст</div>
+        <div class="df-row">
+          <label>Содержание</label>
+          <textarea id="df-text-content" placeholder="Введите текст..."></textarea>
+        </div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Шрифт</label>
+            <select id="df-font">
+              <option>Arial</option><option>Times New Roman</option>
+              <option>Courier New</option><option>Georgia</option><option>Verdana</option>
+            </select>
+          </div>
+          <div class="df-row"><label>Размер (px)</label>
+            <input id="df-font-size" type="number" value="14" min="8" max="72">
+          </div>
+        </div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Цвет текста</label>
+            <input id="df-font-color" type="color" value="#222222">
+          </div>
+          <div class="df-row"><label>Выравнивание</label>
+            <select id="df-text-align">
+              <option value="left">Слева</option>
+              <option value="center" selected>По центру</option>
+              <option value="right">Справа</option>
+            </select>
+          </div>
+        </div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Цвет фона</label>
+            <input id="df-bg-color" type="color" value="#ffffff">
+          </div>
+          <div class="df-row"><label>Прозрачность фона</label>
+            <input id="df-bg-opacity" type="number" value="0.85" min="0" max="1" step="0.05">
+          </div>
+        </div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Тип рамки</label>
+            <select id="df-border-style">
+              <option value="none">Нет</option><option value="solid">Сплошная</option>
+              <option value="dashed">Пунктир</option><option value="dotted">Точки</option>
+            </select>
+          </div>
+          <div class="df-row"><label>Цвет рамки</label>
+            <input id="df-border-color" type="color" value="#1565c0">
+          </div>
+          <div class="df-row"><label>Толщина</label>
+            <input id="df-border-width" type="number" value="1" min="0" max="10">
+          </div>
+        </div>
+      </div>
+
+      <!-- Точки -->
+      <div id="df-points-block">
+        <div class="df-section">Точки</div>
+        <div id="df-points-list" class="df-points-list"></div>
+      </div>
+
+      <!-- Линия -->
+      <div id="df-line-block">
+        <div class="df-section">Линия</div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Тип</label>
+            <select id="df-line-style">
+              <option value="solid">Сплошная</option>
+              <option value="dashed">Пунктир</option>
+              <option value="dotted">Точки</option>
+            </select>
+          </div>
+          <div class="df-row"><label>Цвет</label>
+            <input id="df-line-color" type="color" value="#1565c0">
+          </div>
+          <div class="df-row"><label>Толщина</label>
+            <input id="df-line-width" type="number" value="2" min="1" max="20">
+          </div>
+        </div>
+        <div id="df-arrows-block" class="df-row-inline">
+          <div class="df-row"><label>Стиль начала</label>
+            <select id="df-start-cap" onchange="drawUpdateCapVis()">
+              <option value="none">—</option>
+              <option value="arrow">↩ Стрелка</option>
+              <option value="circle">● Точка</option>
+            </select>
+          </div>
+          <div class="df-row"><label>Стиль конца</label>
+            <select id="df-end-cap" onchange="drawUpdateCapVis()">
+              <option value="none">—</option>
+              <option value="arrow">→ Стрелка</option>
+              <option value="circle">● Точка</option>
+            </select>
+          </div>
+        </div>
+        <!-- Параметры стрелки / точки -->
+        <div id="df-cap-params-block">
+          <div class="df-row">
+            <label>Цвет стрелки / точки</label>
+            <input id="df-cap-color" type="color" value="#1565c0">
+          </div>
+          <div id="df-arrow-params">
+            <div class="df-row-inline">
+              <div class="df-row">
+                <label>Длина стрелки (°)</label>
+                <input id="df-arrow-len" type="number" value="0.012" min="0.001" step="0.001">
+              </div>
+              <div class="df-row">
+                <label>Ширина стрелки (°)</label>
+                <input id="df-arrow-width" type="number" value="0.004" min="0.001" step="0.001">
+              </div>
+            </div>
+          </div>
+          <div id="df-circle-params">
+            <div class="df-row">
+              <label>Размер точки (°)</label>
+              <input id="df-cap-size" type="number" value="0.003" min="0.001" step="0.001">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Заливка -->
+      <div id="df-fill-block">
+        <div class="df-section">Заливка</div>
+        <div class="df-row-inline">
+          <div class="df-row"><label>Цвет заливки</label>
+            <input id="df-fill-color" type="color" value="#1565c0">
+          </div>
+          <div class="df-row"><label>Прозрачность (0–1)</label>
+            <input id="df-fill-opacity" type="number" value="0.15" min="0" max="1" step="0.05">
+          </div>
+        </div>
+      </div>
+
+      <!-- Угол -->
+      <div id="df-angle-block">
+        <div class="df-section">Угол</div>
+        <div class="df-row"><label>Угол (градусы)</label>
+          <input id="df-angle" type="number" value="45" min="1" max="359">
+        </div>
+      </div>
+
+      <!-- Радиус окружности -->
+      <div id="df-radius-block">
+        <div class="df-section">Радиус</div>
+        <div class="df-row">
+          <label>Радиус (км)</label>
+          <input id="df-radius-km" type="number" value="1" min="0.01" step="0.1">
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:-6px;margin-bottom:6px;">
+          Задайте радиус вручную или перетащите точку радиуса через кнопку ⊹ в списке
+        </div>
+      </div>
+
+      <div class="df-btns">
+        <button class="df-btn-save"   onclick="drawFormSave()">💾 Сохранить</button>
+        <button class="df-btn-cancel" onclick="drawFormCancel()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Панель списка элементов -->
+  <div id="draw-panel">
+    <div id="draw-panel-header">
+      <span>✏️ Графика</span>
+      <span id="draw-panel-toggle">▼</span>
+    </div>
+    <div id="draw-panel-body">
+      <div id="draw-items-list"></div>
+      <div id="draw-empty" style="text-align:center;padding:20px 0;color:#aaa;font-size:12px;line-height:1.7;">
+        Нет элементов.<br>
+        <span style="font-size:11px;">Откройте панель и нажмите ПКМ на карте →<br>появится меню «Добавить элемент»</span>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
