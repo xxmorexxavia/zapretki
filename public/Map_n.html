@@ -316,25 +316,36 @@
       background: #25314f;
       border-bottom-color: #334466;
     }
-
     .popup-header .back-btn {
-      cursor: pointer;
-      font-size: 18px;
-      color: #555;
-      padding: 4px 8px;
-      margin: -4px 0;
-      border-radius: 4px;
+      cursor: pointer; font-size: 18px; color: #555;
+      padding: 4px 8px; margin: -4px 0; border-radius: 4px;
     }
-    body.night-mode .popup-header .back-btn {
-      color: #aaccff;
-    }
-    .popup-header .back-btn:hover {
-      background: rgba(0,0,0,0.07);
-    }
-    body.night-mode .popup-header .back-btn:hover {
-      background: rgba(255,255,255,0.08);
-    }
+    body.night-mode .popup-header .back-btn { color: #aaccff; }
+    .popup-header .back-btn:hover { background: rgba(0,0,0,0.07); }
+    body.night-mode .popup-header .back-btn:hover { background: rgba(255,255,255,0.08); }
 
+    .popup-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,0.06); gap: 8px;
+    }
+    .popup-row:last-child { border-bottom: none; }
+    .popup-key {
+      font-size: 11px; color: #888; font-weight: 500;
+      white-space: nowrap; flex-shrink: 0; min-width: 90px;
+    }
+    body.night-mode .popup-key { color: #7a9bb0; }
+    .popup-val {
+      font-size: 12px; color: #222; font-weight: 600;
+      text-align: right; word-break: break-word;
+    }
+    body.night-mode .popup-val { color: #cde; }
+    .popup-divider { height: 1px; background: rgba(0,0,0,0.06); margin: 4px 0; }
+    body.night-mode .popup-divider { background: rgba(255,255,255,0.07); }
+    .popup-notam-block {
+      margin: 6px 10px; border-radius: 6px;
+      background: #fff3f3; padding: 6px 10px;
+    }
+    body.night-mode .popup-notam-block { background: #2a1a1a; }
     .popup-body {
       padding: 12px 16px;
       max-height: 340px;
@@ -346,8 +357,9 @@
     .popup-layer-item {
       padding: 10px 16px;
       margin: 4px 8px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
+      border-left: 4px solid transparent;
       transition: all 0.12s;
       font-size: 14px;
       background: rgba(0,0,0,0.02);
@@ -365,7 +377,7 @@
 
     .layer-METpoly       { background: #f3e8ff; border-left: 5px solid #c084fc; }
     body.night-mode .layer-METpoly       { background: #2a1a3f; border-left-color: #bb88ff; }
-    .layer-ENROUTE_MVL_BUF { background: #f8f8f8; border-left: 5px solid #000;     }
+    .layer-ENROUTE_MVL_BUF { background: #f8f8f8; border-left: 5px solid #000; }
     body.night-mode .layer-ENROUTE_MVL_BUF { background: #1e1e1e; border-left-color: #aaaaaa; }
     .layer-zapretki_poly   { background: #ffebee; border-left: 5px solid #d32f2f; }
     body.night-mode .layer-zapretki_poly   { background: #3f1a1a; border-left-color: #ff6666; }
@@ -791,41 +803,232 @@
       background: #1a2d45 !important;
       border-color: #64b5f6 !important;
     }
+    /* ── ТОЧКА ПО КООРДИНАТАМ ─────────────────────────────────── */
+    #coord-input-dialog {
+      display: none; position: fixed; inset: 0;
+      z-index: 20000; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.45);
+    }
+    #coord-input-dialog.open { display: flex; }
+    #coord-input-box {
+      background: white; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      padding: 20px 24px; width: 320px; font-size: 14px;
+    }
+    body.night-mode #coord-input-box { background: #1e2a3a; color: #cdd; }
+    #coord-input-box h3 {
+      margin: 0 0 14px; font-size: 15px; color: #1a237e;
+    }
+    body.night-mode #coord-input-box h3 { color: #90caf9; }
+    #coord-input-box label {
+      display: block; font-size: 11px; color: #888;
+      margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px;
+    }
+    #coord-input-box input[type=text] {
+      width: 100%; box-sizing: border-box;
+      padding: 7px 10px; border: 1.5px solid #ccc; border-radius: 6px;
+      font-size: 14px; margin-bottom: 10px; font-family: monospace;
+    }
+    body.night-mode #coord-input-box input { background: #253040; border-color: #445; color: #cdd; }
+    #coord-input-box input:focus { border-color: #1a237e; outline: none; }
+    .coord-hint { font-size: 11px; color: #999; margin-bottom: 12px; line-height: 1.5; }
+    #coord-input-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+    #coord-input-btns button {
+      padding: 7px 18px; border-radius: 6px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    #coord-ok-btn  { background: #1a237e; color: white; }
+    #coord-ok-btn:hover { background: #283593; }
+    #coord-cancel-btn { background: #eee; color: #444; }
+    #coord-error { color: #d32f2f; font-size: 12px; margin-top: -6px; margin-bottom: 8px; display: none; }
+
+    /* ── FLIGHT PLAN ──────────────────────────────────────────── */
+    #fp-panel {
+      position: absolute; top: 10px; left: 80px; z-index: 30;
+      background: #f5f7fa; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+      width: 320px; display: none; opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s, transform 0.2s;
+      font-family: 'Arial', sans-serif; font-size: 13px;
+      overflow: hidden;
+    }
+    #fp-panel.visible { display: block; opacity: 1; transform: none; }
+    body.night-mode #fp-panel { background: #1a2535; color: #cdd; }
+    #fp-header {
+      padding: 11px 16px; font-weight: bold; color: white;
+      background: linear-gradient(135deg,#1a237e,#283593);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: move; user-select: none;
+    }
+    .fp-section {
+      margin: 8px 10px;
+      background: white; border-radius: 8px;
+      border: 1.5px solid #dde3ee;
+      overflow: hidden;
+    }
+    body.night-mode .fp-section { background: #1e2d42; border-color: #2a3a55; }
+    .fp-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      color: #888; padding: 5px 12px 2px; text-transform: uppercase;
+    }
+    .fp-icao {
+      font-size: 26px; font-weight: 900; letter-spacing: 2px;
+      color: #1a237e; padding: 0 12px 4px; line-height: 1.1;
+      font-family: monospace;
+    }
+    body.night-mode .fp-icao { color: #90caf9; }
+    .fp-explain {
+      font-size: 11px; color: #555; padding: 0 12px 8px;
+      font-family: monospace; word-break: break-all;
+    }
+    body.night-mode .fp-explain { color: #9ab; }
+    .fp-route-text {
+      font-size: 13px; font-family: monospace; font-weight: 600;
+      color: #1a237e; padding: 8px 12px; line-height: 1.6;
+      word-break: break-all; min-height: 36px;
+    }
+    body.night-mode .fp-route-text { color: #90caf9; }
+    .fp-altn-row {
+      display: flex; gap: 8px; margin: 0 10px 8px;
+    }
+    .fp-altn-box {
+      flex: 1; background: white; border-radius: 8px;
+      border: 1.5px solid #dde3ee; overflow: hidden;
+    }
+    body.night-mode .fp-altn-box { background: #1e2d42; border-color: #2a3a55; }
+    .fp-altn-icao {
+      font-size: 16px; font-weight: 900; letter-spacing: 1.5px;
+      color: #1a237e; padding: 4px 10px 2px; font-family: monospace;
+    }
+    body.night-mode .fp-altn-icao { color: #90caf9; }
+    .fp-altn-explain {
+      font-size: 10px; color: #555; padding: 0 10px 6px;
+      font-family: monospace; word-break: break-all;
+    }
+    body.night-mode .fp-altn-explain { color: #9ab; }
+    #fp-export-btn {
+      margin: 8px 10px; width: calc(100% - 20px);
+      padding: 9px; background: #1a237e; color: white;
+      border: none; border-radius: 8px; font-size: 13px;
+      font-weight: 700; cursor: pointer; letter-spacing: .5px;
+      transition: background .15s;
+    }
+    #fp-export-btn:hover { background: #283593; }
+    #fp-empty-msg {
+      padding: 20px; text-align: center; color: #aaa; font-size: 13px;
+    }
+
     /* ── ПРОЕКТ ─────────────────────────────────────────────── */
     #project-menu {
       position: absolute; top: 10px; left: 10px; z-index: 30;
-      background: white; border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-      width: 270px; overflow: hidden; display: none;
+      background: white; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      width: 310px; display: none;
       opacity: 0; transform: translateY(-8px);
       transition: opacity 0.2s, transform 0.2s; font-size: 13px;
+      overflow: hidden;
     }
     #project-menu.visible { display: block; opacity: 1; transform: none; }
-    body.night-mode #project-menu { background: #1e2a3a; }
+    body.night-mode #project-menu { background: #1a2535; }
     #project-menu-header {
       padding: 11px 16px; font-weight: bold; color: white;
       background: linear-gradient(135deg,#2e7d32,#1b5e20);
       display: flex; justify-content: space-between; align-items: center;
-      cursor: move; user-select: none;
+      cursor: move; user-select: none; gap: 8px;
     }
-    .project-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 16px; cursor: pointer;
-      border-bottom: 1px solid #f0f0f0; transition: background 0.12s;
+    #project-menu-header-title { flex: 1; font-size: 13px; }
+
+    /* Список проектов */
+    #project-list {
+      max-height: 320px; overflow-y: auto;
+      border-bottom: 1px solid #eee;
     }
-    body.night-mode .project-item { border-bottom-color: #2a3a4a; }
-    .project-item:last-child { border-bottom: none; }
-    .project-item:hover { background: #e8f5e9; }
-    body.night-mode .project-item:hover { background: #1a3a2a; }
-    .project-item-icon { font-size: 20px; width: 28px; text-align: center; }
-    .project-item-label { font-weight: 600; color: #222; }
-    body.night-mode .project-item-label { color: #cdd; }
-    .project-item-desc { font-size: 11px; color: #888; margin-top: 1px; }
+    body.night-mode #project-list { border-bottom-color: #2a3a4a; }
+    #project-list:empty::after {
+      content: 'Нет загруженных проектов';
+      display: block; padding: 14px 16px;
+      color: #aaa; font-size: 12px; text-align: center;
+    }
+
+    .proj-card {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.1s;
+    }
+    body.night-mode .proj-card { border-bottom-color: #2a3a4a; }
+    .proj-card.active { background: #f0faf0; }
+    body.night-mode .proj-card.active { background: #1a2e1a; }
+    .proj-card-top {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px 5px;
+    }
+    .proj-card-color {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .proj-card-name {
+      flex: 1; font-weight: 600; font-size: 13px; color: #1a1a1a;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    body.night-mode .proj-card-name { color: #cde; }
+    .proj-card-name-input {
+      flex: 1; border: 1px solid #2e7d32; border-radius: 4px;
+      padding: 2px 6px; font-size: 13px; font-weight: 600;
+      outline: none; background: white; color: #1a1a1a;
+    }
+    body.night-mode .proj-card-name-input { background: #253040; color: #cde; border-color: #4a8a4a; }
+    .proj-card-actions {
+      display: flex; gap: 2px; flex-shrink: 0;
+    }
+    .proj-card-btn {
+      width: 26px; height: 26px; border: none; border-radius: 5px;
+      background: transparent; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s; color: #555;
+    }
+    body.night-mode .proj-card-btn { color: #9ab; }
+    .proj-card-btn:hover { background: rgba(0,0,0,0.08); }
+    body.night-mode .proj-card-btn:hover { background: rgba(255,255,255,0.1); }
+    .proj-card-btn.danger:hover { background: #ffebee; color: #d32f2f; }
+    .proj-card-meta {
+      padding: 0 12px 8px 30px;
+      font-size: 11px; color: #999; line-height: 1.5;
+    }
+    body.night-mode .proj-card-meta { color: #5a7a8a; }
+    .proj-card-meta span { margin-right: 10px; }
+    .proj-visibility-dot {
+      display: inline-block; width: 7px; height: 7px;
+      border-radius: 50%; margin-right: 4px; vertical-align: middle;
+    }
+
+    /* Нижняя панель действий */
+    #project-actions {
+      display: flex; padding: 8px 10px; gap: 6px;
+      background: #fafafa;
+    }
+    body.night-mode #project-actions { background: #1e2d3e; }
+    .proj-action-btn {
+      flex: 1; padding: 7px 4px; border: none; border-radius: 7px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: background 0.12s; display: flex;
+      flex-direction: column; align-items: center; gap: 2px;
+    }
+    .proj-action-btn .pab-icon { font-size: 16px; }
+    .proj-action-btn.primary { background: #2e7d32; color: white; }
+    .proj-action-btn.primary:hover { background: #1b5e20; }
+    .proj-action-btn.secondary { background: #e8f5e9; color: #2e7d32; }
+    .proj-action-btn.secondary:hover { background: #c8e6c9; }
+    body.night-mode .proj-action-btn.secondary { background: #1a3020; color: #81c784; }
+
     #project-info {
-      padding: 8px 16px; font-size: 11px; color: #2e7d32;
+      padding: 6px 14px; font-size: 11px; color: #2e7d32;
       background: #e8f5e9; display: none; text-align: center;
     }
     body.night-mode #project-info { background: #1a3a2a; color: #81c784; }
+
+    /* Совместимость старых классов */
+    .project-item { display: none; }
 
     /* ── ЭКСПОРТ ──────────────────────────────────────────── */
     #export-menu {
@@ -933,6 +1136,7 @@
     <button id="btn-terrain"   title="3D-рельеф вкл/выкл"  class="tool-btn"><span>⛰️</span></button>
     <button id="btn-notam"     title="NOTAM"               class="tool-btn"><span>📋</span></button>
     <button id="btn-draw"     title="Графический редактор" class="tool-btn"><span>✏️</span></button>
+    <button id="btn-fp"       title="Flight Plan"          class="tool-btn"><span>✈</span></button>
     <button id="btn-project"  title="Проект"               class="tool-btn"><span>📁</span></button>
     <button id="btn-export"   title="Экспорт / Печать"      class="tool-btn"><span>🖨️</span></button>
   </div>
@@ -947,7 +1151,7 @@
 
   <div id="measure-panel">
     <div id="measure-header">
-      <span>Прокладка маршрута</span>
+      <span>Прокладка маршрута<span id="measure-proj-label" style="font-size:10px;opacity:.7;margin-left:8px;font-weight:normal;"></span></span>
       <span id="measure-toggle">▼</span>
     </div>
     <div id="measure-content">
@@ -1134,6 +1338,15 @@
     <div class="ctx-menu-item" onclick="ctxDeletePoint()" style="color:#d32f2f;">🗑 Удалить точку</div>
   </div>
 
+  <!-- Контекстное меню карты в режиме маршрута (пустое место) -->
+  <div id="map-ctx-menu" style="display:none; position:fixed; z-index:9995;
+    background:white; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    min-width:190px; overflow:hidden;">
+    <div class="ctx-menu-title">📍 Добавить точку</div>
+    <div class="ctx-menu-item" id="map-ctx-add-here">📌 Добавить здесь</div>
+    <div class="ctx-menu-item" onclick="openCoordInput()">⌨️ Точка по координатам</div>
+  </div>
+
   <!-- Контекстное меню аэродрома вне маршрута -->
   <div id="ad-ctx-menu" style="display:none;">
     <div class="ctx-menu-title" id="ad-ctx-menu-title">Аэродром</div>
@@ -1145,6 +1358,27 @@
     <span>✋ Перетащите точку на новое место</span>
     <button id="move-ok-btn" onclick="confirmMovePoint()">✔ ОК</button>
     <button id="move-cancel-btn" onclick="cancelMovePoint()">✖ Отмена</button>
+  </div>
+
+  <!-- Диалог ввода координат точки маршрута -->
+  <div id="coord-input-dialog">
+    <div id="coord-input-box">
+      <h3>📍 Точка по координатам</h3>
+      <label>Координаты</label>
+      <input type="text" id="coord-input-field" placeholder="55°35.4N 037°27.4E" autocomplete="off">
+      <div class="coord-hint">
+        Форматы:<br>
+        • <b>5535N03727E</b> (ICAO)<br>
+        • <b>55.590 37.456</b> (десятичные)<br>
+        • <b>55°35.4N 037°27.4E</b><br>
+        • <b>55 35 20N 037 27 25E</b> (ГМС)
+      </div>
+      <div id="coord-error">Не удалось распознать координаты</div>
+      <div id="coord-input-btns">
+        <button id="coord-cancel-btn" onclick="coordInputCancel()">Отмена</button>
+        <button id="coord-ok-btn" onclick="coordInputOk()">Добавить</button>
+      </div>
+    </div>
   </div>
 
   <!-- Геопоиск (всегда виден) -->
@@ -4894,7 +5128,8 @@
         },
         "text-allow-overlap": true,
         "text-ignore-placement": true,
-        "icon-allow-overlap": false
+        "icon-allow-overlap": false,
+        "symbol-sort-key": ["-", 0, ["to-number", ["get", "absoluteheight"], 0]]
       },
       "paint": {"text-color": "rgba(214, 23, 23, 1)", "text-halo-width": 3}
     },
@@ -5183,19 +5418,27 @@
       map.addControl(new maplibregl.ScaleControl({ maxWidth: 160, unit: 'nautical' }), 'bottom-left');
 
       document.getElementById('btn-layers').addEventListener('click', () => {
-        document.getElementById('layer-panel').classList.toggle('visible');
+        const p = document.getElementById('layer-panel');
+        p.classList.toggle('visible');
+        document.getElementById('btn-layers').classList.toggle('active', p.classList.contains('visible'));
       });
 
       document.getElementById('btn-weather').addEventListener('click', () => {
-        document.getElementById('weather-panel').classList.toggle('visible');
+        const p = document.getElementById('weather-panel');
+        p.classList.toggle('visible');
+        document.getElementById('btn-weather').classList.toggle('active', p.classList.contains('visible'));
       });
 
       document.getElementById('btn-measure').addEventListener('click', () => {
-        document.getElementById('measure-panel').classList.toggle('visible');
+        const p = document.getElementById('measure-panel');
+        p.classList.toggle('visible');
+        document.getElementById('btn-measure').classList.toggle('active', p.classList.contains('visible'));
       });
 
       document.getElementById('btn-search').addEventListener('click', () => {
-        document.getElementById('search-panel').classList.toggle('visible');
+        const p = document.getElementById('search-panel');
+        p.classList.toggle('visible');
+        document.getElementById('btn-search').classList.toggle('active', p.classList.contains('visible'));
       });
 
       // ─── NOTAM кнопка ─────────────────────────────────────────────────
@@ -5843,9 +6086,9 @@
         const nameProp = feature.properties.NAME || '';
         name = designator ? `${designator} ${nameProp}`.trim() : nameProp || '(без названия)';
       } else if (layerId === 'OBST1R') {
-        name = feature.properties.designator || feature.properties.DESIGNATOR || '(без названия)';
+        name = feature.properties.designator || feature.properties.DESIGNATOR || '(без ID)';
       } else {
-        name = feature.properties[def?.idProps?.[0]] || '(без названия)';
+        name = feature.properties[def?.idProps?.[0]] || feature.properties['ALT_NAME'] || '(без названия)';
       }
 
       const cls = def?.colorClass || '';
@@ -5858,10 +6101,307 @@
         <div class="popup-body ${cls}">
       `;
 
-      Object.entries(feature.properties || {}).forEach(([key, val]) => {
-        if (val == null || val === '') return;
-        html += `<b>${key}:</b> ${val}<br>`;
-      });
+      // ── Фильтрованный вывод семантики ────────────────────────────
+      const _POPUP_CFG = {
+  "OBST": {
+    "fields": [
+      {
+        "key": "obstacleview",
+        "label": "Освещаемость"
+      },
+      {
+        "key": "name",
+        "label": "Вид препятствия"
+      },
+      {
+        "key": "designator",
+        "label": "Идентификатор препятствия"
+      },
+      {
+        "key": "absoluteheight",
+        "label": "Абсолютная высота"
+      },
+      {
+        "key": "relativeheight",
+        "label": "Относительная высота"
+      }
+    ]
+  },
+  "zapretki": {
+    "fields": [
+      {
+        "key": "NAME",
+        "label": "Название"
+      },
+      {
+        "key": "HMIN",
+        "label": "Нижний предел высоты"
+      },
+      {
+        "key": "HMAX",
+        "label": "Верхний предел высоты"
+      },
+      {
+        "key": "WORKTIME",
+        "label": "Время работы",
+        "default": "Круглосуточно"
+      }
+    ]
+  },
+  "VVP": {
+    "fields": [
+      {
+        "key": "ALT_NAME",
+        "label": "Название"
+      },
+      {
+        "key": "DESIGNATOR",
+        "label": "Регион"
+      },
+      {
+        "key": "HMIN",
+        "label": "Нижний предел высоты"
+      },
+      {
+        "key": "HMAX",
+        "label": "Верхний предел высоты"
+      },
+      {
+        "key": "CALLSIGN",
+        "label": "Позывной"
+      },
+      {
+        "key": "FREQUENCY",
+        "label": "Частота"
+      },
+      {
+        "key": "SPACETYPE",
+        "label": "Тип ВП"
+      },
+      {
+        "key": "SPACECLASS",
+        "label": "Класс ВП"
+      }
+    ]
+  },
+  "MET": {
+    "fields": [
+      {
+        "key": "NAME",
+        "label": "Номер зоны"
+      },
+      {
+        "key": "DESIGNATOR",
+        "label": "Идентификатор"
+      },
+      {
+        "key": "ALT_NAME",
+        "label": "Принадлежность"
+      }
+    ]
+  },
+  "SectorFIR": {
+    "fields": [
+      {
+        "key": "ALT_NAME",
+        "label": "Название"
+      },
+      {
+        "key": "DESIGNATOR",
+        "label": "Регион"
+      },
+      {
+        "key": "HMIN",
+        "label": "Нижний предел высоты"
+      },
+      {
+        "key": "HMAX",
+        "label": "Верхний предел высоты"
+      },
+      {
+        "key": "CALLSIGN",
+        "label": "Позывной"
+      },
+      {
+        "key": "FREQUENCY",
+        "label": "Частота"
+      },
+      {
+        "key": "SPACETYPE",
+        "label": "Тип ВП"
+      },
+      {
+        "key": "SPACECLASS",
+        "label": "Класс ВП"
+      }
+    ]
+  },
+  "marshr": {
+    "fields": [
+      {
+        "key": "NAME",
+        "label": "Название маршрута"
+      },
+      {
+        "key": "HMIN",
+        "label": "Нижний предел высоты"
+      },
+      {
+        "key": "HMAX",
+        "label": "Верхний предел высоты"
+      },
+      {
+        "key": "WIDTHM",
+        "label": "Ширина"
+      },
+      {
+        "key": "TRUETRACK",
+        "label": "Прямой курс"
+      },
+      {
+        "key": "REVERSTRACK",
+        "label": "Обратный курс"
+      },
+      {
+        "key": "LENGTHKM",
+        "label": "Дистанция"
+      },
+      {
+        "key": "RTE_POINTS",
+        "label": "Точки маршрута"
+      }
+    ]
+  },
+  "RP": {
+    "fields": [
+      {
+        "key": "NAME",
+        "label": "Название точки"
+      },
+      {
+        "key": "ALT_NAME",
+        "label": "Название точки на русском"
+      },
+      {
+        "key": "SIGNPT_TYPE",
+        "label": "Тип донесения"
+      },
+      {
+        "key": "LATITUDE",
+        "label": "Широта"
+      },
+      {
+        "key": "LONGITUDE",
+        "label": "Долгота"
+      }
+    ]
+  },
+  "RTS": {
+    "fields": [
+      {
+        "key": "NAME",
+        "label": "Название"
+      },
+      {
+        "key": "DESIGNATOR",
+        "label": "Позывной"
+      },
+      {
+        "key": "ALT_NAME",
+        "label": "Название на русском"
+      },
+      {
+        "key": "MAGVAR",
+        "label": "Магнитное склонение"
+      },
+      {
+        "key": "FREQUENCY",
+        "label": "Частота"
+      },
+      {
+        "key": "SIGNPT_TYPE",
+        "label": "Тип РТС"
+      },
+      {
+        "key": "LATITUDE",
+        "label": "Широта"
+      },
+      {
+        "key": "LONGITUDE",
+        "label": "Долгота"
+      }
+    ]
+  },
+  "ADHPLS": {
+    "fields": [
+      {
+        "key": "STATUS",
+        "label": "Статус"
+      },
+      {
+        "key": "ADHPTYPE",
+        "label": "Тип аэродрома/площадки"
+      },
+      {
+        "key": "NAME",
+        "label": "Название"
+      },
+      {
+        "key": "ALT_NAME",
+        "label": "Название на русском"
+      },
+      {
+        "key": "ICAOCODE",
+        "label": "Код ИКАО"
+      },
+      {
+        "key": "CODEID_ALT",
+        "label": "Альтернативный код"
+      },
+      {
+        "key": "LATITUDE",
+        "label": "Широта"
+      },
+      {
+        "key": "LONGITUDE",
+        "label": "Долгота"
+      },
+      {
+        "key": "ABSOLUTEHEIGHT",
+        "label": "Абсолютная высота"
+      },
+      {
+        "key": "WORKTIME",
+        "label": "Время работы"
+      },
+      {
+        "key": "RWYLIST",
+        "label": "Список ВПП"
+      }
+    ]
+  }
+};
+
+      window._POPUP_CFG = _POPUP_CFG;
+      const _src = def?.source || '';
+      const _cfg = _POPUP_CFG[_src];
+      const _props = feature.properties || {};
+
+      if (_cfg) {
+        _cfg.fields.forEach(f => {
+          // Ищем поле без учёта регистра
+          const val = _props[f.key] ?? _props[f.key.toLowerCase()] ?? _props[f.key.toUpperCase()];
+          const display = (val != null && val !== '') ? val : (f.default || null);
+          if (display == null) return;
+          html += `<div class="popup-row"><span class="popup-key">${f.label}</span><span class="popup-val">${display}</span></div>`;
+        });
+      } else {
+        // Слой без конфига — показываем всё как раньше
+        Object.entries(_props).forEach(([key, val]) => {
+          if (val == null || val === '') return;
+          html += `<div class="popup-row"><span class="popup-key">${key}</span><span class="popup-val">${val}</span></div>`;
+        });
+      }
 
       // Если это запретная зона и она активна по NOTAM — показываем номер NOTAM
       if (layerId === 'zapretki_poly') {
@@ -6055,10 +6595,27 @@
     }
 
     // ПКМ на карте
+    // ── Последние координаты ПКМ (для "Добавить здесь") ─────────────
+    let _lastCtxLngLat = null;
+    const mapCtxMenu = document.getElementById('map-ctx-menu');
+
+    function hideMapCtxMenu() { mapCtxMenu.style.display = 'none'; }
+    document.addEventListener('click', hideMapCtxMenu);
+
+    document.getElementById('map-ctx-add-here').addEventListener('click', () => {
+      hideMapCtxMenu();
+      if (!_lastCtxLngLat || !measuring) return;
+      points.push(_lastCtxLngLat);
+      drawMeasureLine(); drawMeasurePoints(); updatePointsList();
+    });
+
     map.on('contextmenu', (e) => {
       e.preventDefault();
       ctxMenu.style.display = 'none';
       adCtxMenu.style.display = 'none';
+      hideMapCtxMenu();
+
+      _lastCtxLngLat = e.lngLat;
 
       // Проверяем клик по маршрутной точке
       if (measuring || points.length > 0) {
@@ -6085,6 +6642,14 @@
         adCtxMenu.style.left = e.originalEvent.clientX + 'px';
         adCtxMenu.style.top  = e.originalEvent.clientY + 'px';
         adCtxMenu.style.display = 'block';
+        return;
+      }
+
+      // В режиме прокладки маршрута — показываем меню карты
+      if (measuring) {
+        mapCtxMenu.style.left = e.originalEvent.clientX + 'px';
+        mapCtxMenu.style.top  = e.originalEvent.clientY + 'px';
+        mapCtxMenu.style.display = 'block';
       }
     });
 
@@ -6248,6 +6813,7 @@
           newPt = new maplibregl.LngLat(coords[0], coords[1]);
           newPt._pointName = f.properties.NAME || '';
           newPt._pointType = 'AD';
+          newPt._adProps   = f.properties;
           newPt._lat = parseSemCoord(f.properties.LATITUDE) ?? coords[1];
           newPt._lng = parseSemCoord(f.properties.LONGITUDE) ?? coords[0];
         }
@@ -6406,10 +6972,11 @@ ${placemarks}
     document.getElementById('weather-mode-chk').addEventListener('change', (e) => {
       weatherMode = e.target.checked;
       if (weatherMode) {
+        // Выключаем режим прокладки маршрута но НЕ очищаем точки
         measuring = false;
         measureBtn.textContent = 'Прокладка маршрута';
         measureBtn.classList.remove('active');
-        clearMeasurement();
+        map.getCanvas().style.cursor = '';
       }
     });
 
@@ -6515,6 +7082,28 @@ ${placemarks}
 
       checkDataset(rpData, 'RP');
       checkDataset(rtsData, 'RTS');
+
+      // Проверяем пользовательские точки из графического редактора
+      if (window._drawItems) {
+        window._drawItems.forEach(item => {
+          if (item.type !== 'point' || !item.points || !item.points[0]) return;
+          const coords = item.points[0]; // [lng, lat]
+          const px = map.project(coords);
+          const dx = px.x - clickPx.x, dy = px.y - clickPx.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < thresholdPx && d < bestDist) {
+            bestDist = d;
+            best = {
+              lngLat: { lng: coords[0], lat: coords[1] },
+              name: item.name || 'Точка',
+              lat: coords[1],
+              lng: coords[0],
+              type: 'USER'
+            };
+          }
+        });
+      }
+
       return best;
     }
 
@@ -6700,6 +7289,7 @@ ${placemarks}
             lngLat._lat = parseSemCoord(f.properties.LATITUDE) ?? coords[1];
             lngLat._lng = parseSemCoord(f.properties.LONGITUDE) ?? coords[0];
             lngLat._pointType = 'AD';
+            lngLat._adProps = f.properties;  // сохраняем все props для Flight Plan
             points.push(lngLat);
           }
           // Шаг 3: прилипание к линии маршрута (snap активен через mousemove)
@@ -6968,11 +7558,32 @@ ${placemarks}
         return;
       }
 
-      let html = `<div style="font-weight:bold; font-size:12px; color:#1976d2; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #e0e0e0;">${sourceLabel}</div>`;
-      Object.entries(props).forEach(([key, val]) => {
-        if (val == null || val === '') return;
-        html += `<div style="padding:2px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:12px;"><b>${key}:</b> ${val}</div>`;
-      });
+      // Определяем источник для фильтрации
+      let _srcKey = null;
+      if (p._pointType === 'AD') _srcKey = 'ADHPLS';
+      else if (p._pointType === 'RP') _srcKey = 'RP';
+      else if (p._pointType === 'RTS' || (p._snapInfo && !p._snapInfo.featureProps)) _srcKey = 'RTS';
+      else if (p._snapInfo && p._snapInfo.featureProps) _srcKey = 'marshr';
+
+      const _PCFG = window._POPUP_CFG;
+      const _layerCfg = _PCFG && _srcKey ? _PCFG[_srcKey] : null;
+
+      let html = `<div style="font-weight:bold;font-size:12px;color:#1976d2;margin-bottom:6px;
+        padding-bottom:4px;border-bottom:1px solid #e0e0e0;">${sourceLabel}</div>`;
+
+      if (_layerCfg) {
+        _layerCfg.fields.forEach(f => {
+          const val = props[f.key] ?? props[f.key.toLowerCase()] ?? props[f.key.toUpperCase()];
+          const display = (val != null && val !== '') ? val : (f.default || null);
+          if (display == null) return;
+          html += `<div class="popup-row"><span class="popup-key">${f.label}</span><span class="popup-val">${display}</span></div>`;
+        });
+      } else {
+        Object.entries(props).forEach(([key, val]) => {
+          if (val == null || val === '') return;
+          html += `<div class="popup-row"><span class="popup-key">${key}</span><span class="popup-val">${val}</span></div>`;
+        });
+      }
       inspectResult.innerHTML = html;
     };
 
@@ -7080,7 +7691,7 @@ ${placemarks}
             type: 'LineString',
             coordinates: points.map(p => [p.lng, p.lat])
           }
-        }] : { type: 'FeatureCollection', features: [] }
+        }] : []
       };
 
       if (!map.getSource('measure-line-source')) {
@@ -7980,6 +8591,31 @@ ${placemarks}
             {type:'Feature',properties:{...bp,_dt:'outline'},geometry:{type:'LineString',coordinates:ring}}
           ];
         }
+        if (item.type==='point') {
+          if (pts.length<1) return [];
+          const [cx,cy] = pts[0];
+          const sz = (s.pointSize||0.004);
+          // Треугольник: равносторонний, острие вверх
+          const h = sz*1.732;
+          const tri = [
+            [cx,        cy+h*0.667],
+            [cx+sz,     cy-h*0.333],
+            [cx-sz,     cy-h*0.333],
+            [cx,        cy+h*0.667]
+          ];
+          const feats = [
+            {type:'Feature',properties:{...bp,_dt:'fill'},  geometry:{type:'Polygon',    coordinates:[tri]}},
+            {type:'Feature',properties:{...bp,_dt:'outline'},geometry:{type:'LineString',coordinates:tri}}
+          ];
+          // Подпись
+          if (item.name && item.name !== 'Без названия') {
+            feats.push({type:'Feature',properties:{
+              _dt:'text', txt:item.name,
+              tc: s.fontColor||'#1a237e', bc:'#ffffff', fs:s.fontSize||13
+            }, geometry:{type:'Point',coordinates:[cx, cy-h*0.5]}});
+          }
+          return feats;
+        }
         return [];
       }
 
@@ -8042,9 +8678,9 @@ ${placemarks}
       }
 
       // ── Список ──────────────────────────────────────────────────────
-      const ICONS  = {text:'📝',line:'📐',polygon:'⬡',circle:'⭕',arc:'⌒',arc3:'⌒',sector:'🥧'};
+      const ICONS  = {text:'📝',line:'📐',polygon:'⬡',circle:'⭕',arc:'⌒',arc3:'⌒',sector:'🥧',point:'📍'};
       const LABELS = {text:'Текст',line:'Линия',polygon:'Многоугольник',
-                      circle:'Окружность',arc:'Дуга',arc3:'Дуга (3т.)',sector:'Сектор'};
+                      circle:'Окружность',arc:'Дуга',arc3:'Дуга (3т.)',sector:'Сектор',point:'Точка'};
 
       function renderDrawList(){
         const list=document.getElementById('draw-items-list');
@@ -8088,7 +8724,7 @@ ${placemarks}
         document.getElementById('draw-ctx-menu').style.display='none';
         if(!confirm('Удалить элемент?')) return;
         if(geomEditId===drawCtxId) stopGeomEdit();
-        drawItems=drawItems.filter(i=>i.id!==drawCtxId);
+        drawItems.splice(0,drawItems.length,...drawItems.filter(i=>i.id!==drawCtxId));
         drawRefresh(); renderDrawList();
       };
 
@@ -8163,14 +8799,14 @@ ${placemarks}
             if (item2.points.length<=1) {
               if (confirm('Удалить весь элемент?')) {
                 stopGeomEdit();
-                drawItems=drawItems.filter(it=>it.id!==geomEditId);
+                drawItems.splice(0,drawItems.length,...drawItems.filter(it=>it.id!==geomEditId));
                 geomEditId=null; drawRefresh(); renderDrawList();
               }
               return;
             }
             if (confirm(`Удалить точку ${labels[i]||i+1}? При удалении точки удаляется весь элемент.`)) {
               stopGeomEdit();
-              drawItems=drawItems.filter(it=>it.id!==geomEditId);
+              drawItems.splice(0,drawItems.length,...drawItems.filter(it=>it.id!==geomEditId));
               geomEditId=null; drawRefresh(); renderDrawList();
             }
           });
@@ -8235,7 +8871,7 @@ ${placemarks}
         const t=item.type;
         show('df-text-block',   t==='text');
         show('df-points-block', t!=='text');
-        show('df-line-block',   ['line','arc','arc3','polygon','circle','sector'].includes(t));
+        show('df-line-block',   ['line','arc','arc3','polygon','circle','sector','point'].includes(t));
         show('df-arrows-block', t==='line');
         // Показываем блок размеров только если есть хотя бы одна стрелка/точка
         const hasCap = ()=>{
@@ -8245,9 +8881,10 @@ ${placemarks}
         };
         show('df-cap-params-block', t==='line');
         if (t==='line') setTimeout(window.drawUpdateCapVis, 10);
-        show('df-fill-block',   ['polygon','circle','sector'].includes(t));
+        show('df-fill-block',   ['polygon','circle','sector','point'].includes(t));
         show('df-angle-block',  ['arc','arc3','sector'].includes(t));
-        show('df-radius-block', t==='circle');
+        show('df-radius-block',     t==='circle');
+        show('df-point-size-block', t==='point');
 
         // Список точек
         const plist=document.getElementById('df-points-list');
@@ -8271,7 +8908,7 @@ ${placemarks}
         if(!item) return;
         if(confirm('При удалении точки удаляется весь элемент. Удалить?')){
           if(geomEditId===drawEditId) stopGeomEdit();
-          drawItems=drawItems.filter(i=>i.id!==drawEditId);
+          drawItems.splice(0,drawItems.length,...drawItems.filter(i=>i.id!==drawEditId));
           drawRefresh(); renderDrawList(); drawFormCancel();
         }
       };
@@ -8353,6 +8990,15 @@ ${placemarks}
           drawItems.push(item); drawRefresh(); renderDrawList(); openDrawForm(item.id);
           return;
         }
+        if(type==='point'){
+          const item={id:nextId(),type:'point',name:'Точка',
+            points:[[_drawLng,_drawLat]],
+            style:{lineColor:'#1a237e',lineWidth:1.5,lineStyle:'solid',
+                   fillColor:'#1a237e',fillOpacity:1,
+                   fontColor:'#1a237e',fontSize:13,pointSize:0.004}};
+          drawItems.push(item); drawRefresh(); renderDrawList(); openDrawForm(item.id);
+          return;
+        }
         drawMode=type; drawTemp=[[_drawLng,_drawLat]];
         setDrawHint((HINTS[type]||[])[0]||'ПКМ — добавить точки');
         map.getCanvas().style.cursor='crosshair';
@@ -8389,7 +9035,7 @@ ${placemarks}
         const type=drawMode,pts=[...drawTemp];
         drawMode=null; drawTemp=[];
         map.getCanvas().style.cursor=''; setDrawHint(null); clearPreview();
-        const minPts={line:2,polygon:3,circle:2,arc:2,arc3:3,sector:2};
+        const minPts={line:2,polygon:3,circle:2,arc:2,arc3:3,sector:2,point:1};
         if(pts.length<(minPts[type]||2)){alert('Недостаточно точек');return;}
         const item={id:nextId(),type,name:'Без названия',points:pts,
           style:{lineColor:'#1565c0',lineWidth:2,lineStyle:'solid',
@@ -8498,11 +9144,7 @@ ${placemarks}
         btn.classList.remove('active');
       }
 
-      document.addEventListener('click', e => {
-        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
-          if (menuOpen) closeExportMenu();
-        }
-      });
+      // Экспорт-меню не закрывается по клику вне — только по кнопке
 
       makeDraggable(menu, document.getElementById('export-menu-header'));
 
@@ -9030,20 +9672,29 @@ ${placemarks}
 
 
     // ═══════════════════════════════════════════════════════════════
-    //  ПРОЕКТ — сохранение/загрузка маршрута и фигур
+    //  МУЛЬТИ-ПРОЕКТ
     // ═══════════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
+
       const btn  = document.getElementById('btn-project');
       const menu = document.getElementById('project-menu');
       let open = false;
 
+      // ── Структура данных ──────────────────────────────────────────
+      // projects: массив объектов { id, name, color, visible, data: {...} }
+      // activeId: id активного проекта (данные которого на карте)
+      const COLORS = ['#2e7d32','#1565c0','#c62828','#6a1b9a','#e65100','#00695c','#37474f'];
+      let projects  = [];  // все загруженные проекты
+      let activeId  = null;
+
+      // ── Открытие/закрытие ─────────────────────────────────────────
       btn.addEventListener('click', () => {
         open = !open;
         if (open) {
           menu.style.display = 'block';
           setTimeout(() => menu.classList.add('visible'), 10);
           btn.classList.add('active');
-          showProjectInfo();
+          renderProjectList();
         } else closeMenu();
       });
 
@@ -9054,245 +9705,772 @@ ${placemarks}
         btn.classList.remove('active');
       }
 
-      document.addEventListener('click', e => {
-        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target))
-          if (open) closeMenu();
-      });
+      // Меню проекта не закрывается по клику вне — только по кнопке
 
       makeDraggable(menu, document.getElementById('project-menu-header'));
 
-      function showProjectInfo() {
-        const el = document.getElementById('project-info');
-        const rCount = typeof points !== 'undefined' ? points.length : 0;
-        const dCount = window._drawItems ? window._drawItems.length : 0;
-        if (rCount > 0 || dCount > 0) {
-          el.style.display = 'block';
-          el.textContent = `Маршрут: ${rCount} точек  •  Фигур: ${dCount}`;
-        } else {
-          el.style.display = 'none';
-        }
+      // ── Утилиты ───────────────────────────────────────────────────
+      function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+      function nextColor() {
+        const used = projects.map(p => p.color);
+        return COLORS.find(c => !used.includes(c)) || COLORS[projects.length % COLORS.length];
       }
 
-      // ── Сохранение ───────────────────────────────────────────────
-      window.projectSave = function() {
-        closeMenu();
+      function showInfo(msg, ms=3000) {
+        const el = document.getElementById('project-info');
+        el.style.display = 'block';
+        el.textContent = msg;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.style.display = 'none', ms);
+      }
 
-        // Сериализуем точки маршрута с сохранением всех метаданных
+      // ── Снимок текущего состояния карты ──────────────────────────
+      function captureState() {
         const routeData = (typeof points !== 'undefined' ? points : []).map(p => {
           const obj = { lng: p.lng, lat: p.lat };
-          if (p._pointName)  obj._pointName  = p._pointName;
-          if (p._snapInfo)   obj._snapInfo   = p._snapInfo;
-          if (p._role)       obj._role       = p._role;
-          if (p._pointType)  obj._pointType  = p._pointType;
+          ['_pointName','_snapInfo','_role','_pointType','_adProps'].forEach(k => {
+            if (p[k] != null) obj[k] = p[k];
+          });
           if (p._altitude !== undefined) obj._altitude = p._altitude;
           if (p._speed    !== undefined) obj._speed    = p._speed;
           return obj;
         });
-
-        // Запасные аэродромы
-        const altData = typeof alternateAirports !== 'undefined'
-          ? alternateAirports.map(a => ({...a})) : [];
-
-        // Фигуры рисования
-        const drawData = window._drawItems
-          ? JSON.parse(JSON.stringify(window._drawItems)) : [];
-
-        const project = {
+        return {
           version: 1,
           savedAt: new Date().toISOString(),
-          route: routeData,
-          alternates: altData,
-          draw: drawData,
-          mapCenter: map.getCenter(),
-          mapZoom: map.getZoom()
+          route:      routeData,
+          alternates: typeof alternateAirports !== 'undefined' ? alternateAirports.map(a=>({...a})) : [],
+          draw:       window._drawItems ? JSON.parse(JSON.stringify(window._drawItems)) : [],
+          mapCenter:  map.getCenter(),
+          mapZoom:    map.getZoom()
         };
+      }
 
-        const json = JSON.stringify(project, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'aviakominf_' + window.dateStamp() + '.avkproj';
-        a.click();
-      };
-
-      // ── Загрузка ─────────────────────────────────────────────────
-      window.projectLoad = function() {
-        closeMenu();
-        document.getElementById('project-file-input').click();
-      };
-
-      document.getElementById('project-file-input').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-          try {
-            const project = JSON.parse(ev.target.result);
-            console.log('[project] parsed:', project.version, 'draw:', project.draw && project.draw.length, 'route:', project.route && project.route.length);
-            applyProject(project);
-          } catch(err) {
-            alert('Ошибка чтения файла проекта: ' + err.message);
-          }
-          e.target.value = '';
-        };
-        reader.readAsText(file);
-      });
-
-      function applyProject(project) {
-        console.log('[project] applyProject called, version:', project && project.version);
-        if (!project || project.version !== 1) {
-          alert('Неверный формат файла проекта: version=' + (project && project.version));
-          return;
-        }
-        console.log('[project] draw items count:', project.draw && project.draw.length);
-
-        // ── Восстанавливаем маршрут ───────────────────────────────
-        if (typeof points !== 'undefined' && Array.isArray(project.route)) {
-          // Очищаем текущий маршрут
+      // ── Применение состояния на карту ────────────────────────────
+      function applyState(data, flyTo=true) {
+        // ── Маршрут ───────────────────────────────────────────────
+        if (typeof points !== 'undefined' && Array.isArray(data.route)) {
           points.length = 0;
           if (typeof alternateAirports !== 'undefined') alternateAirports.length = 0;
-
-          // Восстанавливаем точки
-          project.route.forEach(p => {
+          data.route.forEach(p => {
             const pt = { lng: p.lng, lat: p.lat };
-            if (p._pointName)  pt._pointName  = p._pointName;
-            if (p._snapInfo)   pt._snapInfo   = p._snapInfo;
-            if (p._role)       pt._role       = p._role;
-            if (p._pointType)  pt._pointType  = p._pointType;
+            ['_pointName','_snapInfo','_role','_pointType','_adProps'].forEach(k => {
+              if (p[k] != null) pt[k] = p[k];
+            });
             if (p._altitude !== undefined) pt._altitude = p._altitude;
             if (p._speed    !== undefined) pt._speed    = p._speed;
             points.push(pt);
           });
+          if (Array.isArray(data.alternates))
+            data.alternates.forEach(a => alternateAirports.push({...a}));
+          if (typeof drawMeasureLine   === 'function') drawMeasureLine();
+          if (typeof drawMeasurePoints === 'function') drawMeasurePoints();
+          if (typeof updatePointsList  === 'function') updatePointsList();
 
-          // Восстанавливаем запасные аэродромы
-          if (typeof alternateAirports !== 'undefined' && Array.isArray(project.alternates)) {
-            project.alternates.forEach(a => alternateAirports.push({...a}));
-          }
-
-          // Обновляем маршрут на карте
-          if (typeof drawMeasureLine  === 'function') drawMeasureLine();
-          if (typeof drawMeasurePoints=== 'function') drawMeasurePoints();
-          if (typeof updatePointsList === 'function') updatePointsList();
-
-          // Включаем режим измерения если есть точки
-          if (points.length > 0 && !measuring) {
-            measuring = true;
-            if (typeof map !== 'undefined') {
-              map.getCanvas().style.cursor = 'crosshair';
-            }
-            // Показываем панель маршрута
-            const panel = document.getElementById('measure-panel');
-            if (panel && !panel.classList.contains('visible'))
-              panel.classList.add('visible');
+          // Важно: НЕ включаем measuring автоматически — пользователь сам нажмёт кнопку
+          // Только показываем панель маршрута если есть точки
+          measuring = false;
+          map.getCanvas().style.cursor = '';
+          if (points.length > 0) {
+            const mp = document.getElementById('measure-panel');
+            if (mp && !mp.classList.contains('visible')) mp.classList.add('visible');
+            const mb = document.getElementById('btn-measure');
+            if (mb) mb.classList.add('active');
           }
         }
-
-        // ── Восстанавливаем фигуры ────────────────────────────────
-        console.log('[project] before draw check, draw:', project.draw, 'isArray:', Array.isArray(project.draw), 'len:', project.draw && project.draw.length);
-        if (Array.isArray(project.draw) && project.draw.length > 0) {
-          console.log('[project] entering draw restore block');
-
-          const doDrawRestore = () => {
-            // window._drawItems экспортирован из IIFE initDrawEditor
+        // ── Фигуры ────────────────────────────────────────────────
+        if (Array.isArray(data.draw)) {
+          const applyDraw = () => {
             const di = window._drawItems;
-            if (!di) { console.warn('[project] _drawItems not ready'); return; }
-
-            // Мутируем тот же массив — редактор увидит изменения
+            if (!di) { console.warn('applyState: _drawItems not ready'); return; }
+            // Мутируем тот же массив на который ссылается drawRefresh
             di.splice(0, di.length);
-            project.draw.forEach(item => di.push(item));
-
-            // Убеждаемся что источник и слои созданы
+            data.draw.forEach(item => di.push(item));
+            // Инициализируем источник MapLibre если ещё не создан
             if (typeof window._drawInit === 'function') window._drawInit();
-
-            // Обновляем данные на карте
+            // Принудительно обновляем карту и список
             if (typeof window._drawRefresh    === 'function') window._drawRefresh();
             if (typeof window._renderDrawList === 'function') window._renderDrawList();
-
-            // Открываем панель
-            const panel = document.getElementById('draw-panel');
-            if (panel) {
-              panel.style.display = 'block';
-              setTimeout(() => { panel.style.opacity='1'; panel.style.transform='none'; }, 10);
+            if (data.draw.length > 0) {
+              const dp = document.getElementById('draw-panel');
+              if (dp) {
+                dp.style.display = 'block';
+                setTimeout(() => { dp.style.opacity='1'; dp.style.transform='none'; }, 10);
+              }
+              document.getElementById('btn-draw').classList.add('active');
             }
-            document.getElementById('btn-draw').classList.add('active');
           };
-
-          // Вызываем напрямую — map уже загружена к моменту загрузки проекта
-          console.log('[project] calling doDrawRestore, map.loaded()=', map.loaded());
-          doDrawRestore();
+          // Ждём idle чтобы карта точно была готова и все слои инициализированы
+          if (map.loaded()) {
+            // Небольшая задержка чтобы MapLibre завершил текущий рендер
+            setTimeout(applyDraw, 50);
+          } else {
+            map.once('idle', applyDraw);
+          }
         }
-
-        // ── Позиционируем карту ───────────────────────────────────
-        if (project.mapCenter && project.mapZoom) {
-          map.flyTo({
-            center: [project.mapCenter.lng, project.mapCenter.lat],
-            zoom: project.mapZoom,
-            duration: 800
-          });
+        // ── Позиция карты ─────────────────────────────────────────
+        if (flyTo && data.mapCenter && data.mapZoom) {
+          map.flyTo({ center:[data.mapCenter.lng, data.mapCenter.lat], zoom:data.mapZoom, duration:800 });
         }
-
-        // Уведомление
-        const info = document.getElementById('project-info');
-        info.style.display = 'block';
-        info.textContent = `✓ Загружено: ${project.route.length} точек маршрута, ${project.draw.length} фигур`;
-        setTimeout(() => { info.style.display = 'none'; }, 4000);
       }
 
-      // ── Очистка всего ─────────────────────────────────────────────
-      window.projectClear = function() {
-        if (!confirm('Очистить маршрут и все фигуры?')) return;
-        closeMenu();
+      // ── Очистка карты ─────────────────────────────────────────────
+      function clearMap() {
+        // Сбрасываем режим прокладки маршрута
+        measuring = false;
+        if (typeof map !== 'undefined') map.getCanvas().style.cursor = '';
+        const mb = document.getElementById('btn-measure');
+        if (mb) mb.classList.remove('active');
 
-        // Очищаем маршрут
         if (typeof points !== 'undefined') {
           points.length = 0;
           if (typeof alternateAirports !== 'undefined') alternateAirports.length = 0;
-          if (typeof drawMeasureLine  === 'function') drawMeasureLine();
-          if (typeof drawMeasurePoints=== 'function') drawMeasurePoints();
-          if (typeof updatePointsList === 'function') updatePointsList();
+          if (typeof drawMeasureLine   === 'function') drawMeasureLine();
+          if (typeof drawMeasurePoints === 'function') drawMeasurePoints();
+          if (typeof updatePointsList  === 'function') updatePointsList();
+        }
+        const di = window._drawItems;
+        if (di) {
+          di.splice(0, di.length);
+          if (typeof window._drawRefresh    === 'function') window._drawRefresh();
+          if (typeof window._renderDrawList === 'function') window._renderDrawList();
+        }
+      }
+
+      // ── Обновить метки активного проекта в панелях ─────────────
+      function updateProjLabels() {
+        const proj = projects.find(p => p.id === activeId);
+        const name = proj ? `[${proj.name}]` : '';
+        const ml = document.getElementById('measure-proj-label');
+        const dl = document.getElementById('draw-proj-label');
+        if (ml) ml.textContent = name;
+        if (dl) dl.textContent = name;
+      }
+
+      // ── Рендер списка проектов ────────────────────────────────────
+      function renderProjectList() {
+        const list = document.getElementById('project-list');
+        if (!projects.length) { list.innerHTML = ''; return; }
+
+        list.innerHTML = projects.map(p => {
+          const isActive = p.id === activeId;
+          const visIcon  = p.visible ? '👁' : '🙈';
+          return `
+          <div class="proj-card ${isActive ? 'active' : ''}" id="pcard-${p.id}">
+            <div class="proj-card-top">
+              <div class="proj-card-color" style="background:${p.color}"></div>
+              <span class="proj-card-name" id="pname-${p.id}"
+                ondblclick="projStartRename('${p.id}')"
+                onclick="projActivate('${p.id}')"
+                title="Нажмите чтобы активировать, двойной клик — переименовать">
+                ${escHtml(p.name)}${isActive ? ' <span style="color:#2e7d32;font-size:10px;">●</span>' : ''}
+              </span>
+              <div class="proj-card-actions">
+                <button class="proj-card-btn" title="Видимость" onclick="projToggleVisible('${p.id}')">${visIcon}</button>
+                <button class="proj-card-btn" title="Переименовать" onclick="projStartRename('${p.id}')">✏️</button>
+                <button class="proj-card-btn" title="Сохранить в файл" onclick="projSaveFile('${p.id}')">💾</button>
+                <button class="proj-card-btn danger" title="Удалить" onclick="projRemove('${p.id}')">✕</button>
+              </div>
+            </div>
+            <div class="proj-card-meta">
+              <span>📍${p.data.route ? p.data.route.length : 0} т.</span>
+              <span>✏️${p.data.draw ? p.data.draw.length : 0} ф.</span>
+              <span style="color:#aaa;">${p.data.savedAt ? new Date(p.data.savedAt).toLocaleDateString('ru') : '—'}</span>
+            </div>
+          </div>`;
+        }).join('');
+
+        const lbl = document.getElementById('proj-active-label');
+        const active = projects.find(p => p.id === activeId);
+        lbl.textContent = active ? active.name : '';
+      }
+
+      // ── Активировать проект (загрузить на карту) ──────────────────
+      window.projActivate = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj || id === activeId) return;
+
+        // Сохраняем текущее состояние в активный проект
+        if (activeId) {
+          const cur = projects.find(p => p.id === activeId);
+          if (cur) cur.data = captureState();
         }
 
-        // Очищаем фигуры
-        if (typeof drawItems !== 'undefined') {
-          drawItems.length = 0;
-          if (typeof drawRefresh    === 'function') drawRefresh();
-          if (typeof renderDrawList === 'function') renderDrawList();
+        activeId = id;
+        clearMap();
+
+        if (proj.visible) {
+          applyState(proj.data, true);
         }
+        renderProjectList();
+        updateProjLabels();
+        showInfo(`✓ Активен: ${proj.name}`);
+      };
+
+      // ── Переключить видимость ─────────────────────────────────────
+      window.projToggleVisible = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj) return;
+        proj.visible = !proj.visible;
+
+        if (id === activeId) {
+          if (proj.visible) {
+            applyState(proj.data, false);
+          } else {
+            clearMap();
+          }
+        }
+        renderProjectList();
+      };
+
+      // ── Переименование ────────────────────────────────────────────
+      window.projStartRename = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj) return;
+        const nameEl = document.getElementById('pname-' + id);
+        if (!nameEl) return;
+
+        const input = document.createElement('input');
+        input.className = 'proj-card-name-input';
+        input.value = proj.name;
+        nameEl.replaceWith(input);
+        input.focus();
+        input.select();
+
+        const finish = () => {
+          const val = input.value.trim();
+          if (val) proj.name = val;
+          renderProjectList();
+          const lbl = document.getElementById('proj-active-label');
+          if (activeId === id) lbl.textContent = proj.name;
+        };
+        input.addEventListener('blur', finish);
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+          if (e.key === 'Escape') { input.value = proj.name; input.blur(); }
+        });
+      };
+
+      // ── Удалить проект ────────────────────────────────────────────
+      window.projRemove = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj) return;
+        if (!confirm(`Удалить проект «${proj.name}»?`)) return;
+
+        projects = projects.filter(p => p.id !== id);
+
+        if (activeId === id) {
+          clearMap();
+          activeId = projects.length ? projects[0].id : null;
+          if (activeId) {
+            const next = projects[0];
+            if (next.visible) applyState(next.data, false);
+          }
+        }
+        renderProjectList();
+      };
+
+      // ── Сохранить проект в файл ───────────────────────────────────
+      window.projSaveFile = function(id) {
+        const proj = projects.find(p => p.id === id);
+        if (!proj) return;
+        // Обновляем данные если это активный проект
+        if (id === activeId) proj.data = captureState();
+        const json = JSON.stringify(proj.data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = proj.name.replace(/[^a-zA-ZА-Яа-я0-9_\- ]/g,'').trim() + '.avkproj';
+        a.click();
+      };
+
+      // ── Сохранить активный проект ─────────────────────────────────
+      window.projectSaveActive = function() {
+        if (!activeId && !projects.length) {
+          // Нет проектов — создаём из текущего состояния
+          const data = captureState();
+          if (!data.route.length && !data.draw.length) {
+            showInfo('⚠ Нет данных для сохранения'); return;
+          }
+          const proj = { id: uid(), name: 'Проект ' + window.dateStamp(), color: nextColor(), visible: true, data };
+          projects.push(proj);
+          activeId = proj.id;
+          renderProjectList();
+          projSaveFile(proj.id);
+          return;
+        }
+        if (!activeId) { showInfo('⚠ Нет активного проекта'); return; }
+        projSaveFile(activeId);
+      };
+
+      // Обратная совместимость
+      window.projectSave = window.projectSaveActive;
+
+      // ── Новый пустой проект ───────────────────────────────────────
+      window.projectNewEmpty = function() {
+        // Сохраняем текущий активный
+        if (activeId) {
+          const cur = projects.find(p => p.id === activeId);
+          if (cur) cur.data = captureState();
+        }
+        const proj = {
+          id: uid(),
+          name: 'Проект ' + (projects.length + 1),
+          color: nextColor(),
+          visible: true,
+          data: { version:1, savedAt:new Date().toISOString(), route:[], alternates:[], draw:[], mapCenter:map.getCenter(), mapZoom:map.getZoom() }
+        };
+        projects.push(proj);
+        activeId = proj.id;
+        clearMap();
+        renderProjectList();
+        showInfo(`✓ Создан: ${proj.name}`);
+        // Сразу запускаем переименование
+        setTimeout(() => projStartRename(proj.id), 100);
+      };
+
+      // ── Загрузить файл(ы) ─────────────────────────────────────────
+      window.projectLoad = function() {
+        document.getElementById('project-file-input').click();
+      };
+
+      document.getElementById('project-file-input').addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        // Сохраняем текущий активный
+        if (activeId) {
+          const cur = projects.find(p => p.id === activeId);
+          if (cur) cur.data = captureState();
+        }
+
+        let loaded = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            try {
+              const data = JSON.parse(ev.target.result);
+              if (!data || data.version !== 1) throw new Error('неверный формат');
+
+              const name = file.name.replace(/\.avkproj$/i,'').replace(/aviakominf_/,'') || 'Проект';
+              const proj = { id: uid(), name, color: nextColor(), visible: true, data };
+              projects.push(proj);
+              loaded++;
+
+              // Активируем первый загруженный
+              if (loaded === 1) {
+                activeId = proj.id;
+                clearMap();
+                applyState(proj.data, true);
+              }
+              if (loaded === files.length) {
+                renderProjectList();
+                updateProjLabels();
+                showInfo(`✓ Загружено проектов: ${loaded}`);
+              }
+            } catch(err) {
+              alert(`Ошибка в файле ${file.name}: ${err.message}`);
+            }
+          };
+          reader.readAsText(file);
+        });
+        e.target.value = '';
+      });
+
+      // ── Очистить всё (обратная совместимость) ─────────────────────
+      window.projectClear = function() {
+        if (!confirm('Очистить все проекты и карту?')) return;
+        projects = [];
+        activeId = null;
+        clearMap();
+        renderProjectList();
+        closeMenu();
+      };
+
+      // ── Инициализация: если карта уже имеет данные — создаём проект
+      map.once('idle', () => {
+        const r = typeof points !== 'undefined' ? points.length : 0;
+        const d = window._drawItems ? window._drawItems.length : 0;
+        if (r > 0 || d > 0) {
+          const proj = { id: uid(), name: 'Текущий проект', color: COLORS[0], visible: true, data: captureState() };
+          projects.push(proj);
+          activeId = proj.id;
+          renderProjectList();
+        }
+      });
+
+    });    // ═══════════════════════════════════════════════════════════════
+    //  FLIGHT PLAN
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn   = document.getElementById('btn-fp');
+      const panel = document.getElementById('fp-panel');
+      let open = false;
+
+      btn.addEventListener('click', () => {
+        open = !open;
+        if (open) {
+          panel.style.display = 'block';
+          setTimeout(() => panel.classList.add('visible'), 10);
+          btn.classList.add('active');
+          fpBuild();
+        } else {
+          panel.classList.remove('visible');
+          setTimeout(() => { if (!open) panel.style.display = 'none'; }, 220);
+          btn.classList.remove('active');
+        }
+      });
+
+      // FP панель не закрывается по клику вне — только по кнопке
+
+      makeDraggable(panel, document.getElementById('fp-header'));
+
+      // ── Вспомогательные ──────────────────────────────────────────
+
+      // Получить ICAO код из props аэродрома (поле ICAOCODE в слое ADHPLS)
+      function getIcao(props) {
+        if (!props) return null;
+        return props.ICAOCODE || null;
+      }
+
+      // Получить NAME из props
+      function getName(props) {
+        if (!props) return '';
+        return props.NAME || props.name || '';
+      }
+
+      // Получить props точки — пробуем все места где могут лежать свойства
+      function getPointProps(p) {
+        if (!p) return null;
+        if (p._adProps)   return p._adProps;           // клик по AD_point_name
+        if (p._snapInfo && p._snapInfo.featureProps) return p._snapInfo.featureProps;
+        if (p.props)      return p.props;              // запасные аэродромы
+        return null;
+      }
+
+      // Форматировать точку для строки маршрута
+      // Проверяет — именованная ли точка (из слоёв) или просто гео-точка
+      function isNamedPoint(p) {
+        return !!(p._pointName || (p._snapInfo && p._snapInfo.routeName));
+      }
+
+      // Возвращает имя точки или координаты
+      function fmtRoutePoint(p) {
+        if (p._pointName) return p._pointName;
+        if (p._snapInfo && p._snapInfo.routeName) return p._snapInfo.routeName;
+        return formatCoord(p);  // географическая точка — только координаты
+      }
+
+      // Строит строку маршрута: между именованными точками ничего,
+      // перед гео-точкой ставится DCT
+      function buildRouteStr(pts) {
+        if (!pts.length) return '';
+        const parts = [];
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i];
+          if (!isNamedPoint(p)) {
+            parts.push('DCT ' + formatCoord(p));
+          } else {
+            parts.push(fmtRoutePoint(p));
+          }
+        }
+        return parts.join(' ');
+      }
+
+      // Построить блок аэродрома (DEP/DEST/ALTN)
+      // Возвращает {icao, explain} — ICAO код и строку пояснения если ZZZZ
+      function getAdInfo(props, name, prefix) {
+        const icao = getIcao(props);
+        return {
+          icao: icao || 'ZZZZ',
+          explain: (!icao && name) ? prefix + '/' + name : null
+        };
+      }
+
+      function buildAdBlock(props, name, prefix, bigSize) {
+        const { icao } = getAdInfo(props, name, prefix);
+        const icaoClass = bigSize ? 'fp-icao' : 'fp-altn-icao';
+        return `<div class="${icaoClass}">${icao}</div>`;
+      }
+
+      // ── Главная функция построения ────────────────────────────────
+      window.fpBuild = function() {
+        const body    = document.getElementById('fp-body');
+        const expBtn  = document.getElementById('fp-export-btn');
+        const emptyEl = document.getElementById('fp-empty-msg');
+
+        if (!points || points.length < 2) {
+          body.innerHTML = '<div id="fp-empty-msg">Постройте маршрут в «Прокладке маршрута»</div>';
+          expBtn.style.display = 'none';
+          return;
+        }
+
+        // Точка вылета — первая точка маршрута
+        const depPt    = points[0];
+        const depProps = getPointProps(depPt);
+        const depName  = depPt._pointName || (depPt._snapInfo && depPt._snapInfo.routeName) || '';
+
+        // Точка назначения — точка с _role='destination', иначе последняя
+        const destPt   = points.find(p => p._role === 'destination') || points[points.length - 1];
+        const destProps = getPointProps(destPt);
+        console.log('[fp] dep:', depPt._pointName, 'ICAO:', depProps && depProps.ICAOCODE);
+        console.log('[fp] dest:', destPt._pointName, 'ICAO:', destProps && destProps.ICAOCODE);
+        const destName  = destPt._pointName || (destPt._snapInfo && destPt._snapInfo.routeName) || '';
+
+        // Промежуточные точки — все кроме первой и последней, не назначение/вылет
+        const midPoints = points.slice(1, -1).filter(p => p._role !== 'destination');
+        const routeStr  = buildRouteStr(midPoints);
+
+        // Запасные аэродромы
+        const alts = typeof alternateAirports !== 'undefined' ? alternateAirports : [];
+
+        // Строим HTML
+        let html = '';
+        const explains = []; // пояснения ZZZZ собираем отдельно
+
+        const depInfo  = getAdInfo(depProps,  depName,  'DEP');
+        const destInfo = getAdInfo(destProps, destName, 'DEST');
+        if (depInfo.explain)  explains.push(depInfo.explain);
+        if (destInfo.explain) explains.push(destInfo.explain);
+
+        // DEP
+        html += `<div class="fp-section-label">АЭРОДРОМ ВЫЛЕТА</div>
+        <div class="fp-section"><div class="fp-icao">${depInfo.icao}</div></div>`;
+
+        // МАРШРУТ
+        html += `<div class="fp-section-label">МАРШРУТ</div>
+        <div class="fp-section">
+          <div class="fp-route-text">${routeStr || '&nbsp;'}</div>
+        </div>`;
+
+        // DEST
+        html += `<div class="fp-section-label">АЭРОДРОМ НАЗНАЧЕНИЯ</div>
+        <div class="fp-section"><div class="fp-icao">${destInfo.icao}</div></div>`;
+
+        // ALTN
+        if (alts.length > 0) {
+          html += `<div class="fp-section-label">ЗАПАСНЫЕ АЭРОДРОМЫ</div>
+          <div class="fp-altn-row">`;
+          alts.forEach(a => {
+            const aProps = a.props || null;
+            const ai = getAdInfo(aProps, a.name, 'ALTN');
+            if (ai.explain) explains.push(ai.explain);
+            html += `<div class="fp-altn-box"><div class="fp-altn-icao">${ai.icao}</div></div>`;
+          });
+          html += `</div>`;
+        }
+
+        // Пояснения ZZZZ — отдельным блоком внизу, строчки друг за другом
+        if (explains.length > 0) {
+          html += `<div class="fp-section-label">ПОЯСНЕНИЯ</div>
+          <div class="fp-section">` +
+            explains.map(e => `<div class="fp-explain" style="padding:4px 12px;border-bottom:1px solid #eee;">${e}</div>`).join('') +
+          `</div>`;
+        }
+
+        body.innerHTML = html;
+        expBtn.style.display = 'block';
+      };
+
+      // ── Экспорт в TXT ────────────────────────────────────────────
+      window.fpExport = function() {
+        if (!points || points.length < 2) return;
+
+        const depPt    = points[0];
+        const depProps = getPointProps(depPt);
+        const depName  = depPt._pointName || (depPt._snapInfo && depPt._snapInfo.routeName) || '';
+        const depIcao  = getIcao(depProps) || 'ZZZZ';
+
+        const destPt    = points.find(p => p._role === 'destination') || points[points.length - 1];
+        const destProps = getPointProps(destPt);
+        const destName  = destPt._pointName || (destPt._snapInfo && destPt._snapInfo.routeName) || '';
+        const destIcao  = getIcao(destProps) || 'ZZZZ';
+
+        const midPoints = points.slice(1, -1).filter(p => p._role !== 'destination');
+        const routeStr  = buildRouteStr(midPoints);
+
+        const alts = typeof alternateAirports !== 'undefined' ? alternateAirports : [];
+
+        // Собираем пояснения ZZZZ в одну строку в конце
+        const explains = [];
+        if (depIcao  === 'ZZZZ' && depName)  explains.push(`DEP/${depName}`);
+        if (destIcao === 'ZZZZ' && destName) explains.push(`DEST/${destName}`);
+        alts.forEach(a => {
+          if ((getIcao(a.props)||'ZZZZ') === 'ZZZZ' && a.name) explains.push(`ALTN/${a.name}`);
+        });
+
+        let lines = [];
+
+        // DEP
+        lines.push('DEP:');
+        lines.push(depIcao);
+
+        // Маршрут
+        lines.push('ROUTE:');
+        if (routeStr) lines.push(routeStr);
+
+        // DEST
+        lines.push('DEST:');
+        lines.push(destIcao);
+
+        // ALTN
+        if (alts.length > 0) {
+          lines.push('ALTN:');
+          alts.forEach(a => lines.push(getIcao(a.props) || 'ZZZZ'));
+        }
+
+        // Пояснения ZZZZ — одной строкой в конце
+        if (explains.length > 0) lines.push(explains.join(' '));
+
+        const txt = lines.join('\n');
+
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'flightplan_' + window.dateStamp() + '.txt';
+        a.click();
       };
 
     });
 
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ВВОД ТОЧКИ ПО КООРДИНАТАМ
+    // ═══════════════════════════════════════════════════════════════
+    (function() {
+
+      // ── Парсер координат ─────────────────────────────────────────
+      // Поддерживаемые форматы:
+      //  5535N03727E           ICAO (ДДММN ДДДММЕ)
+      //  55.590 37.456         десятичные градусы
+      //  55°35.4N 037°27.4E   градусы + десятичные минуты
+      //  55 35 20N 037 27 25E градусы минуты секунды
+      function parseCoords(s) {
+        s = s.trim().replace(/[,;]+/g, ' ').replace(/\s+/g, ' ');
+
+        // Формат ICAO: ДДММN ДДДММЕ или ДДММNДДДММЕ
+        let m = s.match(/^(\d{2})(\d{2})([NS])\s*(\d{3})(\d{2})([EW])$/i);
+        if (m) {
+          const lat = (parseInt(m[1]) + parseInt(m[2])/60) * (m[3].toUpperCase()==='S' ? -1 : 1);
+          const lng = (parseInt(m[4]) + parseInt(m[5])/60) * (m[6].toUpperCase()==='W' ? -1 : 1);
+          return { lat, lng };
+        }
+
+        // Два десятичных числа: "55.59 37.45" или "-55.59 -37.45"
+        m = s.match(/^(-?\d+\.?\d*)\s+(-?\d+\.?\d*)$/);
+        if (m) {
+          const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+          if (lat>=-90&&lat<=90&&lng>=-180&&lng<=180) return { lat, lng };
+        }
+
+        // Градусы°минуты'секунды" N/S/E/W — гибкий парсер
+        function parseDMS(str) {
+          // Убираем символы градусов/минут/секунд
+          const clean = str.replace(/[°'"]/g, ' ').replace(/\s+/g, ' ').trim();
+          const parts = clean.split(' ');
+          const dir   = parts[parts.length-1].toUpperCase();
+          const nums  = parts.slice(0, -1).map(parseFloat).filter(n => !isNaN(n));
+          if (!nums.length) return null;
+          let val = nums[0];
+          if (nums[1]) val += nums[1]/60;
+          if (nums[2]) val += nums[2]/3600;
+          if (dir==='S'||dir==='W') val = -val;
+          return val;
+        }
+
+        // Попытка разбить на две части (lat и lng)
+        // Ищем разделитель по буквам N/S
+        const split = s.match(/^(.+[NS])\s+(.+[EW])$/i);
+        if (split) {
+          const lat = parseDMS(split[1]);
+          const lng = parseDMS(split[2]);
+          if (lat!=null&&lng!=null&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180)
+            return { lat, lng };
+        }
+
+        return null;
+      }
+
+      window.openCoordInput = function() {
+        document.getElementById('coord-input-dialog').classList.add('open');
+        document.getElementById('coord-input-field').value = '';
+        document.getElementById('coord-error').style.display = 'none';
+        setTimeout(() => document.getElementById('coord-input-field').focus(), 100);
+      };
+
+      window.coordInputCancel = function() {
+        document.getElementById('coord-input-dialog').classList.remove('open');
+      };
+
+      window.coordInputOk = function() {
+        const s = document.getElementById('coord-input-field').value;
+        const result = parseCoords(s);
+        const errEl = document.getElementById('coord-error');
+        if (!result) {
+          errEl.style.display = 'block';
+          return;
+        }
+        errEl.style.display = 'none';
+        document.getElementById('coord-input-dialog').classList.remove('open');
+
+        // Добавляем точку в маршрут
+        const pt = new maplibregl.LngLat(result.lng, result.lat);
+        points.push(pt);
+        drawMeasureLine(); drawMeasurePoints(); updatePointsList();
+
+        // Центрируем карту на точке
+        map.easeTo({ center: [result.lng, result.lat], duration: 400 });
+      };
+
+      // Enter в поле = ОК
+      document.getElementById('coord-input-field').addEventListener('keydown', e => {
+        if (e.key === 'Enter') window.coordInputOk();
+        if (e.key === 'Escape') window.coordInputCancel();
+      });
+
+      // Клик вне диалога — закрыть
+      document.getElementById('coord-input-dialog').addEventListener('click', function(e) {
+        if (e.target === this) window.coordInputCancel();
+      });
+
+    })();
+
   </script>
+
+  <!-- ═══ FLIGHT PLAN ═══ -->
+  <div id="fp-panel">
+    <div id="fp-header">
+      <span>✈ Flight Plan</span>
+      <span id="fp-refresh" title="Обновить" style="cursor:pointer;font-size:16px;" onclick="fpBuild()">↺</span>
+    </div>
+    <div id="fp-body">
+      <div id="fp-empty-msg">Постройте маршрут в «Прокладке маршрута»</div>
+    </div>
+    <button id="fp-export-btn" onclick="fpExport()" style="display:none">↵ Сохранить в TXT</button>
+  </div>
 
   <!-- ═══ ПРОЕКТ ═══ -->
   <div id="project-menu">
     <div id="project-menu-header">
-      <span>📁 Проект</span><span>▼</span>
+      <span id="project-menu-header-title">📁 Проекты</span>
+      <span style="font-size:11px;opacity:.7;font-weight:normal;" id="proj-active-label"></span>
     </div>
     <div id="project-info"></div>
-    <div class="project-item" onclick="projectSave()">
-      <span class="project-item-icon">💾</span>
-      <div>
-        <div class="project-item-label">Сохранить проект</div>
-        <div class="project-item-desc">Маршрут + фигуры в файл .avkproj</div>
-      </div>
-    </div>
-    <div class="project-item" onclick="projectLoad()">
-      <span class="project-item-icon">📂</span>
-      <div>
-        <div class="project-item-label">Загрузить проект</div>
-        <div class="project-item-desc">Восстановить маршрут и фигуры</div>
-      </div>
-    </div>
-    <div class="project-item" onclick="projectClear()">
-      <span class="project-item-icon">🗑️</span>
-      <div>
-        <div class="project-item-label">Очистить всё</div>
-        <div class="project-item-desc">Удалить маршрут и все фигуры</div>
-      </div>
+    <div id="project-list"></div>
+    <div id="project-actions">
+      <button class="proj-action-btn primary" onclick="projectLoad()">
+        <span class="pab-icon">📂</span>Загрузить
+      </button>
+      <button class="proj-action-btn secondary" onclick="projectSaveActive()">
+        <span class="pab-icon">💾</span>Сохранить
+      </button>
+      <button class="proj-action-btn secondary" onclick="projectNewEmpty()">
+        <span class="pab-icon">➕</span>Новый
+      </button>
     </div>
   </div>
-  <input type="file" id="project-file-input" accept=".avkproj,.json" style="display:none">
+  <input type="file" id="project-file-input" accept=".avkproj,.json" style="display:none" multiple>
 
   <!-- ═══ ЭКСПОРТ / ПЕЧАТЬ ═══ -->
   <div id="export-menu">
@@ -9440,6 +10618,7 @@ ${placemarks}
     <div class="draw-menu-item" onclick="drawStart('polygon')">⬡ Многоугольник</div>
     <div class="draw-menu-item" onclick="drawStart('circle')">⭕ Окружность</div>
     <div class="draw-menu-item" onclick="drawStart('sector')">🥧 Сектор окружности</div>
+    <div class="draw-menu-item" onclick="drawStart('point')">📍 Точка</div>
   </div>
 
   <!-- Контекстное меню элемента -->
@@ -9605,6 +10784,15 @@ ${placemarks}
         </div>
       </div>
 
+      <!-- Размер точки -->
+      <div id="df-point-size-block">
+        <div class="df-section">Размер точки</div>
+        <div class="df-row-inline">
+          <label>Размер (°)</label>
+          <input type="number" id="df-point-size" step="0.001" min="0.001" max="0.05" value="0.004" style="width:80px">
+        </div>
+      </div>
+
       <!-- Радиус окружности -->
       <div id="df-radius-block">
         <div class="df-section">Радиус</div>
@@ -9627,7 +10815,7 @@ ${placemarks}
   <!-- Панель списка элементов -->
   <div id="draw-panel">
     <div id="draw-panel-header">
-      <span>✏️ Графика</span>
+      <span>✏️ Графика<span id="draw-proj-label" style="font-size:10px;opacity:.7;margin-left:6px;font-weight:normal;"></span></span>
       <span id="draw-panel-toggle">▼</span>
     </div>
     <div id="draw-panel-body">
