@@ -1,0 +1,15 @@
+<svg id="Слой_1" data-name="Слой 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 22.68 22.68">
+  <defs>
+    <clipPath id="clip-path">
+      <rect x="2.35" y="2.35" width="17.98" height="17.99" style="fill: none"/>
+    </clipPath>
+  </defs>
+  <title>NOTAM</title>
+  <path d="M4.25,0H18.43a4.27,4.27,0,0,1,4.25,4.25V18.43a4.27,4.27,0,0,1-4.25,4.25H4.25A4.27,4.27,0,0,1,0,18.43V4.25A4.26,4.26,0,0,1,4.25,0" style="fill: #2f2483;fill-rule: evenodd"/>
+  <g style="clip-path: url(#clip-path)">
+    <g style="clip-path: url(#clip-path)">
+      <image width="49" height="49" transform="translate(2.35 2.35) scale(0.37)" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAB4kAAAeJAGm6dnLAAADNUlEQVRoQ+2azWsdVRiHn/ecE2hrCv0KUtAicSkIEdxZrLZaKP0DGnCnVEtXLtxWBEXopm60BhpoEeyyGylULO2+kE3pIuoqFAzVaholRee887qYc70xvTOTm7lJp3QeOMw9c34zc557ZphPMTMA8hinncj7wHZgjHagZvathHCuLhgAUL3gRKaBHdXxrUdEXrAY/5EQvqzKBYvxtPQlfgPuAPtL8vuBncD9VEbN3lT+BOaBl4F9IvKxxWgSwlelS1qMcxajWYy/W4znzIzSEuNSyt6rzG20xHgvrX8p1W9YjH/3tpln2amyZQNwIDn9hfcflhoPwFTPA7vqcuL9dO+3ZtkR59y7ayJL4v0p1uL9G6h+B7wFTIjIJxZjLiHMPJJdNSLz6/jH/j8iMS6menVZtQ7Nsg8GZBYHjkh/u1fXjMzJQSPShF/rAiPB+2OoXgMOUYzMp3mM6kKY7UUaieRmZ4BtdTlXF1gP3h9F9XvgdWDCiXyeZC5CUxHkJyk55+RmK2NjYX5Q24bx/m1UfwAOUsicTTLfNBIJwkVgYlCbF7kNHB/U1gjvj6B6HXiNQuYjoJkI8BzwbEnb5h0/3h9G9WfgRSBCw10LuAnsLmn7sWT+qNDVlWYi3p+oi2wVzUQ2xkMe3e0aX+5suYgL4RJwqS43LMOKWJp6VBcrkxvDp2lvO+tmWJG7FNdWe+qCDblbF1jLUCK55WecuJPAq/T/vVGiwK3c8hk35OqHEnFh7ApwpS7XlGElYESXQW2gE2kbnUjbqBTRLDuM6hyq9hjLnGbZm1X9hAqR5QfLu7xz54GpsswWMeWd+3r5wXLlQ47S88jO8WdOA5OpugBIWXYTMYqnPJOpP5+VBUtFBF4qJhhwH+9fKctuGqpzwPOApP6U8nQc7E8SnUjb6ETaRifSNjqRttGJtI1OpG10Im3D0X/Pvr0q2EJ6/T0AhchCmjGOau3HK61A9QtgPNUWAIKZzYrIWYpXaO+gOkXxzckfFLe6AuxAdbRvaNeH0X9WMJn68AvFbe9uYMXMZgUQMwPVC0Arvw6qYAW4jPfvQU+E1n6vNYgMeJibzbgQLvdm/ifypPMvB7x97D9JMxcAAAAASUVORK5CYII="/>
+    </g>
+  </g>
+  <text transform="translate(6.27 44.18)" style="font-size: 36px;fill: #fff;font-family: ArialMT, Arial">.</text>
+</svg>

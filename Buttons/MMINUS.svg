@@ -1,0 +1,6 @@
+<svg id="Слой_1" data-name="Слой 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.68 22.68">
+  <title>NOTAM</title>
+  <text transform="translate(4.34 -5.09)" style="font-size: 24px;fill: #fff;font-family: Arial-BoldMT, Arial;font-weight: 700">+</text>
+  <path d="M4.25,0H18.43a4.27,4.27,0,0,1,4.25,4.25V18.43a4.27,4.27,0,0,1-4.25,4.25H4.25A4.27,4.27,0,0,1,0,18.43V4.25A4.26,4.26,0,0,1,4.25,0" style="fill: #2f2483;fill-rule: evenodd"/>
+  <text transform="translate(3.4 17.57) scale(1.73 1)" style="font-size: 24px;fill: #fff;font-family: Arial-BoldMT, Arial;font-weight: 700">-</text>
+</svg>
