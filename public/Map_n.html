@@ -448,8 +448,10 @@
 
     #floating-toolbar {
       position: absolute;
-      top: 20px;
-      left: 20px;
+      bottom: 80px;
+      right: 20px;
+      top: auto;
+      left: auto;
       z-index: 999;
       display: flex;
       flex-direction: column;
@@ -467,11 +469,11 @@
     }
 
     .tool-btn {
-      width: 48px;
-      height: 48px;
+      width: 54px;
+      height: 54px;
       border: none;
       background: transparent;
-      font-size: 26px;
+      font-size: 30px;
       cursor: pointer;
       border-radius: 10px;
       transition: all 0.18s ease;
@@ -504,6 +506,17 @@
 
     .tool-btn span {
       line-height: 1;
+    }
+    .tool-btn img {
+      display: block;
+      filter: none;
+      transition: filter 0.18s ease;
+    }
+    body.night-mode .tool-btn img {
+      filter: invert(1) brightness(1.5);
+    }
+    .tool-btn.active img {
+      filter: none;
     }
 
     /* Геопоиск */
@@ -1153,17 +1166,17 @@
   <div id="map"></div>
 
   <div id="floating-toolbar">
-    <button id="btn-layers"    title="Слои"               class="tool-btn"><span>📁</span></button>
-    <button id="btn-weather"   title="Погода"              class="tool-btn"><span>🌨️</span></button>
-    <button id="btn-measure"   title="Прокладка маршрута"  class="tool-btn"><span>📏</span></button>
-    <button id="btn-search"    title="Поиск"               class="tool-btn"><span>🔍</span></button>
-    <button id="btn-night"     title="Ночной режим"        class="tool-btn"><span>🌙</span></button>
-    <button id="btn-terrain"   title="3D-рельеф вкл/выкл"  class="tool-btn"><span>⛰️</span></button>
-    <button id="btn-notam"     title="NOTAM"               class="tool-btn"><span>📋</span></button>
-    <button id="btn-draw"     title="Графический редактор" class="tool-btn"><span>✏️</span></button>
-    <button id="btn-fp"       title="Flight Plan"          class="tool-btn"><span>✈</span></button>
-    <button id="btn-project"  title="Проект"               class="tool-btn"><span>📁</span></button>
-    <button id="btn-export"   title="Экспорт / Печать"      class="tool-btn"><span>🖨️</span></button>
+    <button id="btn-layers"    title="Слои"               class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/LAYERS.svg" width="38" height="38"></button>
+    <button id="btn-weather"   title="Погода"              class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/WEATHER.svg" width="38" height="38"></button>
+    <button id="btn-measure"   title="Прокладка маршрута"  class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/MEASURE.svg" width="38" height="38"></button>
+    <button id="btn-search"    title="Поиск"               class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/SEARCH.svg" width="38" height="38"></button>
+    <button id="btn-night"     title="Ночной режим"        class="tool-btn"><img id="btn-night-icon" src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/NIGHT.svg" width="38" height="38"></button>
+    <button id="btn-terrain"   title="3D-рельеф вкл/выкл"  class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/3D.svg" width="38" height="38"></button>
+    <button id="btn-notam"     title="NOTAM"               class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/NOTAM.svg" width="38" height="38"></button>
+    <button id="btn-draw"     title="Графический редактор" class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/PAINT.svg" width="38" height="38"></button>
+    <button id="btn-fp"       title="Flight Plan"          class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/FP.svg" width="38" height="38"></button>
+    <button id="btn-project"  title="Проект"               class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/PROJECT.svg" width="38" height="38"></button>
+    <button id="btn-export"   title="Экспорт / Печать"      class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/PRINT.svg" width="38" height="38"></button>
   </div>
 
   <div id="layer-panel">
@@ -1318,25 +1331,38 @@
   </div>
 
   <!-- Отображение координат под курсором -->
+  <!-- Координаты у курсора — следуют за мышью -->
   <div id="cursor-coords" style="
-    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-    z-index: 999; background: rgba(255,255,255,0.92); color: #222;
-    padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 13px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25); pointer-events: none; display: none;
+    position: fixed; z-index: 9999;
+    background: rgba(255,255,255,0.95); color: #222;
+    padding: 6px 14px; border-radius: 10px; font-family: monospace; font-size: 13px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3); pointer-events: none; display: none;
     white-space: nowrap; backdrop-filter: blur(4px); letter-spacing: 0.03em;
-  "></div>
-
-  <!-- Галочка координаты у курсора — в нижнем левом углу -->
-  <div id="coords-checkbox-panel" style="
-    position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
-    z-index: 999; background: rgba(255,255,255,0.9); padding: 5px 14px;
-    border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.22);
-    font-size: 13px; backdrop-filter: blur(4px);
+    border: 1px solid rgba(25,118,210,0.2);
   ">
-    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+    <div id="cursor-coords-wgs" style="margin-bottom:2px;"></div>
+    <div id="cursor-coords-pz" style="color:#1976d2; font-size:11.5px;"></div>
+  </div>
+
+  <!-- Панель координат у курсора — левый нижний угол, над линейкой -->
+  <div id="coords-checkbox-panel" style="
+    position: absolute; bottom: 80px; left: 10px;
+    z-index: 999; background: rgba(255,255,255,0.92); padding: 8px 14px;
+    border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+    font-size: 13px; backdrop-filter: blur(4px); line-height: 1.8;
+  ">
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; font-weight:bold;">
       <input type="checkbox" id="cursor-coords-chk" style="accent-color:#1976d2;">
       Координаты у курсора
     </label>
+    <div style="margin-top:6px; padding-top:6px; border-top:1px solid #eee; font-size:12px; color:#555;">
+      <label style="cursor:pointer; user-select:none; display:block;">
+        <input type="radio" name="coord-sys" value="wgs" checked style="accent-color:#1976d2;"> WGS-84
+      </label>
+      <label style="cursor:pointer; user-select:none; display:block;">
+        <input type="radio" name="coord-sys" value="pz" style="accent-color:#1976d2;"> ПЗ-90.11
+      </label>
+    </div>
   </div>
 
   <div id="scheme-control" style="position: absolute; bottom: 20px; right: 20px; background: white; padding: 14px 18px; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.35); display: none; min-width: 260px; z-index: 999; font-size: 14px;">
@@ -5427,7 +5453,7 @@
     document.getElementById('btn-night').addEventListener('click', () => {
       isNight = !isNight;
       document.body.classList.toggle('night-mode', isNight);
-      document.getElementById('btn-night').querySelector('span').textContent = isNight ? '☀️' : '🌙';
+      document.getElementById('btn-night-icon').src = isNight ? 'https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/SUN.svg' : 'https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/NIGHT.svg';
     });
 
     // 3D-рельеф (с защитой от лагов)
@@ -7296,11 +7322,46 @@ ${placemarks}
       if (!showCursorCoords) cursorCoordsEl.style.display = 'none';
     });
 
+    // Сдвиг WGS-84 → ПЗ-90.11 (приближённый, точность ~1м)
+    function wgsToPz(lat, lng) {
+      const dLat = -0.0000108 * lat + 0.0000010 * lng + 0.0000002;
+      const dLng = -0.0000004 * lat - 0.0000114 * lng + 0.0000023;
+      return { lat: lat + dLat, lng: lng + dLng };
+    }
+
+    function toDMS(deg, posDir, negDir) {
+      const abs = Math.abs(deg);
+      const d = Math.floor(abs);
+      const mAll = (abs - d) * 60;
+      const m = Math.floor(mAll);
+      const s = ((mAll - m) * 60).toFixed(1);
+      const dir = deg >= 0 ? posDir : negDir;
+      return `${d}°${m.toString().padStart(2,'0')}'${s.padStart(4,'0')}" ${dir}`;
+    }
+
+    let coordSysMode = 'wgs';
+    document.querySelectorAll('input[name="coord-sys"]').forEach(r => {
+      r.addEventListener('change', e => { coordSysMode = e.target.value; });
+    });
+
     map.on('mousemove', (e) => {
       map.getCanvas().style.cursor = (weatherMode || measuring) ? 'crosshair' : '';
       if (showCursorCoords) {
+        const { lat, lng } = e.lngLat;
         cursorCoordsEl.style.display = 'block';
-        cursorCoordsEl.textContent = formatCoord(e.lngLat);
+        // Позиция у курсора
+        const canvas = map.getCanvas().getBoundingClientRect();
+        const mx = e.originalEvent.clientX;
+        const my = e.originalEvent.clientY;
+        cursorCoordsEl.style.left = (mx + 18) + 'px';
+        cursorCoordsEl.style.top  = (my - 10) + 'px';
+        // Координаты WGS-84
+        document.getElementById('cursor-coords-wgs').textContent =
+          'WGS: ' + toDMS(lat,'N','S') + '  ' + toDMS(lng,'E','W');
+        // Координаты ПЗ-90.11
+        const pz = wgsToPz(lat, lng);
+        document.getElementById('cursor-coords-pz').textContent =
+          'ПЗ: ' + toDMS(pz.lat,'N','S') + '  ' + toDMS(pz.lng,'E','W');
       }
     });
 
