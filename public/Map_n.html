@@ -1341,6 +1341,7 @@
     border: 1px solid rgba(25,118,210,0.2);
   ">
     <div id="cursor-coords-pz" style="font-size:13px;"></div>
+
   </div>
 
   <!-- Панель координат у курсора — левый нижний угол, над линейкой -->
@@ -1434,7 +1435,7 @@
   <div id="geocoder"></div>
 
   <script>
-    const MAPTILER_KEY = 'HBLKeT2UlbIUwg8YAx7V';
+    const MAPTILER_KEY = 's5yYbJ1lmKGQFxXaxQ83';
 
     // ── Глобальная функция скрытия лоадера ──────────────────────────
     let _loaderHidden = false;
@@ -1561,13 +1562,14 @@
           },
           "terrain-dem": {
             "type": "raster-dem",
-            "url": "https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=" + MAPTILER_KEY,
+            "tiles": ["https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=" + MAPTILER_KEY],
             "tileSize": 256,
-            "maxzoom": 15
+            "minzoom": 0,
+            "maxzoom": 12
           }
         },
         "sprite": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/style/style",
-        "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=" + MAPTILER_KEY,
+        "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
         "layers": [
     {
       "id": "background",
@@ -5411,7 +5413,8 @@
       { source: "NOM1",      label: "Карты масштаба 1 : 500 000 и 1 : 1 000 000", section: "Номенклатура" },
       { source: "NOM2",      label: "Карты масштаба 1 : 200 000" },
       { source: "GRID",      label: "Картографическая сетка",                      section: "Картографическая сетка" },
-      { source: "GRID_LABELS", label: "↳ Подписи координат сетки" }
+      { source: "GRID_LABELS", label: "↳ Подписи координат сетки" },
+      { source: "MORA",        label: "МОРА",                                            section: "МОРА" }
     ];
 
     const totalLayers = sourceGroups.length;
@@ -5459,12 +5462,8 @@
 
       if (terrainEnabled) {
         if (currentZoom > 6) {  // не включаем на очень мелких масштабах
-          map.setTerrain({
-            source: 'terrain-dem',
-            exaggeration: 0.8  // сильно уменьшено — меньше лагов
-          });
+          map.setTerrain({ source: 'terrain-dem', exaggeration: 0.8 });
           map.setLayoutProperty('hillshade-layer', 'visibility', 'visible');
-          // Плавный наклон, если ещё плоско
           if (map.getPitch() < 20) {
             map.easeTo({ pitch: 45, duration: 1200 });
           }
@@ -5577,7 +5576,7 @@
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `chk-${group.source}`;
-        checkbox.checked = group.source !== 'OSM' && group.source !== 'NOM1' && group.source !== 'NOM2' && group.source !== 'GoogleSat' && group.source !== 'GRID' && group.source !== 'GRID_LABELS';
+        checkbox.checked = group.source !== 'OSM' && group.source !== 'NOM1' && group.source !== 'NOM2' && group.source !== 'GoogleSat' && group.source !== 'GRID' && group.source !== 'GRID_LABELS' && group.source !== 'MORA';
 
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
@@ -5600,6 +5599,7 @@
       toggleSourceLayers('GoogleSat', false);
       toggleSourceLayers('GRID', false);
       toggleSourceLayers('GRID_LABELS', false);
+      toggleSourceLayers('MORA', false);
 
       loadAllSearchableFeatures().then(setupSearchPanel);
 
@@ -5753,7 +5753,10 @@
         }
       });
 
+
       setTimeout(() => initGeocoder(), 1500);
+
+
 
       // ── Картографическая сетка: источники и слои ───────────────────
       map.addSource('graticule-main', {
@@ -5767,6 +5770,55 @@
       map.addSource('graticule-labels', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
+      });
+      // ── МОРА источник и слой ─────────────────────────────────────────
+      map.addSource('mora-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      // Большая первая цифра МОРА
+      map.addLayer({
+        id: 'mora-big-layer',
+        type: 'symbol',
+        source: 'mora-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'mora_big'],
+          'text-size': 26,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-right',
+          'text-offset': [-0.1, 0.5],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#1565c0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.5
+        }
+      });
+      // Малые последние две цифры МОРА
+      map.addLayer({
+        id: 'mora-small-layer',
+        type: 'symbol',
+        source: 'mora-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'mora_small'],
+          'text-size': 14,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-left',
+          'text-offset': [0.02, 0.78],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#1565c0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.0
+        }
       });
       map.addLayer({
         id: 'graticule-main-layer',
@@ -5791,17 +5843,18 @@
           'text-field': ['get', 'label'],
           'text-size': 10,
           'text-font': ['Noto Sans Regular', 'Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-anchor': 'bottom-left',
-          'text-offset': [0.3, -0.25],
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-          'text-max-width': 14,
+          'text-anchor': 'center',
+          'text-offset': [0, 0],
+          'text-rotate': ['get', 'rotation'],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'text-max-width': 20,
           'symbol-placement': 'point'
         },
         paint: {
           'text-color': '#000000',
-          'text-halo-color': 'rgba(255,255,255,0.9)',
-          'text-halo-width': 1.6
+          'text-halo-color': 'rgba(255,255,255,0.92)',
+          'text-halo-width': 1.8
         }
       });
     });
@@ -5941,28 +5994,54 @@
         lat = prec(lat + cell);
       }
 
-      // ── Подписи в узлах сетки ─────────────────────────────────────────
-      // Ограничиваем по реальному bbox (без padding) + генерируем только видимые
+      // ── Подписи: в центре каждого отрезка каждой ячейки ─────────────────
       const bW = bounds.getWest();
       const bE = bounds.getEast();
       const bS = bounds.getSouth();
       const bN = bounds.getNorth();
+
+      // Подпись широты — на каждой параллели pLat, в центре каждого видимого столбца ячейки
+      // Точка: (lngL + cell/2,  pLat)
       let latL = floorStep(bS, cell);
       while (latL <= bN + cell * 0.001) {
-        let lngL = floorStep(bW, cell);
-        while (lngL <= bE + cell * 0.001) {
-          const pLat = prec(latL);
-          const pLng = prec(lngL);
-          labelFeatures.push({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [pLng, pLat] },
-            properties: {
-              label: formatGratDMS(pLng, false) + '\n' + formatGratDMS(pLat, true)
+        const pLat = prec(latL);
+        if (pLat >= bS && pLat <= bN) {
+          let lngL = floorStep(bW, cell);
+          while (lngL <= bE + cell * 0.001) {
+            const midLng = prec(lngL + cell / 2);
+            if (midLng >= bW && midLng <= bE) {
+              labelFeatures.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [midLng, pLat] },
+                properties: { label: formatGratDMS(pLat, true), rotation: 0 }
+              });
             }
-          });
-          lngL = prec(lngL + cell);
+            lngL = prec(lngL + cell);
+          }
         }
         latL = prec(latL + cell);
+      }
+
+      // Подпись долготы — на каждом меридиане pLng, в центре каждой видимой строки ячейки
+      // Точка: (pLng,  latL + cell/2), текст повёрнут на -90°
+      let lngL = floorStep(bW, cell);
+      while (lngL <= bE + cell * 0.001) {
+        const pLng = prec(lngL);
+        if (pLng >= bW && pLng <= bE) {
+          let latL2 = floorStep(bS, cell);
+          while (latL2 <= bN + cell * 0.001) {
+            const midLat = prec(latL2 + cell / 2);
+            if (midLat >= bS && midLat <= bN) {
+              labelFeatures.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [pLng, midLat] },
+                properties: { label: formatGratDMS(pLng, false), rotation: -90 }
+              });
+            }
+            latL2 = prec(latL2 + cell);
+          }
+        }
+        lngL = prec(lngL + cell);
       }
 
       map.getSource('graticule-main').setData({ type: 'FeatureCollection', features: mainFeatures });
@@ -6327,6 +6406,22 @@
     function toggleSourceLayers(sourceId, visible) {
       const vis = visible ? 'visible' : 'none';
 
+      // ── МОРА ─────────────────────────────────────────────────────────────
+      if (sourceId === 'MORA') {
+        moraEnabled = visible;
+        if (map.getLayer('mora-big-layer'))
+          map.setLayoutProperty('mora-big-layer',   'visibility', visible ? 'visible' : 'none');
+        if (map.getLayer('mora-small-layer'))
+          map.setLayoutProperty('mora-small-layer', 'visibility', visible ? 'visible' : 'none');
+        if (visible) {
+          updateMORA();
+        } else {
+          _moraCache.clear();
+          if (map.getSource('mora-source'))
+            map.getSource('mora-source').setData({ type: 'FeatureCollection', features: [] });
+        }
+        return;
+      }
       // ── Картографическая сетка ──────────────────────────────────────
       if (sourceId === 'GRID_LABELS') {
         graticuleLabelsEnabled = visible;
@@ -7568,6 +7663,203 @@ ${placemarks}
       }
     });
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // МОРА (Minimum Off-Route Altitude)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let moraEnabled = false;
+    let _obstDataForMora = null;   // кеш GeoJSON-фич слоя OBST
+    let _moraCache = new Map();    // ключ: "latS_lngW_cellSz" → строка МОРА
+    let _moraUpdateId = 0;         // защита от гонок при быстром пане
+
+    // Загрузка OBST (один раз)
+    async function loadObstForMora() {
+      if (_obstDataForMora !== null) return;
+      try {
+        const r = await fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson');
+        const gj = await r.json();
+        _obstDataForMora = gj.features || [];
+        console.log('MORA: OBST загружен,', _obstDataForMora.length, 'объектов');
+      } catch(e) {
+        _obstDataForMora = [];
+        console.warn('MORA: ошибка загрузки OBST', e);
+      }
+    }
+
+    // Макс. абсолютная высота препятствий в bbox ячейки
+    function maxObstInCell(latS, latN, lngW, lngE) {
+      let max = 0;
+      for (const f of (_obstDataForMora || [])) {
+        if (!f.geometry || !f.properties) continue;
+        let coords = [];
+        if (f.geometry.type === 'Point')      coords = [f.geometry.coordinates];
+        else if (f.geometry.type === 'MultiPoint') coords = f.geometry.coordinates;
+        for (const [lng, lat] of coords) {
+          if (lat >= latS && lat <= latN && lng >= lngW && lng <= lngE) {
+            const h = parseFloat(f.properties.absoluteheight || f.properties.ABSOLUTEHEIGHT || 0);
+            if (h > max) max = h;
+          }
+        }
+      }
+      return max;
+    }
+
+    // Макс. высота рельефа в bbox ячейки — сетка 5×5, синхронно из GPU
+    async function maxTerrainInCell(latS, latN, lngW, lngE) {
+      const cacheKey = latS.toFixed(5) + '_' + lngW.toFixed(5) + '_' + (latN - latS).toFixed(5);
+      if (window._elevCellCache && window._elevCellCache.has(cacheKey))
+        return window._elevCellCache.get(cacheKey);
+
+      const GRID = 5;
+      const points = [];
+      for (let r = 0; r < GRID; r++)
+        for (let c = 0; c < GRID; c++)
+          points.push({
+            lat: latS + (latN - latS) * (r + 0.5) / GRID,
+            lng: lngW + (lngE - lngW) * (c + 0.5) / GRID
+          });
+
+      const elevs = await window._elevQueryBatch(points);
+      const valid = elevs.filter(e => e !== null);
+      const max = valid.length > 0 ? Math.max(...valid) : 0;
+
+      if (window._elevCellCache) window._elevCellCache.set(cacheKey, max);
+      return max;
+    }
+
+    // Формирование кода МОРА: метры → строка "054"
+    function calcMoraCode(maxHeightM) {
+      if (maxHeightM <= 0) return null;   // нет данных / вода
+      const clearance = maxHeightM < 900 ? 300 : maxHeightM < 1500 ? 450 : 600;
+      const mora = Math.ceil((maxHeightM + clearance) / 10) * 10;
+      return String(mora / 10).padStart(3, '0');
+    }
+
+    async function updateMORA() {
+      if (!moraEnabled) return;
+      if (!map.getSource('mora-source')) return;
+
+      const runId = ++_moraUpdateId;
+
+      await loadObstForMora();
+      if (runId !== _moraUpdateId) return;
+
+      const denom = getGraticuleDenominator();
+      const { cell } = getGraticuleParams(denom);
+
+      const bounds = map.getBounds();
+      const bW = bounds.getWest();
+      const bE = bounds.getEast();
+      const bS = bounds.getSouth();
+      const bN = bounds.getNorth();
+
+      const floorStep = (v, step) => Math.floor(v / step) * step;
+      const prec = v => Math.round(v * 1e7) / 1e7;
+
+      // Собираем все ячейки
+      const cells = [];
+      let latL = floorStep(bS, cell);
+      while (latL <= bN + cell * 0.001) {
+        let lngL = floorStep(bW, cell);
+        while (lngL <= bE + cell * 0.001) {
+          cells.push({
+            latS: prec(latL),
+            latN: prec(latL + cell),
+            lngW: prec(lngL),
+            lngE: prec(lngL + cell),
+            midLat: prec(latL + cell / 2),
+            midLng: prec(lngL + cell / 2)
+          });
+          lngL = prec(lngL + cell);
+        }
+        latL = prec(latL + cell);
+      }
+
+      // Вычисляем МОРА параллельно (не более 8 одновременно)
+      const CONCURRENCY = 8;
+      const features = new Array(cells.length).fill(null);
+
+      async function processBatch(startIdx) {
+        const end = Math.min(startIdx + CONCURRENCY, cells.length);
+        const batch = [];
+        for (let i = startIdx; i < end; i++) {
+          const c = cells[i];
+          const cacheKey = c.latS + '_' + c.lngW + '_' + cell.toFixed(6);
+          batch.push((async (idx, key) => {
+            let code;
+            if (_moraCache.has(key)) {
+              code = _moraCache.get(key);
+            } else {
+              const [terrMax, obstMax] = await Promise.all([
+                maxTerrainInCell(c.latS, c.latN, c.lngW, c.lngE),
+                Promise.resolve(maxObstInCell(c.latS, c.latN, c.lngW, c.lngE))
+              ]);
+              const maxH = Math.max(terrMax, obstMax);
+              code = calcMoraCode(maxH);
+              _moraCache.set(key, code);
+              if (_moraCache.size > 600) _moraCache.delete(_moraCache.keys().next().value);
+            }
+            if (code !== null) {
+              features[idx] = {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [cells[idx].midLng, cells[idx].midLat] },
+                properties: {
+                  mora: code,
+                  mora_big:   code.slice(0, 1),
+                  mora_small: code.slice(1)
+                }
+              };
+            }
+          })(i, cacheKey));
+        }
+        await Promise.all(batch);
+        if (runId !== _moraUpdateId) return false;   // отменён
+        return true;
+      }
+
+      for (let i = 0; i < cells.length; i += CONCURRENCY) {
+        const ok = await processBatch(i);
+        if (!ok) return;
+        // Промежуточное обновление карты после каждой партии
+        if (map.getSource('mora-source')) {
+          map.getSource('mora-source').setData({
+            type: 'FeatureCollection',
+            features: features.filter(Boolean)
+          });
+        }
+      }
+    }
+
+    map.on('moveend', updateMORA);
+    map.on('zoomend', () => { _moraCache.clear(); updateMORA(); });
+
+    // ── конец блока МОРА ──────────────────────────────────────────────────
+
+    // ─── Высота рельефа через map.queryTerrainElevation() ───────────────────────
+    // Читает данные из уже загруженных WebGL-тайлов — без внешних запросов и CORS
+    (function() {
+      const CELL_CACHE = new Map();
+
+      function queryElev(lat, lng) {
+        try {
+          const e = map.queryTerrainElevation({ lat, lng });
+          return (e !== null && e > -500) ? Math.round(e) : null;
+        } catch(_) { return null; }
+      }
+
+      // Одна точка для курсора
+      window.queryTerrainElevation = async function(lat, lng) {
+        return queryElev(lat, lng);
+      };
+
+      // Сетка 5×5 для МОРА — синхронно из GPU, без сети
+      window._elevQueryBatch = async function(points) {
+        return points.map(p => queryElev(p.lat, p.lng));
+      };
+
+      window._elevCellCache = CELL_CACHE;
+    })();
+
     // ─── Координаты у курсора ────────────────────────────────────────
     const cursorCoordsEl = document.getElementById('cursor-coords');
     const cursorCoordsChk = document.getElementById('cursor-coords-chk');
@@ -7601,7 +7893,6 @@ ${placemarks}
         const { lat, lng } = e.lngLat;
         cursorCoordsEl.style.display = 'block';
         // Позиция у курсора
-        const canvas = map.getCanvas().getBoundingClientRect();
         const mx = e.originalEvent.clientX;
         const my = e.originalEvent.clientY;
         cursorCoordsEl.style.left = (mx + 18) + 'px';
@@ -7610,6 +7901,7 @@ ${placemarks}
         const pz = wgsToPz(lat, lng);
         document.getElementById('cursor-coords-pz').textContent =
           toDMS(pz.lat,'N','S') + '  ' + toDMS(pz.lng,'E','W');
+
       }
     });
 
