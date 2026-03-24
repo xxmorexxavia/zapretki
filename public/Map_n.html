@@ -1341,6 +1341,7 @@
     border: 1px solid rgba(25,118,210,0.2);
   ">
     <div id="cursor-coords-pz" style="font-size:13px;"></div>
+    <div id="cursor-coords-elev" style="font-size:11.5px; color:#388e3c; font-weight:bold; margin-top:2px;"></div>
 
   </div>
 
@@ -5467,7 +5468,7 @@
           if (map.getPitch() < 20) {
             map.easeTo({ pitch: 45, duration: 1200 });
           }
-          document.getElementById('btn-terrain').querySelector('span').textContent = '🗻';
+          document.getElementById('btn-terrain').title = '3D-рельеф (вкл)';
         } else {
           alert('Рельеф лучше виден ближе. Приблизьтесь, пожалуйста.');
           terrainEnabled = false;
@@ -5476,7 +5477,7 @@
         map.setTerrain(null);
         map.setLayoutProperty('hillshade-layer', 'visibility', 'none');
         map.easeTo({ pitch: 0, duration: 800 });
-        document.getElementById('btn-terrain').querySelector('span').textContent = '⛰️';
+        document.getElementById('btn-terrain').title = '3D-рельеф вкл/выкл';
       }
     });
 
@@ -5487,7 +5488,7 @@
         map.setLayoutProperty('hillshade-layer', 'visibility', 'none');
         map.easeTo({ pitch: 0, duration: 800 });
         terrainEnabled = false;
-        document.getElementById('btn-terrain').querySelector('span').textContent = '⛰️';
+        document.getElementById('btn-terrain').title = '3D-рельеф вкл/выкл';
       }
     });
 
@@ -5755,6 +5756,7 @@
 
 
       setTimeout(() => initGeocoder(), 1500);
+
 
 
 
@@ -7704,130 +7706,139 @@ ${placemarks}
       return max;
     }
 
-    // Макс. высота рельефа в bbox ячейки — сетка 5×5, синхронно из GPU
-    async function maxTerrainInCell(latS, latN, lngW, lngE) {
-      const cacheKey = latS.toFixed(5) + '_' + lngW.toFixed(5) + '_' + (latN - latS).toFixed(5);
-      if (window._elevCellCache && window._elevCellCache.has(cacheKey))
-        return window._elevCellCache.get(cacheKey);
+    // Высота рельефа для МОРА — один запрос в центр ячейки через OTopo (с кешем)
+    // ─── Высота рельефа для МОРА через OpenTopography ───────────────────────────
+    // ─── Локальный DEM-сервер (Copernicus GLO-30, E:\DEM) ────────────────────────
+    const DEM_SERVER = 'http://172.16.65.91:8765';
+    const _moraTerrCache = new Map();
 
-      const GRID = 5;
-      const points = [];
-      for (let r = 0; r < GRID; r++)
-        for (let c = 0; c < GRID; c++)
-          points.push({
-            lat: latS + (latN - latS) * (r + 0.5) / GRID,
-            lng: lngW + (lngE - lngW) * (c + 0.5) / GRID
-          });
-
-      const elevs = await window._elevQueryBatch(points);
-      const valid = elevs.filter(e => e !== null);
-      const max = valid.length > 0 ? Math.max(...valid) : 0;
-
-      if (window._elevCellCache) window._elevCellCache.set(cacheKey, max);
-      return max;
+    async function maxTerrainForMora(latS, latN, lngW, lngE) {
+      const key = latS.toFixed(4) + '_' + lngW.toFixed(4);
+      if (_moraTerrCache.has(key)) return _moraTerrCache.get(key);
+      const url = DEM_SERVER + '/max_elevation'
+        + '?lat_s=' + latS.toFixed(6)
+        + '&lat_n=' + latN.toFixed(6)
+        + '&lng_w=' + lngW.toFixed(6)
+        + '&lng_e=' + lngE.toFixed(6);
+      try {
+        const r = await fetch(url);
+        if (!r.ok) { _moraTerrCache.set(key, 0); return 0; }
+        const json = await r.json();
+        const result = Math.round(json.max_elevation || 0);
+        _moraTerrCache.set(key, result);
+        if (_moraTerrCache.size > 800) _moraTerrCache.delete(_moraTerrCache.keys().next().value);
+        return result;
+      } catch(e) {
+        console.warn('DEM server unavailable:', e.message);
+        _moraTerrCache.set(key, 0);
+        return 0;
+      }
     }
 
     // Формирование кода МОРА: метры → строка "054"
     function calcMoraCode(maxHeightM) {
-      if (maxHeightM <= 0) return null;   // нет данных / вода
+      if (maxHeightM <= 0) return '030';  // вода / ниже уровня моря → минимальная МОРА 300м
       const clearance = maxHeightM < 900 ? 300 : maxHeightM < 1500 ? 450 : 600;
       const mora = Math.ceil((maxHeightM + clearance) / 10) * 10;
       return String(mora / 10).padStart(3, '0');
     }
 
-    async function updateMORA() {
+    function setMoraStatus(text) {
+      const el = document.getElementById('mora-status');
+      if (!el) return;
+      el.textContent = text;
+      el.style.display = text ? 'block' : 'none';
+    }
+
+    // Расчёт МОРА через requestAnimationFrame — не блокирует UI
+    function updateMORA() {
       if (!moraEnabled) return;
       if (!map.getSource('mora-source')) return;
 
-      const runId = ++_moraUpdateId;
+      ++_moraUpdateId;
+      const runId = _moraUpdateId;
 
-      await loadObstForMora();
+      // Загрузка OBST синхронно если уже загружен, иначе async
+      if (!_obstDataForMora) {
+        setMoraStatus('⏳ Загрузка препятствий...');
+        loadObstForMora().then(() => {
+          if (runId === _moraUpdateId) _startMoraCalc(runId);
+        });
+        return;
+      }
+      _startMoraCalc(runId);
+    }
+
+    function _startMoraCalc(runId) {
       if (runId !== _moraUpdateId) return;
 
       const denom = getGraticuleDenominator();
       const { cell } = getGraticuleParams(denom);
-
       const bounds = map.getBounds();
-      const bW = bounds.getWest();
-      const bE = bounds.getEast();
-      const bS = bounds.getSouth();
-      const bN = bounds.getNorth();
-
-      const floorStep = (v, step) => Math.floor(v / step) * step;
+      const bW = bounds.getWest(), bE = bounds.getEast();
+      const bS = bounds.getSouth(), bN = bounds.getNorth();
+      const floorStep = (v, s) => Math.floor(v / s) * s;
       const prec = v => Math.round(v * 1e7) / 1e7;
 
-      // Собираем все ячейки
+      // Собираем ячейки
       const cells = [];
       let latL = floorStep(bS, cell);
       while (latL <= bN + cell * 0.001) {
         let lngL = floorStep(bW, cell);
         while (lngL <= bE + cell * 0.001) {
           cells.push({
-            latS: prec(latL),
-            latN: prec(latL + cell),
-            lngW: prec(lngL),
-            lngE: prec(lngL + cell),
-            midLat: prec(latL + cell / 2),
-            midLng: prec(lngL + cell / 2)
+            latS: prec(latL), latN: prec(latL + cell),
+            lngW: prec(lngL), lngE: prec(lngL + cell),
+            midLat: prec(latL + cell / 2), midLng: prec(lngL + cell / 2)
           });
           lngL = prec(lngL + cell);
         }
         latL = prec(latL + cell);
       }
 
-      // Вычисляем МОРА параллельно (не более 8 одновременно)
-      const CONCURRENCY = 8;
       const features = new Array(cells.length).fill(null);
+      let i = 0;
+      const CHUNK = 10; // ячеек за один кадр
 
-      async function processBatch(startIdx) {
-        const end = Math.min(startIdx + CONCURRENCY, cells.length);
-        const batch = [];
-        for (let i = startIdx; i < end; i++) {
+      // Обрабатываем по одной ячейке — async OTopo запрос + обновление карты
+      async function processAll() {
+        for (; i < cells.length; i++) {
+          if (runId !== _moraUpdateId) { setMoraStatus(''); return; }
+
           const c = cells[i];
           const cacheKey = c.latS + '_' + c.lngW + '_' + cell.toFixed(6);
-          batch.push((async (idx, key) => {
-            let code;
-            if (_moraCache.has(key)) {
-              code = _moraCache.get(key);
-            } else {
-              const [terrMax, obstMax] = await Promise.all([
-                maxTerrainInCell(c.latS, c.latN, c.lngW, c.lngE),
-                Promise.resolve(maxObstInCell(c.latS, c.latN, c.lngW, c.lngE))
-              ]);
-              const maxH = Math.max(terrMax, obstMax);
-              code = calcMoraCode(maxH);
-              _moraCache.set(key, code);
-              if (_moraCache.size > 600) _moraCache.delete(_moraCache.keys().next().value);
-            }
-            if (code !== null) {
-              features[idx] = {
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [cells[idx].midLng, cells[idx].midLat] },
-                properties: {
-                  mora: code,
-                  mora_big:   code.slice(0, 1),
-                  mora_small: code.slice(1)
-                }
-              };
-            }
-          })(i, cacheKey));
+          let code;
+
+          if (_moraCache.has(cacheKey)) {
+            code = _moraCache.get(cacheKey);
+          } else {
+            const terrMax = await maxTerrainForMora(c.latS, c.latN, c.lngW, c.lngE);
+            const obstMax = maxObstInCell(c.latS, c.latN, c.lngW, c.lngE);
+            code = calcMoraCode(Math.max(terrMax, obstMax));
+            _moraCache.set(cacheKey, code);
+            if (_moraCache.size > 800) _moraCache.delete(_moraCache.keys().next().value);
+          }
+
+          if (code) {
+            features[i] = {
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [c.midLng, c.midLat] },
+              properties: { mora: code, mora_big: code.slice(0,1), mora_small: code.slice(1) }
+            };
+          }
+
+          // Обновляем карту и статус после каждой ячейки
+          setMoraStatus('⏳ МОРА: ' + (i+1) + '/' + cells.length);
+          if (map.getSource('mora-source')) {
+            map.getSource('mora-source').setData({
+              type: 'FeatureCollection', features: features.filter(Boolean)
+            });
+          }
         }
-        await Promise.all(batch);
-        if (runId !== _moraUpdateId) return false;   // отменён
-        return true;
+        setMoraStatus('');
       }
 
-      for (let i = 0; i < cells.length; i += CONCURRENCY) {
-        const ok = await processBatch(i);
-        if (!ok) return;
-        // Промежуточное обновление карты после каждой партии
-        if (map.getSource('mora-source')) {
-          map.getSource('mora-source').setData({
-            type: 'FeatureCollection',
-            features: features.filter(Boolean)
-          });
-        }
-      }
+      processAll();
     }
 
     map.on('moveend', updateMORA);
@@ -7856,8 +7867,58 @@ ${placemarks}
       window._elevQueryBatch = async function(points) {
         return points.map(p => queryElev(p.lat, p.lng));
       };
+      // Экспортируем queryElev для внешнего использования
+      window._queryElevGPU = queryElev;
 
       window._elevCellCache = CELL_CACHE;
+    })();
+
+    // ─── Высота рельефа через локальный DEM-сервер (Copernicus GLO-30) ──────────
+    (function() {
+      const CACHE = new Map();
+      const MAX_CACHE = 2000;
+      let _debTimer = null;
+
+      function ptKey(lat, lng) {
+        return Math.round(lat * 1e4) / 1e4 + ',' + Math.round(lng * 1e4) / 1e4;
+      }
+
+      async function fetchElevLocal(lat, lng) {
+        const key = ptKey(lat, lng);
+        if (CACHE.has(key)) return CACHE.get(key);
+        const eps = 0.001; // ~100м bbox вокруг точки
+        const url = DEM_SERVER + '/max_elevation'
+          + '?lat_s=' + (lat - eps).toFixed(6)
+          + '&lat_n=' + (lat + eps).toFixed(6)
+          + '&lng_w=' + (lng - eps).toFixed(6)
+          + '&lng_e=' + (lng + eps).toFixed(6);
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return null;
+          const json = await r.json();
+          const result = (json.max_elevation != null) ? Math.round(json.max_elevation) : null;
+          if (CACHE.size >= MAX_CACHE) CACHE.delete(CACHE.keys().next().value);
+          CACHE.set(key, result);
+          return result;
+        } catch(e) { return null; }
+      }
+
+      window.startElevDebounce = function(lat, lng) {
+        clearTimeout(_debTimer);
+        const el = document.getElementById('cursor-coords-elev');
+        if (!el) return;
+        el.textContent = '▲ ...';
+        _debTimer = setTimeout(async () => {
+          const elev = await fetchElevLocal(lat, lng);
+          if (el) el.textContent = elev !== null ? '▲ ' + elev + ' м' : '';
+        }, 0);
+      };
+
+      window.clearElevDebounce = function() {
+        clearTimeout(_debTimer);
+        const el = document.getElementById('cursor-coords-elev');
+        if (el) el.textContent = '';
+      };
     })();
 
     // ─── Координаты у курсора ────────────────────────────────────────
@@ -7907,6 +7968,18 @@ ${placemarks}
 
     map.on('mouseleave', () => {
       cursorCoordsEl.style.display = 'none';
+      window.clearElevDebounce();
+    });
+
+    // ─── Высота обновляется при движении мыши через локальный DEM (дебаунс 400мс)
+    let _elevMoveTimer = null;
+    map.on('mousemove', (e) => {
+      if (!showCursorCoords) return;
+      const { lat, lng } = e.lngLat;
+      clearTimeout(_elevMoveTimer);
+      _elevMoveTimer = setTimeout(() => {
+        window.startElevDebounce(lat, lng);
+      }, 400);
     });
 
     // ─── Прилипание к точкам маршрута ENROUTE_MVL ────────────────────
@@ -11363,6 +11436,14 @@ ${placemarks}
     })();
 
   </script>
+
+  <!-- МОРА статус -->
+  <div id="mora-status" style="
+    position: fixed; bottom: 110px; left: 10px; z-index: 999;
+    background: rgba(21,101,192,0.92); color: white;
+    padding: 5px 12px; border-radius: 8px; font-size: 12px;
+    font-family: monospace; pointer-events: none; display: none;
+  "></div>
 
   <!-- ═══ FLIGHT PLAN ═══ -->
   <div id="fp-panel">
