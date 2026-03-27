@@ -123,34 +123,114 @@
       background: #1a2338;
     }
 
-    .layer-section-header {
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      color: #888;
-      padding: 10px 2px 4px 2px;
-      border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 2px;
-      margin-top: 6px;
+    /* ── ПАНЕЛЬ СЛОЁВ — стиль как на макете ────────────────────── */
+    #layer-panel {
+      min-width: 210px !important;
+      max-width: 240px;
     }
-    .layer-section-header:first-child { margin-top: 0; }
-    body.night-mode .layer-section-header {
-      color: #6688aa;
-      border-bottom-color: #2a3b5c;
+    #layer-header {
+      background: #5bc8f5 !important;
+      color: #003366 !important;
+      font-size: 15px !important;
+      font-weight: bold !important;
+      letter-spacing: 0.3px;
     }
-    .layer-item {
-      margin: 8px 0;
+    body.night-mode #layer-header { filter: brightness(0.8) !important; }
+
+    #layer-content {
+      padding: 0 0 8px 0 !important;
+    }
+    #layer-content, #measure-content, #weather-content, #search-content {
+      padding: 12px 16px;
+      max-height: calc(80vh - 42px);
+      overflow-y: auto;
+      background: white;
+    }
+    body.night-mode #layer-content { background: #1a2338; }
+
+    /* Каждая строка — flex, label слева, чекбокс справа */
+    .lp-row {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 2px 10px 2px 0;
+      min-height: 24px;
+      cursor: default;
     }
-    .layer-item input[type="checkbox"] {
-      margin-right: 10px;
-      accent-color: #1976d2;
+    .lp-row:hover { background: rgba(0,0,0,0.03); }
+    body.night-mode .lp-row:hover { background: rgba(255,255,255,0.05); }
+
+    .lp-label {
+      font-size: 13.5px;
+      color: #111;
+      user-select: none;
+      cursor: pointer;
+      line-height: 1.3;
     }
-    body.night-mode .layer-item input[type="checkbox"] {
-      accent-color: #66aaff;
+    body.night-mode .lp-label { color: #d0d9ff; }
+
+    .lp-label-parent {
+      font-weight: bold;
+      font-size: 13.5px;
+      padding-left: 8px;
     }
+    .lp-label-child {
+      font-weight: normal;
+      padding-left: 20px;
+    }
+    .lp-label-leaf {
+      font-weight: bold;
+      font-size: 13.5px;
+      padding-left: 8px;
+    }
+
+    /* Чекбокс справа */
+    .lp-chk {
+      flex-shrink: 0;
+      margin-left: 6px;
+      width: 16px;
+      height: 16px;
+      accent-color: #1565c0;
+      cursor: pointer;
+    }
+    body.night-mode .lp-chk { accent-color: #66aaff; }
+
+    /* Разделитель между группами */
+    .lp-sep {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 1px 8px;
+    }
+    body.night-mode .lp-sep { background: #2a3b5c; }
+
+    /* Синие stub-пункты снизу (IFR/VFR/Обзорные карты) */
+    .lp-row-stub-blue {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 10px 3px 8px;
+      min-height: 26px;
+    }
+    .lp-label-stub-blue {
+      font-size: 13.5px;
+      font-weight: bold;
+      color: #0044cc;
+      user-select: none;
+    }
+    body.night-mode .lp-label-stub-blue { color: #66aaff; }
+    .lp-stub-arrow {
+      font-size: 12px;
+      color: #0044cc;
+      font-weight: bold;
+      margin-left: 4px;
+    }
+    body.night-mode .lp-stub-arrow { color: #66aaff; }
+
+    /* Убираем старые классы дерева (больше не используются) */
+    .layer-section-header, .layer-tree-parent,
+    .layer-item-parent, .layer-item-leaf,
+    .layer-item-child, .layer-children,
+    .layer-item { display: none !important; }
 
     #measure-btn {
       background: #1976d2;
@@ -408,6 +488,10 @@
     body.night-mode .layer-SectorPoly      { background: #1a2e1f; border-left-color: #66cc88; }
     .layer-RP_point        { background: #fafafa; border-left: 5px solid #212121; }
     body.night-mode .layer-RP_point        { background: #222; border-left-color: #cccccc; }
+    .layer-IFR_ENROUTE_MVL { background: #f8f8f8; border-left: 5px solid #000; }
+    body.night-mode .layer-IFR_ENROUTE_MVL { background: #1e1e1e; border-left-color: #aaaaaa; }
+    .layer-IFRp_point      { background: #fafafa; border-left: 5px solid #212121; }
+    body.night-mode .layer-IFRp_point      { background: #222; border-left-color: #cccccc; }
     .layer-RTS             { background: #e8f4fd; border-left: 5px solid #42a5f5; }
     body.night-mode .layer-RTS             { background: #1a2e44; border-left-color: #88ccff; }
     .layer-OBST1R          { background: #ffebee; border-left: 5px solid #c62828; }
@@ -1181,12 +1265,12 @@
 
   <div id="layer-panel">
     <div id="layer-header">
-      <span>Слои <span id="layer-count">13/14</span></span>
+      <span>Карта</span>
       <span id="toggle-arrow">▼</span>
     </div>
-    <div id="layer-toggleall" style="display:flex;gap:6px;padding:8px 12px 4px;border-bottom:1px solid #e0e0e0;">
-      <button onclick="setAllLayers(true)"  style="flex:1;padding:5px 0;font-size:12px;font-weight:bold;border:none;border-radius:5px;cursor:pointer;background:#e3f2fd;color:#1565c0;">✅ Все вкл.</button>
-      <button onclick="setAllLayers(false)" style="flex:1;padding:5px 0;font-size:12px;font-weight:bold;border:none;border-radius:5px;cursor:pointer;background:#fce4ec;color:#c62828;">❌ Все выкл.</button>
+    <div id="layer-toggleall" style="display:flex;gap:5px;padding:5px 8px 4px;border-bottom:1px solid #ddd;">
+      <button onclick="setAllLayers(true)"  style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#e3f2fd;color:#1565c0;">✅ Все вкл.</button>
+      <button onclick="setAllLayers(false)" style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#fce4ec;color:#c62828;">❌ Все выкл.</button>
     </div>
     <div id="layer-content"></div>
   </div>
@@ -1354,7 +1438,7 @@
   ">
     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; font-weight:bold;">
       <input type="checkbox" id="cursor-coords-chk" style="accent-color:#1976d2;">
-      Координаты у курсора
+      Координаты и высота курсора
     </label>
     <div style="margin-top:4px; padding-top:4px; border-top:1px solid #eee; font-size:11px; color:#888;">
       ПЗ-90.11
@@ -1459,7 +1543,7 @@
     setTimeout(hideLoader, 10000);
 
     // Прогресс лоадера
-    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','ADHPLS','OBST','NOM1','NOM2','GoogleSat'];
+    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','ADHPLS','OBST','NOM1','NOM2','GoogleSat','IFRm','IFRp'];
     const _loaderLoaded  = new Set();
     function _loaderProgress(src) {
       if (!src || _loaderLoaded.has(src)) return;
@@ -1514,6 +1598,14 @@
           "RP": {
             "type": "geojson",
             "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson"
+          },
+          "IFRm": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRm.geojson"
+          },
+          "IFRp": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRp.geojson"
           },
           "OSM": {
             "type": "raster",
@@ -4828,6 +4920,284 @@
       }
     },
     {
+      "id": "IFR_ENROUTE_MVL",
+      "type": "line",
+      "source": "IFRm",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-width": {
+          "base": 2,
+          "stops": [[1, 1], [10, 2]],
+          "type": "exponential"
+        }
+      }
+    },
+    {
+      "id": "IFR_MVL_NAME",
+      "type": "symbol",
+      "source": "IFRm",
+      "minzoom": 10,
+      "layout": {
+        "symbol-placement": "line-center",
+        "text-field": [
+          "concat",
+          "\n",
+          ["get", "altname"],
+          "\n",
+          "\n",
+          ["get", "upperLimit"],
+          "\n",
+          ["get", "lowerLimit"]
+        ],
+        "text-size": {
+          "base": 14,
+          "stops": [[1, 5], [10, 13]],
+          "type": "exponential"
+        },
+        "text-line-height": 1.4,
+        "text-letter-spacing": 0.1,
+        "icon-rotation-alignment": "map",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 200,
+          13, 500,
+          15, 1000,
+          17, 2000
+        ],
+        "text-max-width": 11,
+        "visibility": "visible",
+        "icon-pitch-alignment": "map",
+        "text-pitch-alignment": "auto",
+        "symbol-avoid-edges": false,
+        "icon-text-fit": "none",
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ],
+        "icon-size": 1.2,
+        "icon-ignore-placement": true,
+        "icon-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-allow-overlap": true,
+        "icon-image": [
+          "case",
+          ["all", ["has", "magneticTrack"], ["has", "reverseMagneticTrack"]],
+          "lodka",
+          ["has", "magneticTrack"],
+          "lodka_odna",
+          ""
+        ],
+        "icon-rotate": 180
+      },
+      "paint": {
+        "text-halo-color": "rgba(247, 245, 245, 1)",
+        "text-halo-width": 2,
+        "text-halo-blur": 1
+      }
+    },
+    {
+      "id": "IFR_MVL_NAME_cherta",
+      "type": "symbol",
+      "source": "IFRm",
+      "minzoom": 10,
+      "layout": {
+        "symbol-placement": "line-center",
+        "text-field": [
+          "concat",
+          "\n",
+          ["get", "altname"],
+          "\n",
+          "\n",
+          ["get", "upperLimit"],
+          "\n",
+          ["get", "lowerLimit"]
+        ],
+        "text-size": {
+          "base": 14,
+          "stops": [[1, 5], [10, 13]],
+          "type": "exponential"
+        },
+        "text-line-height": 1.4,
+        "text-letter-spacing": 0.1,
+        "icon-rotation-alignment": "map",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 200,
+          13, 500,
+          15, 1000,
+          17, 2000
+        ],
+        "text-max-width": 11,
+        "visibility": "visible",
+        "icon-pitch-alignment": "map",
+        "text-pitch-alignment": "auto",
+        "symbol-avoid-edges": false,
+        "icon-text-fit": "none",
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ],
+        "icon-size": 1,
+        "icon-ignore-placement": true,
+        "icon-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-allow-overlap": true,
+        "icon-image": "podcherk",
+        "icon-offset": [0, 43],
+        "icon-anchor": "bottom",
+        "icon-keep-upright": true,
+        "icon-optional": false
+      },
+      "paint": {
+        "text-halo-color": "rgba(247, 245, 245, 1)",
+        "text-halo-width": 2,
+        "text-halo-blur": 1,
+        "text-opacity": 0
+      }
+    },
+    {
+      "id": "IFR_MVL_NAME_ReverseT",
+      "type": "symbol",
+      "source": "IFRm",
+      "minzoom": 10,
+      "layout": {
+        "symbol-placement": "line-center",
+        "text-field": ["concat", ["get", "reverseMagneticTrack"]],
+        "text-size": {
+          "base": 14,
+          "stops": [[1, 5], [10, 11]],
+          "type": "exponential"
+        },
+        "text-line-height": 1.4,
+        "text-letter-spacing": 0.1,
+        "icon-rotation-alignment": "map",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 200,
+          13, 500,
+          15, 1000,
+          17, 2000
+        ],
+        "text-max-width": 7,
+        "visibility": "visible",
+        "icon-pitch-alignment": "map",
+        "text-pitch-alignment": "auto",
+        "symbol-avoid-edges": false,
+        "icon-text-fit": "none",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ],
+        "text-justify": "right",
+        "text-anchor": "right",
+        "text-offset": [8, 0]
+      },
+      "paint": {
+        "text-halo-color": "rgba(247, 245, 245, 1)",
+        "text-halo-width": 3,
+        "text-halo-blur": 1
+      }
+    },
+    {
+      "id": "IFR_MVL_NAME_TrueTrack",
+      "type": "symbol",
+      "source": "IFRm",
+      "minzoom": 10,
+      "layout": {
+        "symbol-placement": "line-center",
+        "text-field": ["concat", ["get", "magneticTrack"]],
+        "text-size": {
+          "base": 14,
+          "stops": [[1, 5], [10, 11]],
+          "type": "exponential"
+        },
+        "text-line-height": 1.4,
+        "text-letter-spacing": 0.1,
+        "icon-rotation-alignment": "map",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 200,
+          13, 500,
+          15, 1000,
+          17, 2000
+        ],
+        "text-max-width": 7,
+        "visibility": "visible",
+        "icon-pitch-alignment": "map",
+        "text-pitch-alignment": "auto",
+        "symbol-avoid-edges": false,
+        "icon-text-fit": "none",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ],
+        "text-justify": "left",
+        "text-anchor": "left",
+        "text-offset": [-8, 0]
+      },
+      "paint": {
+        "text-halo-color": "rgba(247, 245, 245, 1)",
+        "text-halo-width": 3,
+        "text-halo-blur": 1
+      }
+    },
+    {
+      "id": "IFR_MVL_NAME_dist",
+      "type": "symbol",
+      "source": "IFRm",
+      "minzoom": 10,
+      "layout": {
+        "symbol-placement": "line-center",
+        "text-field": ["concat", ["to-string", ["round", ["to-number", ["get", "lengthInKM"]]]]],
+        "text-size": {
+          "base": 14,
+          "stops": [[1, 5], [10, 11]],
+          "type": "exponential"
+        },
+        "text-line-height": 1.4,
+        "text-letter-spacing": 0.1,
+        "icon-rotation-alignment": "map",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10, 200,
+          13, 500,
+          15, 1000,
+          17, 2000
+        ],
+        "text-max-width": 7,
+        "visibility": "visible",
+        "icon-pitch-alignment": "map",
+        "text-pitch-alignment": "auto",
+        "symbol-avoid-edges": false,
+        "icon-text-fit": "none",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ]
+      },
+      "paint": {
+        "text-halo-color": "rgba(247, 245, 245, 1)",
+        "text-halo-width": 2,
+        "text-halo-blur": 1
+      }
+    },
+    {
       "id": "VVP_name",
       "type": "symbol",
       "source": "VVP",
@@ -5037,6 +5407,67 @@
           ],
           "CRP",
           ""
+        ],
+        "icon-size": 0.4,
+        "visibility": "visible"
+      },
+      "paint": {"text-halo-width": 11, "icon-opacity": 1}
+    },
+    {
+      "id": "IFRp_name",
+      "type": "symbol",
+      "source": "IFRp",
+      "minzoom": 7,
+      "layout": {
+        "icon-size": 0.4,
+        "text-field": ["concat", ["get", "name"]],
+        "text-size": 15,
+        "text-offset": [0, -2],
+        "text-anchor": "center",
+        "text-justify": "center",
+        "text-font": [
+          "literal",
+          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
+        ],
+        "text-optional": false,
+        "text-ignore-placement": false,
+        "text-allow-overlap": false,
+        "icon-rotation-alignment": "auto",
+        "icon-allow-overlap": false,
+        "icon-ignore-placement": false,
+        "icon-optional": false,
+        "text-variable-anchor": [
+          "top", "bottom", "left", "right", "center",
+          "top-left", "top-right", "bottom-left", "bottom-right"
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-halo-color": "rgba(255, 255, 255, 1)",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "IFRp_point",
+      "type": "symbol",
+      "source": "IFRp",
+      "minzoom": 7,
+      "layout": {
+        "icon-image": [
+          "case",
+          [
+            "all",
+            ["has", "start_reportingATC"],
+            ["==", ["get", "start_reportingATC"], "Пункт не обязательного донесения"]
+          ],
+          "NCRP",
+          [
+            "all",
+            ["has", "start_reportingATC"],
+            ["==", ["get", "start_reportingATC"], "Пункт обязательного донесения"]
+          ],
+          "CRP",
+          "NCRP"
         ],
         "icon-size": 0.4,
         "visibility": "visible"
@@ -5397,29 +5828,190 @@
     const pointsList = document.getElementById('points-list');
     const totalEl = document.getElementById('total-distance');
 
-    const sourceGroups = [
-      { source: "base",      label: "MapTiler Base", section: "Подложка" },
-      { source: "OSM",       label: "OSM" },
-      { source: "GoogleSat", label: "Google Спутник" },
-      { source: "FIRS",      label: "РПИ",                           section: "Аэронавигационные слои" },
-      { source: "marshr",    label: "Маршруты" },
-      { source: "zapretki",  label: "Зоны ограничения" },
-      { source: "VVP",       label: "Воздушное пространство" },
-      { source: "MET",       label: "Районы прогнозирования погоды" },
-      { source: "SectorFIR", label: "Сектора РПИ" },
-      { source: "RP",        label: "Маршрутные точки" },
-      { source: "RTS",       label: "РТС" },
-      { source: "ADHPLS",    label: "АД, ПП, ППВ" },
-      { source: "OBST",      label: "Препятствия" },
-      { source: "NOM1",      label: "Карты масштаба 1 : 500 000 и 1 : 1 000 000", section: "Номенклатура" },
-      { source: "NOM2",      label: "Карты масштаба 1 : 200 000" },
-      { source: "GRID",      label: "Картографическая сетка",                      section: "Картографическая сетка" },
-      { source: "GRID_LABELS", label: "↳ Подписи координат сетки" },
-      { source: "MORA",        label: "МОРА",                                            section: "МОРА" }
+    // ═══════════════════════════════════════════════════════
+    // ДЕРЕВО СЛОЁВ — новая структура панели
+    // ═══════════════════════════════════════════════════════
+    const layerTree = [
+      { id:'sec-vp', label:'ВП', type:'parent', children:[
+        { id:'vp-ifr', label:'IFR', type:'vp-group', defaultOn:false },
+        { id:'vp-vfr', label:'VFR', type:'vp-group', defaultOn:true  },
+      ]},
+      { id:'sec-zones', label:'Зоны', type:'parent', children:[
+        { id:'zone-p',     label:'P',      type:'zone', zoneChar:'P',     defaultOn:true  },
+        { id:'zone-d',     label:'D',      type:'zone', zoneChar:'D',     defaultOn:true  },
+        { id:'zone-r',     label:'R',      type:'zone', zoneChar:'R',     defaultOn:true  },
+        { id:'zone-other', label:'Прочие', type:'zone', zoneChar:'other', defaultOn:true  },
+      ]},
+      { id:'sec-marsh', label:'Маршруты', type:'parent', children:[
+        { id:'marsh-ppp', label:'ППП', type:'source', source:'IFRm',   defaultOn:false },
+        { id:'marsh-pvp', label:'ПВП', type:'source', source:'marshr', defaultOn:true  },
+      ]},
+      { id:'sec-points', label:'Точки', type:'parent', children:[
+        { id:'points-ppp', label:'ППП', type:'source', source:'IFRp', defaultOn:false },
+        { id:'points-pvp', label:'ПВП', type:'source', source:'RP',   defaultOn:true  },
+      ]},
+      { id:'sec-rts', label:'РТС', type:'parent', children:[
+        { id:'rts-vordme', label:'VOR/DME', type:'rts', rtsTypes:['Совмещённый VOR/DME','Всенаправленный маяк VOR','Совмещённый VOR/TACAN'], defaultOn:true  },
+        { id:'rts-ndb',    label:'NDB',     type:'rts', rtsTypes:['Маяк NDB'],      defaultOn:true  },
+        { id:'rts-dme',    label:'DME',     type:'rts', rtsTypes:['Дальномер DME'], defaultOn:true  },
+        { id:'rts-lomlmm', label:'LOM/LMM', type:'stub',                            defaultOn:false },
+      ]},
+      { id:'sec-ad',    label:'АД/ВД/ПП',  type:'leaf', source:'ADHPLS', defaultOn:true  },
+      { id:'sec-obst',  label:'Препятствия', type:'parent', children:[
+        { id:'obst-r1',   label:'Район 1',       type:'source', source:'OBST', defaultOn:true  },
+        { id:'obst-r234', label:'Район 2, 3, 4', type:'stub',                  defaultOn:false },
+      ]},
+      { id:'sec-ama',   label:'AMA',    type:'stub', defaultOn:false },
+      { id:'sec-mora',  label:'МОРА',   type:'leaf', source:'MORA', defaultOn:false },
+      { id:'sec-meteo', label:'МЕТЕО',  type:'leaf', source:'MET',  defaultOn:true  },
+      { id:'sec-podl',  label:'Подложка', type:'parent', children:[
+        { id:'podl-base',  label:'MapTiler Base',  type:'source', source:'base',      defaultOn:true  },
+        { id:'podl-osm',   label:'OSM',            type:'source', source:'OSM',       defaultOn:false },
+        { id:'podl-gsat',  label:'Google Спутник', type:'source', source:'GoogleSat', defaultOn:false },
+      ]},
+      { id:'sec-nom',  label:'Номенклатура', type:'parent', children:[
+        { id:'nom1', label:'Карты 1 : 500 000 и 1 : 1 000 000', type:'source', source:'NOM1', defaultOn:false },
+        { id:'nom2', label:'Карты 1 : 200 000',                  type:'source', source:'NOM2', defaultOn:false },
+      ]},
+      { id:'sec-grid', label:'Картографическая сетка', type:'parent', children:[
+        { id:'grid-main',   label:'Картографическая сетка', type:'source', source:'GRID',        defaultOn:false },
+        { id:'grid-labels', label:'↳ Подписи координат',   type:'source', source:'GRID_LABELS', defaultOn:false },
+      ]},
+      // Синие stub-пункты (Карты) отображаются особым образом
+      { id:'sec-karty-ifr',   label:'IFR (ППП)', type:'stub-blue', defaultOn:false },
+      { id:'sec-karty-vfr',   label:'VFR (ПВП)', type:'stub-blue', defaultOn:false },
+      { id:'sec-karty-obzor', label:'Обзорные',  type:'stub-blue', defaultOn:false },
     ];
 
-    const totalLayers = sourceGroups.length;
-    let enabledCount = totalLayers;
+    // Плоский индекс item.id → item
+    const _itemMap = {};
+    (function buildMap(items) {
+      items.forEach(it => { _itemMap[it.id] = it; if (it.children) buildMap(it.children); });
+    })(layerTree);
+
+    // Для обратной совместимости (используется в toggleSourceLayers)
+    const sourceGroups = [];
+
+    // ── Состояние ВП ──────────────────────────────────────────────────────
+    const _vpState = { 'vp-ifr': true, 'vp-vfr': true };
+    const _vpSources = ['VVP', 'FIRS', 'SectorFIR'];
+
+    function applyVPFilter() {
+      const anyOn = _vpState['vp-ifr'] || _vpState['vp-vfr'];
+      _vpSources.forEach(src => toggleSourceLayers(src, anyOn));
+    }
+
+    // ── Состояние Зон ─────────────────────────────────────────────────────
+    const _zoneState = { P: true, D: true, R: true, other: true };
+    const _zapretkiLayerIds = [
+      'zapretki_poly','zapretki_line_buf2_notam','zapretki_line_buf2',
+      'zapretki_line_buf1_notam','zapretki_line_buf1','zapretki_line_notam',
+      'zapretki_line_all','zapretki_NAME_all','zapretki_NAME_Notam'
+    ];
+    let _zapretkiOrigFilters = {};
+
+    function initZoneFilters() {
+      _zapretkiLayerIds.forEach(id => {
+        if (map.getLayer(id)) _zapretkiOrigFilters[id] = map.getFilter(id) || null;
+      });
+    }
+
+    function applyZoneFilter() {
+      const activeChars = ['P','D','R'].filter(c => _zoneState[c]);
+      const hasOther = _zoneState['other'];
+      const anyActive = activeChars.length > 0 || hasOther;
+
+      _zapretkiLayerIds.forEach(id => {
+        if (!map.getLayer(id)) return;
+        if (!anyActive) { map.setLayoutProperty(id, 'visibility', 'none'); return; }
+
+        let zoneExpr;
+        if (activeChars.length > 0 && hasOther) {
+          zoneExpr = ['any',
+            ['in', ['slice', ['get', 'NAME'], 2, 3], ['literal', activeChars]],
+            ['!', ['in', ['slice', ['get', 'NAME'], 2, 3], ['literal', ['P','D','R']]]]
+          ];
+        } else if (hasOther) {
+          zoneExpr = ['!', ['in', ['slice', ['get', 'NAME'], 2, 3], ['literal', ['P','D','R']]]];
+        } else {
+          zoneExpr = ['in', ['slice', ['get', 'NAME'], 2, 3], ['literal', activeChars]];
+        }
+
+        const orig = _zapretkiOrigFilters[id];
+        map.setFilter(id, orig ? ['all', orig, zoneExpr] : zoneExpr);
+        map.setLayoutProperty(id, 'visibility', 'visible');
+      });
+    }
+
+    // ── Состояние РТС ─────────────────────────────────────────────────────
+    const _rtsState   = { 'rts-vordme': true, 'rts-ndb': true, 'rts-dme': true };
+    const _rtsTypeMap = {
+      'rts-vordme': ['Совмещённый VOR/DME','Всенаправленный маяк VOR','Совмещённый VOR/TACAN'],
+      'rts-ndb':    ['Маяк NDB'],
+      'rts-dme':    ['Дальномер DME'],
+    };
+    const _rtsLayerIds = ['RTS_Roza', 'RTS_name', 'RTS'];
+
+    function applyRtsFilter() {
+      const activeTypes = [];
+      Object.entries(_rtsState).forEach(([k, on]) => {
+        if (on && _rtsTypeMap[k]) activeTypes.push(..._rtsTypeMap[k]);
+      });
+
+      _rtsLayerIds.forEach(id => {
+        if (!map.getLayer(id)) return;
+        if (activeTypes.length === 0) {
+          map.setLayoutProperty(id, 'visibility', 'none'); return;
+        }
+        if (id === 'RTS_Roza') {
+          map.setLayoutProperty(id, 'visibility',
+            activeTypes.includes('Совмещённый VOR/DME') ? 'visible' : 'none');
+          return;
+        }
+        map.setFilter(id, ['in', ['get', 'SIGNPT_TYPE'], ['literal', activeTypes]]);
+        map.setLayoutProperty(id, 'visibility', 'visible');
+      });
+    }
+
+    // ── Универсальный переключатель ───────────────────────────────────────
+    function toggleItem(id, checked) {
+      const item = _itemMap[id];
+      if (!item) return;
+      switch (item.type) {
+        case 'source': case 'leaf':
+          toggleSourceLayers(item.source, checked); break;
+        case 'vp-group':
+          _vpState[id] = checked; applyVPFilter(); break;
+        case 'zone':
+          _zoneState[item.zoneChar] = checked; applyZoneFilter(); break;
+        case 'rts':
+          _rtsState[id] = checked; applyRtsFilter(); break;
+        case 'stub': break; // заглушка
+        case 'parent':
+          if (item.children) item.children.forEach(child => {
+            const cc = document.getElementById(`chk-${child.id}`);
+            if (cc) { cc.checked = checked; }
+            toggleItem(child.id, checked);
+          });
+          break;
+      }
+    }
+
+    // Обновить состояние чекбокса родителя по детям
+    function updateParentCbx(parentId) {
+      const parent = _itemMap[parentId];
+      if (!parent || !parent.children) return;
+      const chk = document.getElementById(`chk-${parentId}`);
+      if (!chk) return;
+      const states = parent.children.map(c => {
+        const cc = document.getElementById(`chk-${c.id}`); return cc ? cc.checked : false;
+      });
+      chk.indeterminate = states.some(Boolean) && !states.every(Boolean);
+      chk.checked = states.every(Boolean);
+    }
+
+    let enabledCount = 0;
+    const totalLayers = 0; // обновляется в updateCount
 
     const clickableLayers = [
       { id: 'METpoly', colorClass: 'layer-METpoly', source: 'MET', idProps: ['NAME', 'DESIGNATOR'] },
@@ -5428,6 +6020,8 @@
       { id: 'VVPpoly', colorClass: 'layer-VVPpoly', source: 'VVP', idProps: ['NAME', 'HMIN'] },
       { id: 'SectorPoly', colorClass: 'layer-SectorPoly', source: 'SectorFIR', idProps: ['NAME', 'HMAX'] },
       { id: 'RP_point', colorClass: 'layer-RP_point', source: 'RP', idProps: ['NAME'] },
+      { id: 'IFR_ENROUTE_MVL', colorClass: 'layer-IFR_ENROUTE_MVL', source: 'IFRm', idProps: ['altname'] },
+      { id: 'IFRp_point', colorClass: 'layer-IFRp_point', source: 'IFRp', idProps: ['name'] },
       { id: 'RTS', colorClass: 'layer-RTS', source: 'RTS', idProps: ['NAME'] },
       { id: 'OBST1R', colorClass: 'layer-OBST1R', source: 'OBST', idProps: ['NAME'] },
       { id: 'AD_point_name', colorClass: 'layer-AD_point_name', source: 'ADHPLS', idProps: ['NAME', 'DESIGNATOR'] },
@@ -5442,6 +6036,8 @@
       "VVP": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/CTATMACTRAFIZ.geojson",
       "SectorFIR": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/SECTOR.geojson",
       "RP": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson",
+      "IFRm": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRm.geojson",
+      "IFRp": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRp.geojson",
       "RTS": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson",
       "OBST": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson",
       "ADHPLS": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson",
@@ -5560,47 +6156,101 @@
         }
       });
 
-      // Панель слоёв (чекбоксы)
-      const content = document.getElementById('layer-content');
+      // ── Построение дерева слоёв (новый стиль) ──────────────────────
+      function makeRow(labelText, labelCls, itemId, isChecked, isStub, parentId) {
+        const row = document.createElement('div');
+        row.className = 'lp-row';
 
-      sourceGroups.forEach(group => {
-        if (group.section) {
-          const hdr = document.createElement('div');
-          hdr.className = 'layer-section-header';
-          hdr.textContent = group.section;
-          content.appendChild(hdr);
-        }
+        const lbl = document.createElement('label');
+        lbl.className = 'lp-label ' + labelCls;
+        lbl.textContent = labelText;
+        lbl.htmlFor = itemId ? `chk-${itemId}` : undefined;
 
-        const div = document.createElement('div');
-        div.className = 'layer-item';
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.className = 'lp-chk';
+        chk.id = itemId ? `chk-${itemId}` : '';
+        chk.checked = isChecked;
+        if (isStub) { chk.style.opacity = '0.35'; lbl.style.opacity = '0.6'; }
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `chk-${group.source}`;
-        checkbox.checked = group.source !== 'OSM' && group.source !== 'NOM1' && group.source !== 'NOM2' && group.source !== 'GoogleSat' && group.source !== 'GRID' && group.source !== 'GRID_LABELS' && group.source !== 'MORA';
-
-        const label = document.createElement('label');
-        label.htmlFor = checkbox.id;
-        label.textContent = group.label;
-
-        checkbox.addEventListener('change', () => {
-          toggleSourceLayers(group.source, checkbox.checked);
+        chk.addEventListener('change', () => {
+          toggleItem(itemId, chk.checked);
+          if (parentId) updateParentCbx(parentId);
           updateCount();
         });
 
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        content.appendChild(div);
-      });
+        row.appendChild(lbl);
+        row.appendChild(chk);
+        return row;
+      }
 
-      updateCount();
-      toggleSourceLayers('OSM', false);
-      toggleSourceLayers('NOM1', false);
-      toggleSourceLayers('NOM2', false);
-      toggleSourceLayers('GoogleSat', false);
-      toggleSourceLayers('GRID', false);
-      toggleSourceLayers('GRID_LABELS', false);
-      toggleSourceLayers('MORA', false);
+      function buildLayerPanel() {
+        const content = document.getElementById('layer-content');
+        content.innerHTML = '';
+
+        let first = true;
+        layerTree.forEach(item => {
+          // Разделитель между группами (кроме первой)
+          if (!first) {
+            const sep = document.createElement('div');
+            sep.className = 'lp-sep';
+            content.appendChild(sep);
+          }
+          first = false;
+
+          if (item.type === 'stub-blue') {
+            // Синие пункты карт внизу
+            const row = document.createElement('div');
+            row.className = 'lp-row-stub-blue';
+            const lbl = document.createElement('span');
+            lbl.className = 'lp-label-stub-blue';
+            lbl.textContent = item.label;
+            const arrow = document.createElement('span');
+            arrow.className = 'lp-stub-arrow';
+            arrow.textContent = '▲';
+            row.appendChild(lbl);
+            row.appendChild(arrow);
+            content.appendChild(row);
+            return;
+          }
+
+          if (item.type === 'parent') {
+            const allOn = item.children.every(c => c.defaultOn !== false);
+            content.appendChild(makeRow(item.label, 'lp-label-parent', item.id, allOn, false, null));
+            item.children.forEach(child => {
+              const isStub = child.type === 'stub';
+              content.appendChild(makeRow(child.label, 'lp-label-child', child.id, child.defaultOn !== false, isStub, item.id));
+            });
+          } else {
+            // leaf / stub
+            const isStub = item.type === 'stub';
+            content.appendChild(makeRow(item.label, 'lp-label-leaf', item.id, item.defaultOn !== false, isStub, null));
+          }
+        });
+      }
+
+      buildLayerPanel();
+
+      // ── Начальное состояние ─────────────────────────────────────────
+      // Применяем начальные значения всех листов
+      (function applyInitialState() {
+        function processTree(items) {
+          items.forEach(item => {
+            if (item.type === 'parent') {
+              processTree(item.children);
+            } else {
+              toggleItem(item.id, item.defaultOn !== false);
+            }
+          });
+        }
+        initZoneFilters();
+        processTree(layerTree);
+        // Принудительно применить фильтры состояния
+        applyZoneFilter();
+        applyRtsFilter();
+        applyVPFilter();
+        updateCount();
+      })();
 
       loadAllSearchableFeatures().then(setupSearchPanel);
 
@@ -6384,6 +7034,10 @@
               searchKey = [name, designator, icaocode].filter(Boolean).join(' ');
             } else if (sourceId === 'NOM1' || sourceId === 'NOM2') {
               searchKey = f.properties.NAME || '';
+            } else if (sourceId === 'IFRm') {
+              searchKey = f.properties.altname || f.properties.name || '';
+            } else if (sourceId === 'IFRp') {
+              searchKey = f.properties.name || f.properties.altname || '';
             } else {
               searchKey = f.properties.NAME || '';
             }
@@ -6477,21 +7131,36 @@
     }
 
     function updateCount() {
-      enabledCount = sourceGroups.filter(g => {
-        const chk = document.getElementById(`chk-${g.source}`);
-        return chk && chk.checked;
-      }).length;
-      document.getElementById('layer-count').textContent = `${enabledCount}/${totalLayers}`;
+      let total = 0, enabled = 0;
+      (function count(items) {
+        items.forEach(item => {
+          if (item.type === 'parent') { count(item.children); }
+          else if (item.type !== 'stub' && item.type !== 'stub-blue') {
+            total++;
+            const chk = document.getElementById(`chk-${item.id}`);
+            if (chk && chk.checked) enabled++;
+          }
+        });
+      })(layerTree);
+      const el = document.getElementById('layer-count');
+      if (el) el.textContent = `${enabled}/${total}`;
     }
 
     function setAllLayers(enable) {
-      sourceGroups.forEach(g => {
-        const chk = document.getElementById(`chk-${g.source}`);
-        if (chk) {
-          chk.checked = enable;
-          toggleSourceLayers(g.source, enable);
-        }
-      });
+      (function setTree(items) {
+        items.forEach(item => {
+          if (item.type === 'stub-blue') return;
+          if (item.type === 'parent') {
+            const pchk = document.getElementById(`chk-${item.id}`);
+            if (pchk) { pchk.checked = enable; pchk.indeterminate = false; }
+            setTree(item.children);
+          } else {
+            const chk = document.getElementById(`chk-${item.id}`);
+            if (chk) chk.checked = enable;
+            toggleItem(item.id, enable);
+          }
+        });
+      })(layerTree);
       updateCount();
     }
 
@@ -6538,7 +7207,13 @@
       let html = `<div style="padding:8px 12px; background:#f8f9fa; border-bottom:1px solid #eee; font-size:12.8px; color:#555;">Найдено: <b>${filtered.length}</b></div>`;
 
       filtered.forEach((item, idx) => {
-        const groupLabel = sourceGroups.find(g => g.source === item.layerDef.source)?.label || item.layerDef.id;
+        const _srcLabelMap = {
+          'IFRm':'Маршруты ППП','marshr':'Маршруты ПВП','IFRp':'Точки ППП','RP':'Точки ПВП',
+          'RTS':'РТС','ADHPLS':'АД/ВД/ПП','OBST':'Препятствия','MET':'МЕТЕО',
+          'VVP':'Воздушное пространство','FIRS':'РПИ','SectorFIR':'Сектора РПИ',
+          'zapretki':'Зоны','NOM1':'Номенклатура 500k/1M','NOM2':'Номенклатура 200k'
+        };
+        const groupLabel = _srcLabelMap[item.layerDef.source] || item.layerDef.id;
         const isAD = item.layerDef.source === 'ADHPLS';
         const icaocode = isAD ? (item.feature.properties.ICAOCODE || '') : '';
         const designator = isAD ? (item.feature.properties.DESIGNATOR || '') : '';
@@ -6709,9 +7384,10 @@
       clickableLayers.forEach(ld => {
         const hid = `highlight-${ld.id}`;
         const outlineHid = `${hid}-outline`;
+        const idProp = (ld.idProps && ld.idProps[0]) ? ld.idProps[0] : 'NAME';
         const resetFilter = ld._isNotamTemp
           ? ['==', ['get', 'notamId'], '___NO_MATCH___']
-          : ['==', ['get', 'NAME'],    '___NO_MATCH___'];
+          : ['==', ['get', idProp],    '___NO_MATCH___'];
 
         if (map.getLayer(hid)) {
           map.setFilter(hid, resetFilter);
@@ -6724,39 +7400,9 @@
       });
     }
 
-    function showDetail(feature) {
-      const layerId = feature.layer ? feature.layer.id : feature._layerId;
-      const def = clickableLayers.find(ld => ld.id === layerId);
 
-      // NOTAM TEMPORARY зоны — отдельный попап
-      if (def && def._isNotamTemp) {
-        buildNotamTempDetail(feature, currentLngLat);
-        return;
-      }
-
-      let name = '';
-      if (layerId === 'METpoly') {
-        const designator = feature.properties.DESIGNATOR || '';
-        const nameProp = feature.properties.NAME || '';
-        name = designator ? `${designator} ${nameProp}`.trim() : nameProp || '(без названия)';
-      } else if (layerId === 'OBST1R') {
-        name = feature.properties.designator || feature.properties.DESIGNATOR || '(без ID)';
-      } else {
-        name = feature.properties[def?.idProps?.[0]] || feature.properties['ALT_NAME'] || '(без названия)';
-      }
-
-      const cls = def?.colorClass || '';
-
-      let html = `
-        <div class="popup-header ${cls}">
-          ${currentFeatures && currentFeatures.length > 1 ? `<span class="back-btn" onclick="backToChooser()">←</span>` : ''}
-          <span>${name}</span>
-        </div>
-        <div class="popup-body ${cls}">
-      `;
-
-      // ── Фильтрованный вывод семантики ────────────────────────────
-      const _POPUP_CFG = {
+    // ═══ КОНФИГ ПОПАПОВ (глобальный) ═══════════════════════════
+    window._POPUP_CFG = {
   "OBST": {
     "fields": [
       {
@@ -6926,6 +7572,66 @@
       }
     ]
   },
+  "IFRm": {
+    "fields": [
+      {
+        "key": "altname",
+        "label": "Название маршрута"
+      },
+      {
+        "key": "lowerLimit",
+        "label": "Нижний предел высоты"
+      },
+      {
+        "key": "upperLimit",
+        "label": "Верхний предел высоты"
+      },
+      {
+        "key": "widthm",
+        "label": "Ширина"
+      },
+      {
+        "key": "magneticTrack",
+        "label": "Прямой курс"
+      },
+      {
+        "key": "reverseMagneticTrack",
+        "label": "Обратный курс"
+      },
+      {
+        "key": "lengthInKM",
+        "label": "Дистанция"
+      },
+      {
+        "key": "segmentname",
+        "label": "Точки маршрута"
+      }
+    ]
+  },
+  "IFRp": {
+    "fields": [
+      {
+        "key": "name",
+        "label": "Название точки"
+      },
+      {
+        "key": "altname",
+        "label": "Название точки на русском"
+      },
+      {
+        "key": "start_reportingATC",
+        "label": "Тип донесения"
+      },
+      {
+        "key": "latitude",
+        "label": "Широта"
+      },
+      {
+        "key": "longitude",
+        "label": "Долгота"
+      }
+    ]
+  },
   "RP": {
     "fields": [
       {
@@ -7046,7 +7752,39 @@
   }
 };
 
-      window._POPUP_CFG = _POPUP_CFG;
+    function showDetail(feature) {
+      const layerId = feature.layer ? feature.layer.id : feature._layerId;
+      const def = clickableLayers.find(ld => ld.id === layerId);
+
+      // NOTAM TEMPORARY зоны — отдельный попап
+      if (def && def._isNotamTemp) {
+        buildNotamTempDetail(feature, currentLngLat);
+        return;
+      }
+
+      let name = '';
+      if (layerId === 'METpoly') {
+        const designator = feature.properties.DESIGNATOR || '';
+        const nameProp = feature.properties.NAME || '';
+        name = designator ? `${designator} ${nameProp}`.trim() : nameProp || '(без названия)';
+      } else if (layerId === 'OBST1R') {
+        name = feature.properties.designator || feature.properties.DESIGNATOR || '(без ID)';
+      } else {
+        name = feature.properties[def?.idProps?.[0]] || feature.properties['ALT_NAME'] || '(без названия)';
+      }
+
+      const cls = def?.colorClass || '';
+
+      let html = `
+        <div class="popup-header ${cls}">
+          ${currentFeatures && currentFeatures.length > 1 ? `<span class="back-btn" onclick="backToChooser()">←</span>` : ''}
+          <span>${name}</span>
+        </div>
+        <div class="popup-body ${cls}">
+      `;
+
+      // ── Фильтрованный вывод семантики ────────────────────────────
+      const _POPUP_CFG = window._POPUP_CFG;
       const _src = def?.source || '';
       const _cfg = _POPUP_CFG[_src];
       const _props = feature.properties || {};
@@ -7907,10 +8645,10 @@ ${placemarks}
         clearTimeout(_debTimer);
         const el = document.getElementById('cursor-coords-elev');
         if (!el) return;
-        el.textContent = '▲ ...';
+        el.textContent = 'H = ...';
         _debTimer = setTimeout(async () => {
           const elev = await fetchElevLocal(lat, lng);
-          if (el) el.textContent = elev !== null ? '▲ ' + elev + ' м' : '';
+          if (el) el.textContent = elev !== null ? 'H = ' + elev + ' м' : '';
         }, 0);
       };
 
@@ -8000,12 +8738,24 @@ ${placemarks}
       .then(d => { marshrData = d; })
       .catch(e => console.error('Ошибка загрузки marsh.geojson:', e));
 
+    let ifrmData = null;
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRm.geojson')
+      .then(r => r.json())
+      .then(d => { ifrmData = d; })
+      .catch(e => console.error('Ошибка загрузки IFRm.geojson:', e));
+
     // Загружаем RP-точки и RTS для snap-приоритета при измерении
     let rpData = null;
     fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RP.geojson')
       .then(r => r.json())
       .then(d => { rpData = d; })
       .catch(e => console.error('Ошибка загрузки RP.geojson:', e));
+
+    let ifrpData = null;
+    fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRp.geojson')
+      .then(r => r.json())
+      .then(d => { ifrpData = d; })
+      .catch(e => console.error('Ошибка загрузки IFRp.geojson:', e));
 
     let rtsData = null;
     fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson')
@@ -8033,6 +8783,9 @@ ${placemarks}
               name: f.properties.NAME || '',
               lat: parseSemCoord(f.properties.LATITUDE) ?? coords[1],
               lng: parseSemCoord(f.properties.LONGITUDE) ?? coords[0],
+              // Сохраняем сырые строки координат из семантики для отображения
+              latStr: f.properties.LATITUDE || null,
+              lngStr: f.properties.LONGITUDE || null,
               type: typeLabel
             };
           }
@@ -8041,6 +8794,31 @@ ${placemarks}
 
       checkDataset(rpData, 'RP');
       checkDataset(rtsData, 'RTS');
+
+      // Точки ППП (IFRp)
+      if (ifrpData) {
+        ifrpData.features.forEach(f => {
+          if (!f.geometry || f.geometry.type !== 'Point') return;
+          const coords = f.geometry.coordinates;
+          const px = map.project(coords);
+          const dx = px.x - clickPx.x, dy = px.y - clickPx.y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < thresholdPx && d < bestDist) {
+            bestDist = d;
+            best = {
+              lngLat: { lng: coords[0], lat: coords[1] },
+              name: f.properties.name || f.properties.altname || '',
+              // Всегда используем геометрию — она всегда в десятичных градусах
+              lat: coords[1],
+              lng: coords[0],
+              // Сохраняем сырые строки из семантики для отображения
+              latStr: f.properties.latitude || null,
+              lngStr: f.properties.longitude || null,
+              type: 'IFRp'
+            };
+          }
+        });
+      }
 
       // Проверяем пользовательские точки из графического редактора
       if (window._drawItems) {
@@ -8067,7 +8845,6 @@ ${placemarks}
     }
 
     function findNearestRoutePoint(lngLat, thresholdPx) {
-      if (!marshrData) return null;
       const clickPx = map.project([lngLat.lng, lngLat.lat]);
       let best = null, bestDist = Infinity;
 
@@ -8081,34 +8858,39 @@ ${placemarks}
         return { x: ax + t*dx, y: ay + t*dy, t };
       }
 
-      marshrData.features.forEach(f => {
-        if (!f.geometry) return;
-        const routeName = f.properties && f.properties.NAME ? f.properties.NAME : '';
+      function scanLines(dataset, nameField, srcKey) {
+        if (!dataset) return;
+        dataset.features.forEach(f => {
+          if (!f.geometry) return;
+          const routeName = f.properties && f.properties[nameField] ? f.properties[nameField] : '';
 
-        const processLine = (coords) => {
-          for (let i = 0; i < coords.length - 1; i++) {
-            const aPx = map.project(coords[i]);
-            const bPx = map.project(coords[i + 1]);
-            const proj = projectPointOnSegment(
-              clickPx.x, clickPx.y,
-              aPx.x, aPx.y, bPx.x, bPx.y
-            );
-            const dx = proj.x - clickPx.x, dy = proj.y - clickPx.y;
-            const d = Math.sqrt(dx*dx + dy*dy);
-            if (d < thresholdPx && d < bestDist) {
-              bestDist = d;
-              // Интерполируем географические координаты
-              const t = proj.t;
-              const snapLng = coords[i][0] + t * (coords[i+1][0] - coords[i][0]);
-              const snapLat = coords[i][1] + t * (coords[i+1][1] - coords[i][1]);
-              best = { lngLat: { lng: snapLng, lat: snapLat }, routeName, featureProps: f.properties };
+          const processLine = (coords) => {
+            for (let i = 0; i < coords.length - 1; i++) {
+              const aPx = map.project(coords[i]);
+              const bPx = map.project(coords[i + 1]);
+              const proj = projectPointOnSegment(
+                clickPx.x, clickPx.y,
+                aPx.x, aPx.y, bPx.x, bPx.y
+              );
+              const dx = proj.x - clickPx.x, dy = proj.y - clickPx.y;
+              const d = Math.sqrt(dx*dx + dy*dy);
+              if (d < thresholdPx && d < bestDist) {
+                bestDist = d;
+                const t = proj.t;
+                const snapLng = coords[i][0] + t * (coords[i+1][0] - coords[i][0]);
+                const snapLat = coords[i][1] + t * (coords[i+1][1] - coords[i][1]);
+                best = { lngLat: { lng: snapLng, lat: snapLat }, routeName, featureProps: f.properties, _srcKey: srcKey };
+              }
             }
-          }
-        };
+          };
 
-        if (f.geometry.type === 'LineString') processLine(f.geometry.coordinates);
-        else if (f.geometry.type === 'MultiLineString') f.geometry.coordinates.forEach(processLine);
-      });
+          if (f.geometry.type === 'LineString') processLine(f.geometry.coordinates);
+          else if (f.geometry.type === 'MultiLineString') f.geometry.coordinates.forEach(processLine);
+        });
+      }
+
+      scanLines(marshrData, 'NAME', 'marshr');
+      scanLines(ifrmData,   'altname', 'IFRm');
 
       return best;
     }
@@ -8233,6 +9015,8 @@ ${placemarks}
           lngLat._pointName = namedPt.name;
           lngLat._lat = namedPt.lat;
           lngLat._lng = namedPt.lng;
+          lngLat._latStr = namedPt.latStr || null;
+          lngLat._lngStr = namedPt.lngStr || null;
           lngLat._pointType = namedPt.type;
           points.push(lngLat);
           clearSnap();
@@ -8247,6 +9031,8 @@ ${placemarks}
             lngLat._pointName = f.properties.NAME || '';
             lngLat._lat = parseSemCoord(f.properties.LATITUDE) ?? coords[1];
             lngLat._lng = parseSemCoord(f.properties.LONGITUDE) ?? coords[0];
+            lngLat._latStr = f.properties.LATITUDE || null;
+            lngLat._lngStr = f.properties.LONGITUDE || null;
             lngLat._pointType = 'AD';
             lngLat._adProps = f.properties;  // сохраняем все props для Flight Plan
             points.push(lngLat);
@@ -8493,6 +9279,15 @@ ${placemarks}
           if (f) { props = f.properties; sourceLabel = 'Маршрутная точка (RP)'; }
         }
       }
+      if (!props && p._pointType === 'IFRp') {
+        if (ifrpData) {
+          const f = ifrpData.features.find(f =>
+            f.geometry && f.geometry.type === 'Point' &&
+            f.properties && (f.properties.name === p._pointName || f.properties.altname === p._pointName)
+          );
+          if (f) { props = f.properties; sourceLabel = 'Точка ППП (IFR)'; }
+        }
+      }
       if (!props && p._pointType === 'RTS') {
         if (rtsData) {
           const f = rtsData.features.find(f =>
@@ -8511,13 +9306,12 @@ ${placemarks}
         if (item) { props = item.feature.properties; sourceLabel = 'Аэродром / ПП'; }
       }
       if (!props && p._snapInfo) {
-        // Берём свойства именно той фичи, по которой кликнули
         if (p._snapInfo.featureProps) {
           props = p._snapInfo.featureProps;
-          sourceLabel = 'Маршрут (ENROUTE)';
+          sourceLabel = p._snapInfo._srcKey === 'IFRm' ? 'Маршрут ППП (IFR)' : 'Маршрут (ENROUTE)';
         } else {
           props = { NAME: p._snapInfo.routeName, Координаты: formatCoord(p) };
-          sourceLabel = 'Маршрут (ENROUTE)';
+          sourceLabel = p._snapInfo._srcKey === 'IFRm' ? 'Маршрут ППП (IFR)' : 'Маршрут (ENROUTE)';
         }
       }
 
@@ -8530,8 +9324,9 @@ ${placemarks}
       let _srcKey = null;
       if (p._pointType === 'AD') _srcKey = 'ADHPLS';
       else if (p._pointType === 'RP') _srcKey = 'RP';
+      else if (p._pointType === 'IFRp') _srcKey = 'IFRp';
       else if (p._pointType === 'RTS' || (p._snapInfo && !p._snapInfo.featureProps)) _srcKey = 'RTS';
-      else if (p._snapInfo && p._snapInfo.featureProps) _srcKey = 'marshr';
+      else if (p._snapInfo && p._snapInfo.featureProps) _srcKey = p._snapInfo._srcKey || 'marshr';
 
       const _PCFG = window._POPUP_CFG;
       const _layerCfg = _PCFG && _srcKey ? _PCFG[_srcKey] : null;
@@ -8606,7 +9401,13 @@ ${placemarks}
         let pointLabel = '';
         if (p._pointName) {
           const icon = p._pointType === 'AD' ? '🛫' : p._pointType === 'RTS' ? '📡' : '📍';
-          const coordStr = formatCoord({ lat: parseFloat(p._lat !== undefined ? p._lat : p.lat), lng: parseFloat(p._lng !== undefined ? p._lng : p.lng) });
+          // Используем сырые строки координат из семантики, если есть — иначе formatCoord
+          let coordStr;
+          if (p._latStr && p._lngStr) {
+            coordStr = `${p._latStr} ${p._lngStr}`;
+          } else {
+            coordStr = formatCoord({ lat: parseFloat(p._lat !== undefined ? p._lat : p.lat), lng: parseFloat(p._lng !== undefined ? p._lng : p.lng) });
+          }
           pointLabel = `<span
             onclick="showPointSemantics(${i})"
             style="color:#1976d2; font-weight:bold; font-size:13px; cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px;"
@@ -10728,7 +11529,7 @@ ${placemarks}
       function captureState() {
         const routeData = (typeof points !== 'undefined' ? points : []).map(p => {
           const obj = { lng: p.lng, lat: p.lat };
-          ['_pointName','_snapInfo','_role','_pointType','_adProps'].forEach(k => {
+          ['_pointName','_snapInfo','_role','_pointType','_adProps','_lat','_lng','_latStr','_lngStr'].forEach(k => {
             if (p[k] != null) obj[k] = p[k];
           });
           if (p._altitude !== undefined) obj._altitude = p._altitude;
@@ -10754,7 +11555,7 @@ ${placemarks}
           if (typeof alternateAirports !== 'undefined') alternateAirports.length = 0;
           data.route.forEach(p => {
             const pt = { lng: p.lng, lat: p.lat };
-            ['_pointName','_snapInfo','_role','_pointType','_adProps'].forEach(k => {
+            ['_pointName','_snapInfo','_role','_pointType','_adProps','_lat','_lng','_latStr','_lngStr'].forEach(k => {
               if (p[k] != null) pt[k] = p[k];
             });
             if (p._altitude !== undefined) pt._altitude = p._altitude;
