@@ -1261,7 +1261,33 @@
     <button id="btn-fp"       title="Flight Plan"          class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/FP.svg" width="38" height="38"></button>
     <button id="btn-project"  title="Проект"               class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/PROJECT.svg" width="38" height="38"></button>
     <button id="btn-export"   title="Экспорт / Печать"      class="tool-btn"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/PRINT.svg" width="38" height="38"></button>
+    <button id="btn-legend"   title="Условные обозначения"  class="tool-btn" onclick="toggleLegend()"><img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/UZ.svg" width="38" height="38"></button>
   </div>
+
+  <!-- Легенда поверх карты -->
+  <div id="legend-overlay" style="
+    display:none; position:fixed; inset:0; z-index:9000;
+    background:rgba(0,0,0,0.55); align-items:center; justify-content:center;
+  " onclick="if(event.target===this)toggleLegend()">
+    <div style="position:relative; max-width:95vw; max-height:92vh; overflow:auto; border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+      <img src="https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/legend.png"
+           style="display:block; max-width:100%; max-height:92vh; border-radius:10px;"
+           alt="Условные обозначения">
+      <button onclick="toggleLegend()" style="
+        position:absolute; top:8px; right:10px;
+        background:rgba(0,0,0,0.55); color:white; border:none;
+        border-radius:50%; width:30px; height:30px; font-size:18px;
+        cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center;
+      ">✕</button>
+    </div>
+  </div>
+  <script>
+    function toggleLegend() {
+      const el = document.getElementById('legend-overlay');
+      const isVisible = el.style.display === 'flex';
+      el.style.display = isVisible ? 'none' : 'flex';
+    }
+  </script>
 
   <div id="layer-panel">
     <div id="layer-header">
@@ -4330,7 +4356,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(208, 137, 137, 1)",
+        "line-color": "rgba(201, 191, 191, 1)",
         "line-width": 5,
         "line-offset": 9,
         "line-opacity": 0.5
@@ -4366,7 +4392,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(214, 86, 86, 1)",
+        "line-color": "rgba(139, 131, 131, 1)",
         "line-width": 5,
         "line-offset": 4,
         "line-opacity": 0.5
@@ -4397,7 +4423,7 @@
       "filter": ["==", ["get", "WORKTIME"], "По NOTAM"],
       "layout": {"visibility": "visible"},
       "paint": {
-        "line-color": "rgba(213, 108, 108, 1)",
+        "line-color": "rgba(114, 110, 110, 1)",
         "line-width": {
           "base": 3,
           "stops": [[1, 1], [10, 4]],
@@ -4458,7 +4484,7 @@
         "symbol-spacing": 500
       },
       "paint": {
-        "text-color": "#ff0000",
+        "text-color": "rgba(40, 38, 38, 1)",
         "text-halo-width": 4,
         "text-halo-blur": 11,
         "text-halo-color": "rgba(255, 253, 253, 1)",
@@ -6556,50 +6582,6 @@
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
       });
-      // Большая цифра АМА (тысячи)
-      map.addLayer({
-        id: 'ama-big-layer',
-        type: 'symbol',
-        source: 'ama-source',
-        layout: {
-          visibility: 'none',
-          'text-field': ['get', 'ama_big'],
-          'text-size': 26,
-          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-anchor': 'bottom-right',
-          'text-offset': [-0.1, 0.5],
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-          'symbol-placement': 'point'
-        },
-        paint: {
-          'text-color': '#9c27b0',
-          'text-halo-color': 'rgba(255,255,255,0.95)',
-          'text-halo-width': 2.5
-        }
-      });
-      // Малая цифра АМА (сотни)
-      map.addLayer({
-        id: 'ama-small-layer',
-        type: 'symbol',
-        source: 'ama-source',
-        layout: {
-          visibility: 'none',
-          'text-field': ['get', 'ama_small'],
-          'text-size': 14,
-          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-anchor': 'bottom-left',
-          'text-offset': [0.02, 0.78],
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-          'symbol-placement': 'point'
-        },
-        paint: {
-          'text-color': '#9c27b0',
-          'text-halo-color': 'rgba(255,255,255,0.95)',
-          'text-halo-width': 2.0
-        }
-      });
       map.addLayer({
         id: 'graticule-main-layer',
         type: 'line',
@@ -6635,6 +6617,85 @@
           'text-color': '#000000',
           'text-halo-color': 'rgba(255,255,255,0.92)',
           'text-halo-width': 1.8
+        }
+      });
+
+      // ── Сетка АМА (1°×1°, фиолетовая, показывается вместе с АМА) ──────
+      map.addSource('ama-grid-main', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addSource('ama-grid-ticks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addSource('ama-grid-labels', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'ama-grid-main-layer', type: 'line', source: 'ama-grid-main',
+        layout: { visibility: 'none', 'line-cap': 'square', 'line-join': 'miter' },
+        paint: { 'line-color': '#9c27b0', 'line-width': 3.9, 'line-opacity': 0.70 }
+      });
+      map.addLayer({
+        id: 'ama-grid-ticks-layer', type: 'line', source: 'ama-grid-ticks',
+        layout: { visibility: 'none', 'line-cap': 'square', 'line-join': 'miter' },
+        paint: { 'line-color': '#9c27b0', 'line-width': 3.9, 'line-opacity': 0.70 }
+      });
+      map.addLayer({
+        id: 'ama-grid-labels-layer', type: 'symbol', source: 'ama-grid-labels',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'label'],
+          'text-size': 10,
+          'text-font': ['Noto Sans Regular', 'Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-anchor': 'center',
+          'text-offset': [0, 0],
+          'text-rotate': ['get', 'rotation'],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'text-max-width': 20,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#9c27b0',
+          'text-halo-color': 'rgba(255,255,255,0.92)',
+          'text-halo-width': 1.8
+        }
+      });
+      // АМА цифры — поверх всего (добавлены последними чтобы быть выше graticule)
+      map.addLayer({
+        id: 'ama-big-layer',
+        type: 'symbol',
+        source: 'ama-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'ama_big'],
+          'text-size': 26,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-right',
+          'text-offset': [-0.1, 0.5],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#9c27b0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.5
+        }
+      });
+      map.addLayer({
+        id: 'ama-small-layer',
+        type: 'symbol',
+        source: 'ama-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'ama_small'],
+          'text-size': 14,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-left',
+          'text-offset': [0.02, 0.78],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#9c27b0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.0
         }
       });
     });
@@ -6839,6 +6900,99 @@
     // Обновляем сетку при перемещении / изменении zoom
     map.on('moveend', updateGraticule);
     map.on('zoomend', updateGraticule);
+
+    // ── Сетка АМА 1°×1° ─────────────────────────────────────────────────
+    function updateAmaGrid() {
+      if (!amaEnabled) return;
+      if (!map.getSource('ama-grid-main')) return;
+
+      const CELL = 1.0;
+      const TICK = 0.1;   // штрихи через каждые 6'
+      const bounds = map.getBounds();
+      const W = Math.max(-180, bounds.getWest()  - CELL * 2);
+      const E = Math.min( 180, bounds.getEast()  + CELL * 2);
+      const S = Math.max( -85, bounds.getSouth() - CELL * 2);
+      const N = Math.min(  85, bounds.getNorth() + CELL * 2);
+
+      const floorStep = (v, s) => Math.floor(v / s) * s;
+      const prec = v => Math.round(v * 1e7) / 1e7;
+      const tickLen = CELL / 72;
+
+      const mainF = [], tickF = [], labelF = [];
+
+      // Меридианы
+      let lng = floorStep(W, CELL);
+      while (lng <= E + CELL * 0.001) {
+        const lf = prec(lng);
+        mainF.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[lf, S], [lf, N]] } });
+        let latT = floorStep(S, TICK);
+        while (latT <= N + TICK * 0.001) {
+          const lf2 = prec(latT);
+          const latMod = Math.abs((latT % CELL + CELL) % CELL);
+          const onCell = latMod < TICK * 0.02 || Math.abs(latMod - CELL) < TICK * 0.02;
+          if (!onCell && lf2 >= S && lf2 <= N)
+            tickF.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[prec(lf - tickLen), lf2], [prec(lf + tickLen), lf2]] } });
+          latT = prec(latT + TICK);
+        }
+        lng = prec(lng + CELL);
+      }
+
+      // Параллели
+      let lat = floorStep(S, CELL);
+      while (lat <= N + CELL * 0.001) {
+        const lf = prec(lat);
+        mainF.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[W, lf], [E, lf]] } });
+        let lngT = floorStep(W, TICK);
+        while (lngT <= E + TICK * 0.001) {
+          const lf2 = prec(lngT);
+          const lngMod = Math.abs((lngT % CELL + CELL) % CELL);
+          const onCell = lngMod < TICK * 0.02 || Math.abs(lngMod - CELL) < TICK * 0.02;
+          if (!onCell && lf2 >= W && lf2 <= E)
+            tickF.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[lf2, prec(lf - tickLen)], [lf2, prec(lf + tickLen)]] } });
+          lngT = prec(lngT + TICK);
+        }
+        lat = prec(lat + CELL);
+      }
+
+      // Подписи (те же функции formatGratDMS)
+      const bW = bounds.getWest(), bE = bounds.getEast();
+      const bS = bounds.getSouth(), bN = bounds.getNorth();
+      let latL = floorStep(bS, CELL);
+      while (latL <= bN + CELL * 0.001) {
+        const pLat = prec(latL);
+        if (pLat >= bS && pLat <= bN) {
+          let lngL = floorStep(bW, CELL);
+          while (lngL <= bE + CELL * 0.001) {
+            const midLng = prec(lngL + CELL / 2);
+            if (midLng >= bW && midLng <= bE)
+              labelF.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [midLng, pLat] }, properties: { label: formatGratDMS(pLat, true), rotation: 0 } });
+            lngL = prec(lngL + CELL);
+          }
+        }
+        latL = prec(latL + CELL);
+      }
+      let lngL = floorStep(bW, CELL);
+      while (lngL <= bE + CELL * 0.001) {
+        const pLng = prec(lngL);
+        if (pLng >= bW && pLng <= bE) {
+          let latL2 = floorStep(bS, CELL);
+          while (latL2 <= bN + CELL * 0.001) {
+            const midLat = prec(latL2 + CELL / 2);
+            if (midLat >= bS && midLat <= bN)
+              labelF.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [pLng, midLat] }, properties: { label: formatGratDMS(pLng, false), rotation: -90 } });
+            latL2 = prec(latL2 + CELL);
+          }
+        }
+        lngL = prec(lngL + CELL);
+      }
+
+      map.getSource('ama-grid-main').setData({ type: 'FeatureCollection', features: mainF });
+      map.getSource('ama-grid-ticks').setData({ type: 'FeatureCollection', features: tickF });
+      map.getSource('ama-grid-labels').setData({ type: 'FeatureCollection', features: labelF });
+    }
+
+    map.on('moveend', updateAmaGrid);
+    map.on('zoomend', updateAmaGrid);
 
     // ── конец блока КАРТОГРАФИЧЕСКАЯ СЕТКА ─────────────────────────────
 
@@ -7220,14 +7374,22 @@
           map.setLayoutProperty('ama-big-layer',   'visibility', visible ? 'visible' : 'none');
         if (map.getLayer('ama-small-layer'))
           map.setLayoutProperty('ama-small-layer', 'visibility', visible ? 'visible' : 'none');
+        // Сетка АМА
+        ['ama-grid-main-layer','ama-grid-ticks-layer','ama-grid-labels-layer'].forEach(id => {
+          if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+        });
         if (visible) {
           updateAMA();
+          updateAmaGrid();
         } else {
-          ++_amaUpdateId;           // останавливает текущий расчёт
+          ++_amaUpdateId;
           _amaCache.clear();
           setAmaStatus('');
           if (map.getSource('ama-source'))
             map.getSource('ama-source').setData({ type: 'FeatureCollection', features: [] });
+          ['ama-grid-main','ama-grid-ticks','ama-grid-labels'].forEach(src => {
+            if (map.getSource(src)) map.getSource(src).setData({ type: 'FeatureCollection', features: [] });
+          });
         }
         return;
       }
@@ -10939,7 +11101,7 @@ ${placemarks}
         const el=document.getElementById('ditem-'+id);
         if(el) el.classList.add('geom-active');
 
-        setDrawHint('Перетащите точки для изменения геометрии • Esc — выйти');
+        setDrawHint('Перетащите точки для изменения геометрии • Enter — зафиксировать • Esc — выйти');
 
         // Создаём маркеры-драгеры для каждой точки
         const ptLabels = {
@@ -11009,7 +11171,7 @@ ${placemarks}
 
         // Для линии/полигона — показать кнопку "Добавить точку"
         if (['line','polygon'].includes(item.type)) {
-          setDrawHint('Перетащите точки • ПКМ на карте — добавить точку • Esc — выйти');
+          setDrawHint('Перетащите точки • ПКМ — добавить точку • Enter — зафиксировать • Esc — выйти');
         }
       };
 
@@ -11128,6 +11290,7 @@ ${placemarks}
           fillColor:  get('df-fill-color'), fillOpacity:+get('df-fill-opacity'),
           angle:      +get('df-angle'),
           radiusKm:   item.type==='circle' ? +get('df-radius-km') : undefined,
+          pointSize:  item.type==='point'  ? +get('df-point-size') : undefined,
         };
         // Если задан radiusKm — убираем вторую точку радиуса, оставляем только центр
         if(item.type==='circle' && item.style.radiusKm!=null){
@@ -11239,6 +11402,11 @@ ${placemarks}
 
       document.addEventListener('keydown',e=>{
         if(e.key==='Enter'&&drawMode&&['line','polygon'].includes(drawMode)) finishDraw();
+        if(e.key==='Enter'&&!drawMode&&geomEditId){
+          // Фиксируем результат редактирования геометрии
+          stopGeomEdit();
+          drawRefresh();
+        }
         if(e.key==='Escape'){
           if(drawMode){drawMode=null;drawTemp=[];map.getCanvas().style.cursor='';setDrawHint(null);clearPreview();}
           else if(geomEditId) stopGeomEdit();
