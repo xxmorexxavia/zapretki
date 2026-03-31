@@ -1543,7 +1543,7 @@
     setTimeout(hideLoader, 10000);
 
     // Прогресс лоадера
-    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','ADHPLS','OBST','NOM1','NOM2','GoogleSat','IFRm','IFRp'];
+    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','LOM','ADHPLS','OBST','NOM1','NOM2','GoogleSat','IFRm','IFRp'];
     const _loaderLoaded  = new Set();
     function _loaderProgress(src) {
       if (!src || _loaderLoaded.has(src)) return;
@@ -1637,13 +1637,17 @@
             "type": "geojson",
             "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson"
           },
+          "LOM": {
+            "type": "geojson",
+            "data": "https://huggingface.co/buckets/egorew/avcinfo/resolve/LOM.geojson"
+          },
           "ADHPLS": {
             "type": "geojson",
             "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson"
           },
           "OBST": {
             "type": "geojson",
-            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson"
+            "data": "https://huggingface.co/buckets/egorew/avcinfo/resolve/OBST.geojson"
           },
           "NOM1": {
             "type": "geojson",
@@ -5562,36 +5566,11 @@
       "layout": {
         "icon-image": [
           "case",
-          [
-            "all",
-            ["has", "SIGNPT_TYPE"],
-            ["==", ["get", "SIGNPT_TYPE"], "Маяк NDB"]
-          ],
-          "NDB",
-          [
-            "all",
-            ["has", "SIGNPT_TYPE"],
-            ["==", ["get", "SIGNPT_TYPE"], "Совмещённый VOR/DME"]
-          ],
-          "VORDME",
-          [
-            "all",
-            ["has", "SIGNPT_TYPE"],
-            ["==", ["get", "SIGNPT_TYPE"], "Дальномер DME"]
-          ],
-          "DME",
-          [
-            "all",
-            ["has", "SIGNPT_TYPE"],
-            ["==", ["get", "SIGNPT_TYPE"], "Совмещённый VOR/TACAN"]
-          ],
-          "TACAN",
-          [
-            "all",
-            ["has", "SIGNPT_TYPE"],
-            ["==", ["get", "SIGNPT_TYPE"], "Всенаправленный маяк VOR"]
-          ],
-          "VOR",
+          ["all", ["has", "SIGNPT_TYPE"], ["==", ["get", "SIGNPT_TYPE"], "Маяк NDB"]], "NDB",
+          ["all", ["has", "SIGNPT_TYPE"], ["==", ["get", "SIGNPT_TYPE"], "Совмещённый VOR/DME"]], "VORDME",
+          ["all", ["has", "SIGNPT_TYPE"], ["==", ["get", "SIGNPT_TYPE"], "Дальномер DME"]], "DME",
+          ["all", ["has", "SIGNPT_TYPE"], ["==", ["get", "SIGNPT_TYPE"], "Совмещённый VOR/TACAN"]], "TACAN",
+          ["all", ["has", "SIGNPT_TYPE"], ["==", ["get", "SIGNPT_TYPE"], "Всенаправленный маяк VOR"]], "VOR",
           ""
         ],
         "icon-size": {
@@ -5600,20 +5579,65 @@
           "type": "exponential"
         },
         "symbol-sort-key": [
-          "match",
-          ["get", "SIGNPT_TYPE"],
-          "Маяк NDB",
-          10,
-          "Совмещённый VOR/DME",
-          9,
-          "Дальномер DME",
-          8,
-          "Совмещённый VOR/TACAN",
-          7,
-          "Всенаправленный маяк VOR",
-          6,
-          1
+          "match", ["get", "SIGNPT_TYPE"],
+          "Маяк NDB", 10, "Совмещённый VOR/DME", 9, "Дальномер DME", 8,
+          "Совмещённый VOR/TACAN", 7, "Всенаправленный маяк VOR", 6, 1
         ],
+        "text-allow-overlap": false,
+        "icon-allow-overlap": true
+      }
+    },
+    {
+      "id": "LOM_name",
+      "type": "symbol",
+      "source": "LOM",
+      "minzoom": 9,
+      "layout": {
+        "visibility": "none",
+        "text-field": ["concat",
+          ["get", "NAME"], " ",
+          ["case",
+            ["==", ["slice", ["to-string", ["coalesce", ["get", "FREQUENCY"], ""]], 0, 1], "0"],
+            ["to-string", ["round", ["*", ["to-number", ["coalesce", ["get", "FREQUENCY"], 0]], 1000]]],
+            ["to-string", ["coalesce", ["get", "FREQUENCY"], ""]]
+          ],
+          " ",
+          ["get", "DESIGNATOR"]
+        ],
+        "text-offset": [-1, -2],
+        "text-size": {
+          "base": 11,
+          "stops": [[1, 1], [6, 11]],
+          "type": "exponential"
+        },
+        "text-allow-overlap": false,
+        "text-keep-upright": false,
+        "text-ignore-placement": false,
+        "text-optional": false,
+        "text-rotation-alignment": "auto",
+        "text-pitch-alignment": "auto",
+        "text-variable-anchor": ["top","bottom","left","right","center","top-left","top-right","bottom-left","bottom-right"],
+        "text-font": ["literal", ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]]
+      },
+      "paint": {
+        "text-color": "rgba(59, 107, 215, 1)",
+        "text-halo-color": "rgba(255, 255, 255, 1)",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "LOM_point",
+      "type": "symbol",
+      "source": "LOM",
+      "minzoom": 7,
+      "layout": {
+        "visibility": "none",
+        "icon-image": "NDB",
+        "icon-size": {
+          "base": 0.4,
+          "stops": [[1, 0.1], [9, 0.5]],
+          "type": "exponential"
+        },
         "text-allow-overlap": false,
         "icon-allow-overlap": true
       }
@@ -5623,7 +5647,42 @@
       "type": "symbol",
       "source": "OBST",
       "minzoom": 10,
+      "filter": ["==", ["slice", ["coalesce", ["get", "designator"], ["get", "DESIGNATOR"], ""], 4, 5], "1"],
       "layout": {
+        "icon-image": ["case",
+          ["all", ["has", "obstacleview"], ["==", ["get", "obstacleview"], "Неосвещаемое"]], "OBST",
+          ["all", ["has", "obstacleview"], ["==", ["get", "obstacleview"], "Освещаемое"]], "OBST_LT",
+          "OBST"
+        ],
+        "icon-size": {
+          "base": 0.5,
+          "stops": [[1, 0.1], [10, 0.5]],
+          "type": "exponential"
+        },
+        "text-field": "{absoluteheight}",
+        "text-offset": [0, -1.4],
+        "text-font": ["Arial Unicode MS Bold", "Arial Unicode MS Regular"],
+        "text-size": {
+          "base": 1,
+          "stops": [[1, 1], [10, 12]],
+          "type": "exponential"
+        },
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "icon-allow-overlap": false,
+        "symbol-sort-key": ["-", 0, ["to-number", ["get", "absoluteheight"], 0]]
+      },
+      "paint": {"text-color": "rgba(214, 23, 23, 1)", "text-halo-width": 3}
+    },
+    {
+      "id": "OBST234",
+      "type": "symbol",
+      "source": "OBST",
+      "minzoom": 10,
+      "visibility": "none",
+      "filter": ["!=", ["slice", ["coalesce", ["get", "designator"], ["get", "DESIGNATOR"], ""], 4, 5], "1"],
+      "layout": {
+        "visibility": "none",
         "icon-image": ["case",
           ["all", ["has", "obstacleview"], ["==", ["get", "obstacleview"], "Неосвещаемое"]], "OBST",
           ["all", ["has", "obstacleview"], ["==", ["get", "obstacleview"], "Освещаемое"]], "OBST_LT",
@@ -5854,14 +5913,14 @@
         { id:'rts-vordme', label:'VOR/DME', type:'rts', rtsTypes:['Совмещённый VOR/DME','Всенаправленный маяк VOR','Совмещённый VOR/TACAN'], defaultOn:true  },
         { id:'rts-ndb',    label:'NDB',     type:'rts', rtsTypes:['Маяк NDB'],      defaultOn:true  },
         { id:'rts-dme',    label:'DME',     type:'rts', rtsTypes:['Дальномер DME'], defaultOn:true  },
-        { id:'rts-lomlmm', label:'LOM/LMM', type:'stub',                            defaultOn:false },
+        { id:'rts-lomlmm', label:'LOM/LMM', type:'lom', defaultOn:false },
       ]},
       { id:'sec-ad',    label:'АД/ВД/ПП',  type:'leaf', source:'ADHPLS', defaultOn:true  },
       { id:'sec-obst',  label:'Препятствия', type:'parent', children:[
-        { id:'obst-r1',   label:'Район 1',       type:'source', source:'OBST', defaultOn:true  },
-        { id:'obst-r234', label:'Район 2, 3, 4', type:'stub',                  defaultOn:false },
+        { id:'obst-r1',   label:'Район 1',       type:'source', source:'OBST',   defaultOn:true  },
+        { id:'obst-r234', label:'Район 2, 3, 4', type:'obst234',                 defaultOn:false },
       ]},
-      { id:'sec-ama',   label:'AMA',    type:'stub', defaultOn:false },
+      { id:'sec-ama',   label:'AMA',    type:'leaf', source:'AMA', defaultOn:false },
       { id:'sec-mora',  label:'МОРА',   type:'leaf', source:'MORA', defaultOn:false },
       { id:'sec-meteo', label:'МЕТЕО',  type:'leaf', source:'MET',  defaultOn:true  },
       { id:'sec-podl',  label:'Подложка', type:'parent', children:[
@@ -5979,13 +6038,29 @@
       if (!item) return;
       switch (item.type) {
         case 'source': case 'leaf':
-          toggleSourceLayers(item.source, checked); break;
+          // Особый случай: obst-r1 управляет только слоем OBST1R, не всем source
+          if (id === 'obst-r1') {
+            if (map.getLayer('OBST1R'))
+              map.setLayoutProperty('OBST1R', 'visibility', checked ? 'visible' : 'none');
+          } else {
+            toggleSourceLayers(item.source, checked);
+          }
+          break;
+        case 'obst234':
+          if (map.getLayer('OBST234'))
+            map.setLayoutProperty('OBST234', 'visibility', checked ? 'visible' : 'none');
+          break;
         case 'vp-group':
           _vpState[id] = checked; applyVPFilter(); break;
         case 'zone':
           _zoneState[item.zoneChar] = checked; applyZoneFilter(); break;
         case 'rts':
           _rtsState[id] = checked; applyRtsFilter(); break;
+        case 'lom':
+          ['LOM_point','LOM_name'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', checked ? 'visible' : 'none');
+          });
+          break;
         case 'stub': break; // заглушка
         case 'parent':
           if (item.children) item.children.forEach(child => {
@@ -6023,7 +6098,9 @@
       { id: 'IFR_ENROUTE_MVL', colorClass: 'layer-IFR_ENROUTE_MVL', source: 'IFRm', idProps: ['altname'] },
       { id: 'IFRp_point', colorClass: 'layer-IFRp_point', source: 'IFRp', idProps: ['name'] },
       { id: 'RTS', colorClass: 'layer-RTS', source: 'RTS', idProps: ['NAME'] },
+      { id: 'LOM_point', colorClass: 'layer-RTS', source: 'LOM', idProps: ['NAME'] },
       { id: 'OBST1R', colorClass: 'layer-OBST1R', source: 'OBST', idProps: ['NAME'] },
+      { id: 'OBST234', colorClass: 'layer-OBST1R', source: 'OBST', idProps: ['NAME'] },
       { id: 'AD_point_name', colorClass: 'layer-AD_point_name', source: 'ADHPLS', idProps: ['NAME', 'DESIGNATOR'] },
       { id: 'NOM1_fill', colorClass: 'layer-NOM1', source: 'NOM1', idProps: ['NAME'] },
       { id: 'NOM2_fill', colorClass: 'layer-NOM2', source: 'NOM2', idProps: ['NAME'] }
@@ -6039,7 +6116,8 @@
       "IFRm": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRm.geojson",
       "IFRp": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRp.geojson",
       "RTS": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/RTS.geojson",
-      "OBST": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson",
+      "LOM": "https://huggingface.co/buckets/egorew/avcinfo/resolve/LOM.geojson",
+      "OBST": "https://huggingface.co/buckets/egorew/avcinfo/resolve/OBST.geojson",
       "ADHPLS": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson",
       "NOM1": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/refs/heads/main/5km10km.geojson",
       "NOM2": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/refs/heads/main/2km.geojson"
@@ -6468,6 +6546,56 @@
         },
         paint: {
           'text-color': '#1565c0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.0
+        }
+      });
+
+      // ── АМА — источник и слои ─────────────────────────────────────────
+      map.addSource('ama-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      // Большая цифра АМА (тысячи)
+      map.addLayer({
+        id: 'ama-big-layer',
+        type: 'symbol',
+        source: 'ama-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'ama_big'],
+          'text-size': 26,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-right',
+          'text-offset': [-0.1, 0.5],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#9c27b0',
+          'text-halo-color': 'rgba(255,255,255,0.95)',
+          'text-halo-width': 2.5
+        }
+      });
+      // Малая цифра АМА (сотни)
+      map.addLayer({
+        id: 'ama-small-layer',
+        type: 'symbol',
+        source: 'ama-source',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'ama_small'],
+          'text-size': 14,
+          'text-font': ['Noto Sans Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-anchor': 'bottom-left',
+          'text-offset': [0.02, 0.78],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-placement': 'point'
+        },
+        paint: {
+          'text-color': '#9c27b0',
           'text-halo-color': 'rgba(255,255,255,0.95)',
           'text-halo-width': 2.0
         }
@@ -7011,13 +7139,19 @@
         if (!layerDef) continue;
 
         try {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const geojson = await res.json();
+          let features = [];
 
-          if (geojson.type !== 'FeatureCollection' || !geojson.features) continue;
+          if (false) {
+            // fgb branch removed
+          } else {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const geojson = await res.json();
+            if (geojson.type !== 'FeatureCollection' || !geojson.features) continue;
+            features = geojson.features;
+          }
 
-          geojson.features.forEach(f => {
+          features.forEach(f => {
             if (!f || !f.properties || !f.geometry) return;
 
             let searchKey;
@@ -7072,9 +7206,28 @@
         if (visible) {
           updateMORA();
         } else {
+          ++_moraUpdateId;          // останавливает текущий расчёт
           _moraCache.clear();
+          setMoraStatus('');
           if (map.getSource('mora-source'))
             map.getSource('mora-source').setData({ type: 'FeatureCollection', features: [] });
+        }
+        return;
+      }
+      if (sourceId === 'AMA') {
+        amaEnabled = visible;
+        if (map.getLayer('ama-big-layer'))
+          map.setLayoutProperty('ama-big-layer',   'visibility', visible ? 'visible' : 'none');
+        if (map.getLayer('ama-small-layer'))
+          map.setLayoutProperty('ama-small-layer', 'visibility', visible ? 'visible' : 'none');
+        if (visible) {
+          updateAMA();
+        } else {
+          ++_amaUpdateId;           // останавливает текущий расчёт
+          _amaCache.clear();
+          setAmaStatus('');
+          if (map.getSource('ama-source'))
+            map.getSource('ama-source').setData({ type: 'FeatureCollection', features: [] });
         }
         return;
       }
@@ -7658,38 +7811,24 @@
   },
   "RTS": {
     "fields": [
-      {
-        "key": "NAME",
-        "label": "Название"
-      },
-      {
-        "key": "DESIGNATOR",
-        "label": "Позывной"
-      },
-      {
-        "key": "ALT_NAME",
-        "label": "Название на русском"
-      },
-      {
-        "key": "MAGVAR",
-        "label": "Магнитное склонение"
-      },
-      {
-        "key": "FREQUENCY",
-        "label": "Частота"
-      },
-      {
-        "key": "SIGNPT_TYPE",
-        "label": "Тип РТС"
-      },
-      {
-        "key": "LATITUDE",
-        "label": "Широта"
-      },
-      {
-        "key": "LONGITUDE",
-        "label": "Долгота"
-      }
+      { "key": "NAME",       "label": "Название"   },
+      { "key": "DESIGNATOR", "label": "Позывной"   },
+      { "key": "ALT_NAME",   "label": "Название на русском" },
+      { "key": "MAGVAR",     "label": "Магнитное склонение" },
+      { "key": "FREQUENCY",  "label": "Частота"    },
+      { "key": "SIGNPT_TYPE","label": "Тип РТС"    },
+      { "key": "LATITUDE",   "label": "Широта"     },
+      { "key": "LONGITUDE",  "label": "Долгота"    }
+    ]
+  },
+  "LOM": {
+    "fields": [
+      { "key": "NAME",        "label": "Название"  },
+      { "key": "DESIGNATOR",  "label": "Позывной"  },
+      { "key": "FREQUENCY",   "label": "Частота",   "freq_khz": true },
+      { "key": "__lomlmm__",  "label": "Тип",       "default": "LOM/LMM" },
+      { "key": "LATITUDE",    "label": "Широта"    },
+      { "key": "LONGITUDE",   "label": "Долгота"   }
     ]
   },
   "NOM1": {
@@ -7767,7 +7906,7 @@
         const designator = feature.properties.DESIGNATOR || '';
         const nameProp = feature.properties.NAME || '';
         name = designator ? `${designator} ${nameProp}`.trim() : nameProp || '(без названия)';
-      } else if (layerId === 'OBST1R') {
+      } else if (layerId === 'OBST1R' || layerId === 'OBST234') {
         name = feature.properties.designator || feature.properties.DESIGNATOR || '(без ID)';
       } else {
         name = feature.properties[def?.idProps?.[0]] || feature.properties['ALT_NAME'] || '(без названия)';
@@ -7793,8 +7932,16 @@
         _cfg.fields.forEach(f => {
           // Ищем поле без учёта регистра
           const val = _props[f.key] ?? _props[f.key.toLowerCase()] ?? _props[f.key.toUpperCase()];
-          const display = (val != null && val !== '') ? val : (f.default || null);
+          let display = (val != null && val !== '') ? val : (f.default || null);
           if (display == null) return;
+          // Частота LOM: умножаем на 1000 (МГц → кГц)
+          if (f.freq_khz && display != null) {
+            const s = String(display);
+            if (s.startsWith('0')) {
+              const n = parseFloat(s);
+              if (!isNaN(n)) display = Math.round(n * 1000);
+            }
+          }
           html += `<div class="popup-row"><span class="popup-key">${f.label}</span><span class="popup-val">${display}</span></div>`;
         });
       } else {
@@ -8409,22 +8556,105 @@ ${placemarks}
 
     let moraEnabled = false;
     let _obstDataForMora = null;   // кеш GeoJSON-фич слоя OBST
+    let _obstLoading = false;      // флаг: идёт загрузка OBST прямо сейчас
     let _moraCache = new Map();    // ключ: "latS_lngW_cellSz" → строка МОРА
     let _moraUpdateId = 0;         // защита от гонок при быстром пане
 
-    // Загрузка OBST (один раз)
+    // Fetch с таймаутом
+    async function fetchWithTimeout(url, timeoutMs = 12000) {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(new DOMException('Timeout after ' + timeoutMs + 'ms', 'TimeoutError')), timeoutMs);
+      try {
+        const r = await fetch(url, {
+          signal: ctrl.signal,
+          headers: { 'Connection': 'close' }   // просим сервер закрыть TCP после ответа
+        });
+        clearTimeout(tid);
+        return r;
+      } catch(e) {
+        clearTimeout(tid);
+        throw e;
+      }
+    }
+
+    // Очередь запросов к DEM-серверу — не более 1 одновременно
+    let _demQueue = Promise.resolve();
+    function demFetch(url) {
+      const p = _demQueue.then(() => fetchWithTimeout(url, 15000));
+      // Подавляем rejection в очереди чтобы следующий запрос не блокировался
+      _demQueue = p.then(() => {}, () => {});
+      return p;
+    }
+
+    // Загрузка OBST (один раз, защита от повторных вызовов)
     async function loadObstForMora() {
       if (_obstDataForMora !== null) return;
+      if (_obstLoading) return;
+      _obstLoading = true;
       try {
-        const r = await fetch('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/OBST1R.geojson');
+        const r = await fetchWithTimeout('https://huggingface.co/buckets/egorew/avcinfo/resolve/OBST.geojson', 60000);
         const gj = await r.json();
         _obstDataForMora = gj.features || [];
         console.log('MORA: OBST загружен,', _obstDataForMora.length, 'объектов');
       } catch(e) {
         _obstDataForMora = [];
         console.warn('MORA: ошибка загрузки OBST', e);
+      } finally {
+        _obstLoading = false;
       }
     }
+
+    // ─── Локальный DEM-сервер (Copernicus GLO-30) ────────────────────────────────
+    const DEM_SERVER = 'http://172.16.65.91:8765';
+    const _moraTerrCache = new Map();
+
+    // Диагностика DEM-сервера
+    let _demServerOk = null; // null=неизвестно, true=ок, false=недоступен
+    async function checkDemServer() {
+      // Проверяем реальный эндпоинт /max_elevation с минимальным bbox
+      const testUrl = DEM_SERVER + '/max_elevation?lat_s=55.0&lat_n=55.1&lng_w=37.0&lng_e=37.1';
+      try {
+        const r = await fetchWithTimeout(testUrl, 5000);
+        _demServerOk = r.ok;
+        if (r.ok) {
+          const j = await r.json();
+          console.log('[DEM] Сервер ОК, тест:', j);
+        } else {
+          console.warn('[DEM] Сервер ответил HTTP', r.status);
+        }
+      } catch(e) {
+        _demServerOk = false;
+        console.warn('[DEM] Сервер недоступен:', e.message);
+      }
+      updateDemStatusPanel();
+    }
+
+    function updateDemStatusPanel() {
+      const el = document.getElementById('dem-status');
+      if (!el) return;
+      if (_demServerOk === true) {
+        el.textContent = '🟢 ЦМР-сервер: ОК';
+        el.style.background = 'rgba(46,125,50,0.88)';
+        el.style.display = 'block';
+        setTimeout(() => { if (el && _demServerOk === true) el.style.display = 'none'; }, 4000);
+      } else if (_demServerOk === false) {
+        el.textContent = '🔴 ЦМР-сервер: недоступен — МОРА/АМА считается без рельефа. Нажмите для проверки.';
+        el.style.background = 'rgba(183,28,28,0.92)';
+        el.style.display = 'block';
+        // Не скрываем — остаётся до восстановления
+      }
+    }
+
+    // Кнопка ручной проверки DEM-сервера
+    window.checkDemServerManual = async function() {
+      const el = document.getElementById('dem-status');
+      if (el) { el.textContent = '⏳ Проверка ЦМР-сервера...'; el.style.background = 'rgba(21,101,192,0.88)'; el.style.display = 'block'; }
+      _demServerOk = null;
+      await checkDemServer();
+    };
+
+    // Запускаем проверку при старте
+    checkDemServer();
 
     // Макс. абсолютная высота препятствий в bbox ячейки
     function maxObstInCell(latS, latN, lngW, lngE) {
@@ -8444,11 +8674,7 @@ ${placemarks}
       return max;
     }
 
-    // Высота рельефа для МОРА — один запрос в центр ячейки через OTopo (с кешем)
-    // ─── Высота рельефа для МОРА через OpenTopography ───────────────────────────
-    // ─── Локальный DEM-сервер (Copernicus GLO-30, E:\DEM) ────────────────────────
-    const DEM_SERVER = 'http://172.16.65.91:8765';
-    const _moraTerrCache = new Map();
+    // Высота рельефа для МОРА через локальный DEM-сервер
 
     async function maxTerrainForMora(latS, latN, lngW, lngE) {
       const key = latS.toFixed(4) + '_' + lngW.toFixed(4);
@@ -8459,15 +8685,21 @@ ${placemarks}
         + '&lng_w=' + lngW.toFixed(6)
         + '&lng_e=' + lngE.toFixed(6);
       try {
-        const r = await fetch(url);
-        if (!r.ok) { _moraTerrCache.set(key, 0); return 0; }
+        const r = await demFetch(url);
+        if (!r.ok) { _moraTerrCache.set(key, 0); _demServerOk = false; return 0; }
         const json = await r.json();
         const result = Math.round(json.max_elevation || 0);
         _moraTerrCache.set(key, result);
         if (_moraTerrCache.size > 800) _moraTerrCache.delete(_moraTerrCache.keys().next().value);
+        _demServerOk = true;
         return result;
       } catch(e) {
-        console.warn('DEM server unavailable:', e.message);
+        const msg = e?.message || String(e);
+        if (_demServerOk !== false) {
+          _demServerOk = false;
+          updateDemStatusPanel();
+          console.warn('[DEM] Недоступен:', msg, url);
+        }
         _moraTerrCache.set(key, 0);
         return 0;
       }
@@ -8584,6 +8816,138 @@ ${placemarks}
 
     // ── конец блока МОРА ──────────────────────────────────────────────────
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // АМА — Area Minimum Altitude (только квадраты 1°×1°, результат в футах)
+    // ═══════════════════════════════════════════════════════════════════════
+    let amaEnabled = false;
+    let _amaCache = new Map();
+    let _amaUpdateId = 0;
+
+    const AMA_CELL = 1.0;           // квадрат 1°×1°
+    const AMA_BUF_DEG = 8 / 111.0; // буфер 8 км → градусы (~0.072°)
+    const M_TO_FT = 3.28084;
+
+    // АМА-код: метры → "тысячи сотни" (1400 ft → "1 4", 10400 ft → "10 4")
+    function calcAmaCode(maxHeightM) {
+      if (maxHeightM <= 0) maxHeightM = 0;
+      // Зазор: <900м→300м, <1500м→450м, иначе→600м
+      const clearance = maxHeightM < 900 ? 300 : maxHeightM < 1500 ? 450 : 600;
+      const totalM = maxHeightM + clearance;
+      // Перевод в футы, округление вверх до 100 футов
+      const totalFt = Math.ceil((totalM * M_TO_FT) / 100) * 100;
+      const minFt = 1000; // минимальная АМА 1000 ft
+      const ft = Math.max(totalFt, minFt);
+      const thousands = Math.floor(ft / 1000);
+      const hundreds  = Math.floor((ft % 1000) / 100);
+      return { big: String(thousands), small: String(hundreds) };
+    }
+
+    function setAmaStatus(text) {
+      const el = document.getElementById('ama-status');
+      if (!el) return;
+      el.textContent = text;
+      el.style.display = text ? 'block' : 'none';
+    }
+
+    function updateAMA() {
+      if (!amaEnabled) return;
+      if (!map.getSource('ama-source')) return;
+
+      ++_amaUpdateId;
+      const runId = _amaUpdateId;
+
+      // Переиспользуем OBST, который уже загружается для МОРА
+      if (!_obstDataForMora) {
+        setAmaStatus('⏳ Загрузка препятствий...');
+        loadObstForMora().then(() => {
+          if (runId === _amaUpdateId) _startAmaCalc(runId);
+        });
+        return;
+      }
+      _startAmaCalc(runId);
+    }
+
+    function _startAmaCalc(runId) {
+      if (runId !== _amaUpdateId) return;
+
+      const bounds = map.getBounds();
+      const bW = bounds.getWest(), bE = bounds.getEast();
+      const bS = bounds.getSouth(), bN = bounds.getNorth();
+      const floorStep = (v, s) => Math.floor(v / s) * s;
+      const prec = v => Math.round(v * 1e7) / 1e7;
+
+      // Только 1°×1° ячейки
+      const cells = [];
+      let latL = floorStep(bS, AMA_CELL);
+      while (latL <= bN + AMA_CELL * 0.001) {
+        let lngL = floorStep(bW, AMA_CELL);
+        while (lngL <= bE + AMA_CELL * 0.001) {
+          cells.push({
+            latS: prec(latL), latN: prec(latL + AMA_CELL),
+            lngW: prec(lngL), lngE: prec(lngL + AMA_CELL),
+            midLat: prec(latL + AMA_CELL / 2),
+            midLng: prec(lngL + AMA_CELL / 2)
+          });
+          lngL = prec(lngL + AMA_CELL);
+        }
+        latL = prec(latL + AMA_CELL);
+      }
+
+      const features = new Array(cells.length).fill(null);
+      let i = 0;
+
+      async function processAll() {
+        for (; i < cells.length; i++) {
+          if (runId !== _amaUpdateId) { setAmaStatus(''); return; }
+
+          const c = cells[i];
+          const cacheKey = c.latS + '_' + c.lngW;
+
+          let code;
+          if (_amaCache.has(cacheKey)) {
+            code = _amaCache.get(cacheKey);
+          } else {
+            // Запрос рельефа с буфером 8 км
+            const terrMax = await maxTerrainForMora(
+              prec(c.latS - AMA_BUF_DEG), prec(c.latN + AMA_BUF_DEG),
+              prec(c.lngW - AMA_BUF_DEG), prec(c.lngE + AMA_BUF_DEG)
+            );
+            // Препятствия тоже с буфером
+            const obstMax = maxObstInCell(
+              c.latS - AMA_BUF_DEG, c.latN + AMA_BUF_DEG,
+              c.lngW - AMA_BUF_DEG, c.lngE + AMA_BUF_DEG
+            );
+            code = calcAmaCode(Math.max(terrMax, obstMax));
+            _amaCache.set(cacheKey, code);
+            if (_amaCache.size > 800) _amaCache.delete(_amaCache.keys().next().value);
+          }
+
+          if (code) {
+            features[i] = {
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [c.midLng, c.midLat] },
+              properties: { ama_big: code.big, ama_small: code.small }
+            };
+          }
+
+          setAmaStatus('⏳ АМА: ' + (i + 1) + '/' + cells.length);
+          if (map.getSource('ama-source')) {
+            map.getSource('ama-source').setData({
+              type: 'FeatureCollection', features: features.filter(Boolean)
+            });
+          }
+        }
+        setAmaStatus('');
+      }
+
+      processAll();
+    }
+
+    map.on('moveend', updateAMA);
+    map.on('zoomend', () => { _amaCache.clear(); updateAMA(); });
+
+    // ── конец блока АМА ───────────────────────────────────────────────────
+
     // ─── Высота рельефа через map.queryTerrainElevation() ───────────────────────
     // Читает данные из уже загруженных WebGL-тайлов — без внешних запросов и CORS
     (function() {
@@ -8645,10 +9009,10 @@ ${placemarks}
         clearTimeout(_debTimer);
         const el = document.getElementById('cursor-coords-elev');
         if (!el) return;
-        el.textContent = 'H = ...';
+        el.textContent = 'Hабс. = ...';
         _debTimer = setTimeout(async () => {
           const elev = await fetchElevLocal(lat, lng);
-          if (el) el.textContent = elev !== null ? 'H = ' + elev + ' м' : '';
+          if (el) el.textContent = elev !== null ? 'Hабс. = ' + elev + ' м' : '';
         }, 0);
       };
 
@@ -8763,6 +9127,12 @@ ${placemarks}
       .then(d => { rtsData = d; })
       .catch(e => console.error('Ошибка загрузки RTS.geojson:', e));
 
+    let lomData = null;
+    fetch('https://huggingface.co/buckets/egorew/avcinfo/resolve/LOM.geojson')
+      .then(r => r.json())
+      .then(d => { lomData = d; })
+      .catch(e => console.error('Ошибка загрузки LOM.geojson:', e));
+
     // Поиск ближайшей именованной точки (RP / RTS) в пикселях
     function findNearestNamedPoint(lngLat, thresholdPx) {
       const clickPx = map.project([lngLat.lng, lngLat.lat]);
@@ -8794,6 +9164,7 @@ ${placemarks}
 
       checkDataset(rpData, 'RP');
       checkDataset(rtsData, 'RTS');
+      checkDataset(lomData, 'LOM');
 
       // Точки ППП (IFRp)
       if (ifrpData) {
@@ -9297,6 +9668,20 @@ ${placemarks}
           if (f) { props = f.properties; sourceLabel = 'РТС'; }
         }
       }
+      if (!props && p._pointType === 'LOM') {
+        if (lomData) {
+          const f = lomData.features.find(f =>
+            f.geometry && f.geometry.type === 'Point' &&
+            f.properties && f.properties.NAME === p._pointName
+          );
+          if (f) {
+            // Подставляем LOM/LMM если поле пустое
+            props = { ...f.properties };
+            if (!props.SIGNPT_TYPE) props.SIGNPT_TYPE = 'LOM/LMM';
+            sourceLabel = 'LOM/LMM';
+          }
+        }
+      }
       if (!props && p._pointType === 'AD') {
         // Ищем в allSearchableFeatures по имени
         const item = allSearchableFeatures.find(it =>
@@ -9325,6 +9710,7 @@ ${placemarks}
       if (p._pointType === 'AD') _srcKey = 'ADHPLS';
       else if (p._pointType === 'RP') _srcKey = 'RP';
       else if (p._pointType === 'IFRp') _srcKey = 'IFRp';
+      else if (p._pointType === 'LOM') _srcKey = 'LOM';
       else if (p._pointType === 'RTS' || (p._snapInfo && !p._snapInfo.featureProps)) _srcKey = 'RTS';
       else if (p._snapInfo && p._snapInfo.featureProps) _srcKey = p._snapInfo._srcKey || 'marshr';
 
@@ -9337,8 +9723,15 @@ ${placemarks}
       if (_layerCfg) {
         _layerCfg.fields.forEach(f => {
           const val = props[f.key] ?? props[f.key.toLowerCase()] ?? props[f.key.toUpperCase()];
-          const display = (val != null && val !== '') ? val : (f.default || null);
+          let display = (val != null && val !== '') ? val : (f.default || null);
           if (display == null) return;
+          if (f.freq_khz && display != null) {
+            const s = String(display);
+            if (s.startsWith('0')) {
+              const n = parseFloat(s);
+              if (!isNaN(n)) display = Math.round(n * 1000);
+            }
+          }
           html += `<div class="popup-row"><span class="popup-key">${f.label}</span><span class="popup-val">${display}</span></div>`;
         });
       } else {
@@ -9400,7 +9793,7 @@ ${placemarks}
 
         let pointLabel = '';
         if (p._pointName) {
-          const icon = p._pointType === 'AD' ? '🛫' : p._pointType === 'RTS' ? '📡' : '📍';
+          const icon = p._pointType === 'AD' ? '🛫' : p._pointType === 'RTS' ? '📡' : p._pointType === 'LOM' ? '📡' : '📍';
           // Используем сырые строки координат из семантики, если есть — иначе formatCoord
           let coordStr;
           if (p._latStr && p._lngStr) {
@@ -12245,6 +12638,17 @@ ${placemarks}
     padding: 5px 12px; border-radius: 8px; font-size: 12px;
     font-family: monospace; pointer-events: none; display: none;
   "></div>
+  <div id="ama-status" style="
+    position: fixed; bottom: 140px; left: 10px; z-index: 999;
+    background: rgba(156,39,176,0.92); color: white;
+    padding: 5px 12px; border-radius: 8px; font-size: 12px;
+    font-family: monospace; pointer-events: none; display: none;
+  "></div>
+  <div id="dem-status" style="
+    position: fixed; bottom: 170px; left: 10px; z-index: 999;
+    color: white; padding: 5px 12px; border-radius: 8px; font-size: 12px;
+    font-family: monospace; cursor: pointer; display: none;
+  " onclick="checkDemServerManual()" title="Нажмите для повторной проверки"></div>
 
   <!-- ═══ FLIGHT PLAN ═══ -->
   <div id="fp-panel">
