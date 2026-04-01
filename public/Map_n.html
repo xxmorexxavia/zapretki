@@ -36,9 +36,9 @@
       position: absolute;
       top: 10px;
       z-index: 10;
-      background: white;
+      background: #f5f4ff;
       border-radius: 6px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 12px rgba(47,36,131,0.18); border: 1px solid rgba(47,36,131,0.12);
       min-width: 240px;
       max-height: 80vh;
       overflow: hidden;
@@ -69,8 +69,8 @@
     #weather-panel { 
       left: 760px;
       min-width: 280px;
-      background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
-      border: 1px solid #a5d6a7;
+      background: #f5f4ff;
+      border: 1px solid rgba(47,36,131,0.15);
     }
     body.night-mode #weather-panel {
       background: linear-gradient(135deg, #0f1a2e 0%, #1a2338 100%);
@@ -93,10 +93,10 @@
       color: white;
     }
 
-    #layer-header   { background: linear-gradient(135deg, #81d4fa 0%, #42a5f5 100%); }
-    #measure-header { background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); }
-    #weather-header { background: linear-gradient(135deg, #66bb6a 0%, #388e3c 100%); }
-    #search-header  { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); }
+    #layer-header   { background: #2F2483; }
+    #measure-header { background: #2F2483; }
+    #weather-header { background: #2F2483; }
+    #search-header  { background: #2F2483; }
 
     body.night-mode #layer-header,
     body.night-mode #measure-header,
@@ -114,7 +114,7 @@
       padding: 12px 16px;
       max-height: calc(80vh - 42px);
       overflow-y: auto;
-      background: white;
+      background: #ffffff;
     }
     body.night-mode #layer-content,
     body.night-mode #measure-content,
@@ -122,6 +122,7 @@
     body.night-mode #search-content {
       background: #1a2338;
     }
+    body.night-mode #weather-mode-label { color: #ffffff; }
 
     /* ── ПАНЕЛЬ СЛОЁВ — стиль как на макете ────────────────────── */
     #layer-panel {
@@ -129,8 +130,8 @@
       max-width: 240px;
     }
     #layer-header {
-      background: #5bc8f5 !important;
-      color: #003366 !important;
+      background: #2F2483 !important;
+      color: #ffffff !important;
       font-size: 15px !important;
       font-weight: bold !important;
       letter-spacing: 0.3px;
@@ -188,12 +189,27 @@
     .lp-chk {
       flex-shrink: 0;
       margin-left: 6px;
-      width: 16px;
-      height: 16px;
-      accent-color: #1565c0;
+      width: 18px;
+      height: 18px;
       cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background: url('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/kvadrat.png') center/contain no-repeat;
+      border: none;
+      outline: none;
+      vertical-align: middle;
     }
-    body.night-mode .lp-chk { accent-color: #66aaff; }
+    .lp-chk:checked {
+      background:
+        url('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/krest.png') center/contain no-repeat,
+        url('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/kvadrat.png') center/contain no-repeat;
+    }
+    .lp-chk:indeterminate {
+      background:
+        url('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/krest.png') center/contain no-repeat,
+        url('https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/Buttons/kvadrat.png') center/contain no-repeat;
+      opacity: 0.5;
+    }
 
     /* Разделитель между группами */
     .lp-sep {
@@ -278,9 +294,9 @@
     .point-item {
       margin: 8px 0;
       padding: 6px 10px;
-      background: #f8fbff;
+      background: #f5f4ff;
       border-radius: 4px;
-      border-left: 4px solid #42a5f5;
+      border-left: 4px solid #2F2483;
     }
     body.night-mode .point-item {
       background: #1e2a44;
@@ -374,7 +390,7 @@
       border-bottom-color: #2a3b5c;
     }
     .search-result-item:hover {
-      background: #f8fbff;
+      background: #eeedf8;
       padding-left: 16px;
     }
     body.night-mode .search-result-item:hover {
@@ -411,7 +427,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #f8f9fa;
+      background: #eeedf8;
     }
     body.night-mode .popup-header {
       background: #25314f;
@@ -813,8 +829,8 @@
     ═══════════════════════════════════════════════════════ */
     #draw-panel {
       position: absolute; top: 10px; left: 80px; z-index: 20;
-      background: white; border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.28);
+      background: #f5f4ff; border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(47,36,131,0.18); border: 1px solid rgba(47,36,131,0.12);
       width: 300px; max-width: calc(100vw - 110px);
       max-height: 82vh; overflow: hidden; font-size: 13px;
       display: none; opacity: 0; transform: translateY(-10px);
@@ -825,17 +841,17 @@
     #draw-panel-header {
       padding: 10px 16px; cursor: move; font-weight: bold;
       display: flex; justify-content: space-between; align-items: center;
-      color: white; background: linear-gradient(135deg,#1565c0 0%,#0d47a1 100%);
+      color: white; background: #2F2483;
       user-select: none;
     }
     #draw-panel-body { padding: 10px 12px; overflow-y: auto; max-height: calc(82vh - 44px); }
     .draw-item {
       display: flex; align-items: center; gap: 8px; padding: 7px 8px;
-      border-radius: 6px; margin-bottom: 4px; background: #f5f7fa;
-      cursor: default; border: 1px solid #e0e4ea; transition: background 0.15s;
+      border-radius: 6px; margin-bottom: 4px; background: #eeedf8;
+      cursor: default; border: 1px solid rgba(47,36,131,0.15); transition: background 0.15s;
     }
     body.night-mode .draw-item { background: #253040; border-color: #334; }
-    .draw-item:hover { background: #e3eeff; }
+    .draw-item:hover { background: #dddaf5; }
     .draw-item-name { flex: 1; font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .draw-item-type { font-size: 10px; color: #888; white-space: nowrap; }
     .draw-item-actions button {
@@ -897,7 +913,7 @@
     body.night-mode .df-section { color: #64b5f6; border-bottom-color: #334; }
     .df-btns { display: flex; gap: 10px; margin-top: 16px; }
     .df-btn-save {
-      flex: 1; background: linear-gradient(135deg,#1565c0,#0d47a1);
+      flex: 1; background: #2F2483;
       color: white; border: none; padding: 9px; border-radius: 6px;
       cursor: pointer; font-weight: bold; font-size: 13px;
     }
@@ -941,7 +957,7 @@
     #coord-input-box h3 {
       margin: 0 0 14px; font-size: 15px; color: #1a237e;
     }
-    body.night-mode #coord-input-box h3 { color: #90caf9; }
+    body.night-mode #coord-input-box h3 { color: #2F2483; }
     #coord-input-box label {
       display: block; font-size: 11px; color: #888;
       margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px;
@@ -967,7 +983,7 @@
     /* ── FLIGHT PLAN ──────────────────────────────────────────── */
     #fp-panel {
       position: absolute; top: 10px; left: 80px; z-index: 30;
-      background: #f5f7fa; border-radius: 12px;
+      background: #f5f4ff; border-radius: 12px; border: 1px solid rgba(47,36,131,0.12);
       box-shadow: 0 4px 24px rgba(0,0,0,0.22);
       width: 320px; display: none; opacity: 0;
       transform: translateY(-8px);
@@ -979,14 +995,14 @@
     body.night-mode #fp-panel { background: #1a2535; color: #cdd; }
     #fp-header {
       padding: 11px 16px; font-weight: bold; color: white;
-      background: linear-gradient(135deg,#1a237e,#283593);
+      background: #2F2483;
       display: flex; justify-content: space-between; align-items: center;
       cursor: move; user-select: none;
     }
     .fp-section {
       margin: 8px 10px;
-      background: white; border-radius: 8px;
-      border: 1.5px solid #dde3ee;
+      background: #ffffff; border-radius: 8px;
+      border: 1.5px solid rgba(47,36,131,0.18);
       overflow: hidden;
     }
     body.night-mode .fp-section { background: #1e2d42; border-color: #2a3a55; }
@@ -996,10 +1012,10 @@
     }
     .fp-icao {
       font-size: 26px; font-weight: 900; letter-spacing: 2px;
-      color: #1a237e; padding: 0 12px 4px; line-height: 1.1;
+      color: #2F2483; padding: 0 12px 4px; line-height: 1.1;
       font-family: monospace;
     }
-    body.night-mode .fp-icao { color: #90caf9; }
+    body.night-mode .fp-icao { color: #2F2483; }
     .fp-explain {
       font-size: 11px; color: #555; padding: 0 12px 8px;
       font-family: monospace; word-break: break-all;
@@ -1010,7 +1026,7 @@
       color: #1a237e; padding: 8px 12px; line-height: 1.6;
       word-break: break-all; min-height: 36px;
     }
-    body.night-mode .fp-route-text { color: #90caf9; }
+    body.night-mode .fp-route-text { color: #2F2483; }
     .fp-altn-row {
       display: flex; gap: 8px; margin: 0 10px 8px;
     }
@@ -1023,7 +1039,7 @@
       font-size: 16px; font-weight: 900; letter-spacing: 1.5px;
       color: #1a237e; padding: 4px 10px 2px; font-family: monospace;
     }
-    body.night-mode .fp-altn-icao { color: #90caf9; }
+    body.night-mode .fp-altn-icao { color: #2F2483; }
     .fp-altn-explain {
       font-size: 10px; color: #555; padding: 0 10px 6px;
       font-family: monospace; word-break: break-all;
@@ -1036,7 +1052,7 @@
       font-weight: 700; cursor: pointer; letter-spacing: .5px;
       transition: background .15s;
     }
-    #fp-export-btn:hover { background: #283593; }
+    #fp-export-btn:hover { background: #3d2e9e; }
     #fp-empty-msg {
       padding: 20px; text-align: center; color: #aaa; font-size: 13px;
     }
@@ -1055,7 +1071,7 @@
     body.night-mode #project-menu { background: #1a2535; }
     #project-menu-header {
       padding: 11px 16px; font-weight: bold; color: white;
-      background: linear-gradient(135deg,#2e7d32,#1b5e20);
+      background: #2F2483;
       display: flex; justify-content: space-between; align-items: center;
       cursor: move; user-select: none; gap: 8px;
     }
@@ -1078,7 +1094,7 @@
       transition: background 0.1s;
     }
     body.night-mode .proj-card { border-bottom-color: #2a3a4a; }
-    .proj-card.active { background: #f0faf0; }
+    .proj-card.active { background: #eeedf8; }
     body.night-mode .proj-card.active { background: #1a2e1a; }
     .proj-card-top {
       display: flex; align-items: center; gap: 8px;
@@ -1095,7 +1111,7 @@
     }
     body.night-mode .proj-card-name { color: #cde; }
     .proj-card-name-input {
-      flex: 1; border: 1px solid #2e7d32; border-radius: 4px;
+      flex: 1; border: 1px solid #2F2483; border-radius: 4px;
       padding: 2px 6px; font-size: 13px; font-weight: 600;
       outline: none; background: white; color: #1a1a1a;
     }
@@ -1137,17 +1153,17 @@
       flex-direction: column; align-items: center; gap: 2px;
     }
     .proj-action-btn .pab-icon { font-size: 16px; }
-    .proj-action-btn.primary { background: #2e7d32; color: white; }
+    .proj-action-btn.primary { background: #2F2483; color: white; }
     .proj-action-btn.primary:hover { background: #1b5e20; }
-    .proj-action-btn.secondary { background: #e8f5e9; color: #2e7d32; }
-    .proj-action-btn.secondary:hover { background: #c8e6c9; }
+    .proj-action-btn.secondary { background: #eeedf8; color: #2F2483; }
+    .proj-action-btn.secondary:hover { background: #dddaf5; }
     body.night-mode .proj-action-btn.secondary { background: #1a3020; color: #81c784; }
 
     #project-info {
-      padding: 6px 14px; font-size: 11px; color: #2e7d32;
-      background: #e8f5e9; display: none; text-align: center;
+      padding: 6px 14px; font-size: 11px; color: #2F2483;
+      background: #eeedf8; display: none; text-align: center;
     }
-    body.night-mode #project-info { background: #1a3a2a; color: #81c784; }
+    body.night-mode #project-info { background: #1a1a3a; color: #9988ff; }
 
     /* Совместимость старых классов */
     .project-item { display: none; }
@@ -1157,9 +1173,9 @@
       position: absolute;
       top: 10px; left: 80px;
       z-index: 30;
-      background: white;
+      background: #f5f4ff;
       border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 20px rgba(47,36,131,0.2); border: 1px solid rgba(47,36,131,0.12);
       width: 260px;
       overflow: hidden;
       display: none;
@@ -1174,7 +1190,7 @@
       padding: 11px 16px;
       font-weight: bold;
       color: white;
-      background: linear-gradient(135deg,#1565c0,#0d47a1);
+      background: #2F2483;
       display: flex; justify-content: space-between; align-items: center;
       cursor: move; user-select: none;
     }
@@ -1187,7 +1203,7 @@
     }
     body.night-mode .export-item { border-bottom-color: #2a3a4a; }
     .export-item:last-child { border-bottom: none; }
-    .export-item:hover { background: #e8f0fe; }
+    .export-item:hover { background: #dddaf5; }
     body.night-mode .export-item:hover { background: #1a2d45; }
     .export-item-icon { font-size: 20px; width: 28px; text-align: center; }
     .export-item-text { flex: 1; }
@@ -1196,9 +1212,9 @@
     .export-item-desc { font-size: 11px; color: #888; margin-top: 1px; }
     #export-status {
       padding: 8px 16px;
-      font-size: 12px; color: #1565c0;
+      font-size: 12px; color: #2F2483;
       text-align: center; display: none;
-      background: #e8f0fe;
+      background: #eeedf8;
     }
     body.night-mode #export-status { background: #1a2d45; color: #64b5f6; }
 
@@ -1207,8 +1223,8 @@
       background:#f5f5f5; color:#555; font-size:11px; font-weight:500;
       cursor:pointer; transition:all .15s; white-space:nowrap;
     }
-    .exp-scale-btn:hover { border-color:#1565c0; color:#1565c0; background:#e8f0fe; }
-    .exp-scale-btn.active { border-color:#1565c0; background:#1565c0; color:white; }
+    .exp-scale-btn:hover { border-color:#2F2483; color:#2F2483; background:#eeedf8; }
+    .exp-scale-btn.active { border-color:#2F2483; background:#2F2483; color:white; }
     body.night-mode .exp-scale-btn { background:#253040; border-color:#445; color:#9ab; }
     body.night-mode .exp-scale-btn.active { background:#1565c0; border-color:#1565c0; color:white; }
     #exp-scale-input:focus { border-color:#0d47a1; }
@@ -1230,7 +1246,7 @@
     #export-menu-header {
     #draw-hint {
       display: none; position: fixed; bottom: 90px; left: 50%;
-      transform: translateX(-50%); background: rgba(21,101,192,0.92);
+      transform: translateX(-50%); background: rgba(47,36,131,0.92);
       color: white; border-radius: 20px; padding: 8px 22px;
       font-size: 13px; z-index: 9998; pointer-events: none; white-space: nowrap;
     }
@@ -1293,7 +1309,7 @@
                style="display:block; max-width:45vw; max-height:85vh; transform-origin:0 0; user-select:none; pointer-events:none;"
                alt="Легенда карт УК" draggable="false">
         </div>
-        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:-4px;">🔍 Колесо мыши / щипок — приближение • Перетащите для панорамирования</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:-4px;">Колесо мыши / щипок — приближение • Перетащите для панорамирования</div>
       </div>
 
       <!-- Легенда МК -->
@@ -1309,7 +1325,7 @@
                style="display:block; max-width:45vw; max-height:85vh; transform-origin:0 0; user-select:none; pointer-events:none;"
                alt="Легенда карт МК" draggable="false">
         </div>
-        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:-4px;">🔍 Колесо мыши / щипок — приближение • Перетащите для панорамирования</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:-4px;">Колесо мыши / щипок — приближение • Перетащите для панорамирования</div>
       </div>
 
     </div>
@@ -1433,11 +1449,11 @@
   <div id="layer-panel">
     <div id="layer-header">
       <span>Карта</span>
-      <span id="toggle-arrow">▼</span>
+      
     </div>
     <div id="layer-toggleall" style="display:flex;gap:5px;padding:5px 8px 4px;border-bottom:1px solid #ddd;">
-      <button onclick="setAllLayers(true)"  style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#e3f2fd;color:#1565c0;">✅ Все вкл.</button>
-      <button onclick="setAllLayers(false)" style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#fce4ec;color:#c62828;">❌ Все выкл.</button>
+      <button onclick="setAllLayers(true)"  style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#eeedf8;color:#2F2483;">Все вкл.</button>
+      <button onclick="setAllLayers(false)" style="flex:1;padding:3px 0;font-size:11px;font-weight:bold;border:none;border-radius:4px;cursor:pointer;background:#eeedf8;color:#2F2483;">Все выкл.</button>
     </div>
     <div id="layer-content"></div>
   </div>
@@ -1445,18 +1461,18 @@
   <div id="measure-panel">
     <div id="measure-header">
       <span>Прокладка маршрута<span id="measure-proj-label" style="font-size:10px;opacity:.7;margin-left:8px;font-weight:normal;"></span></span>
-      <span id="measure-toggle">▼</span>
+      
     </div>
     <div id="measure-content">
       <button id="measure-btn">Прокладка маршрута</button>
       <button id="clear-btn">Очистить маршрут</button>
-      <button id="export-kml-btn" onclick="exportKML()" style="background:#388e3c; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%; margin-top:6px; font-size:13px;">📥 Выгрузить в KML</button>
+      <button id="export-kml-btn" onclick="exportKML()" style="background:#2F2483; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%; margin-top:6px; font-size:13px;">Выгрузить в KML</button>
       <div id="points-list">Точки не добавлены</div>
       <div id="total-distance" class="total">Общее: — км / — NM</div>
 
       <!-- Блок инспектора семантики (показывается после завершения маршрута) -->
       <div id="inspect-block" style="display:none; margin-top:14px; border-top:1px solid #ddd; padding-top:10px;">
-        <div style="font-weight:bold; font-size:13px; color:#555; margin-bottom:6px;">🔍 Просмотр объектов</div>
+        <div style="font-weight:bold; font-size:13px; color:#555; margin-bottom:6px;">Просмотр объектов</div>
         <div id="inspect-result" style="font-size:12.5px; line-height:1.5; max-height:260px; overflow-y:auto;"></div>
       </div>
     </div>
@@ -1465,10 +1481,10 @@
   <div id="weather-panel">
     <div id="weather-header">
       <span>Погода</span>
-      <span id="weather-toggle">▼</span>
+      
     </div>
     <div id="weather-content">
-      <label style="display:flex; align-items:center; gap:10px; margin:12px 0; font-size:15px; font-weight:bold; color:#2e7d32;">
+      <label id="weather-mode-label" style="display:flex; align-items:center; gap:10px; margin:12px 0; font-size:15px; font-weight:bold; color:#2F2483;">
         <input type="checkbox" id="weather-mode-chk">
         Режим погоды (клик → погода в точке)
       </label>
@@ -1502,7 +1518,7 @@
   <div id="search-panel">
     <div id="search-header">
       <span>Поиск объектов</span>
-      <span id="search-toggle">▼</span>
+      
     </div>
     <div id="search-content">
       <input type="text" id="search-input" placeholder="Поиск по названию или коду ИКАО (UUEE, UUDD...)" autocomplete="off">
@@ -1542,18 +1558,18 @@
       justify-content: space-between;
       align-items: center;
       color: white;
-      background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%);
+      background: #2F2483;
       user-select: none;
     ">
-      <span>📋 NOTAM</span>
-      <span id="notam-toggle">▼</span>
+      <span>NOTAM</span>
+      
     </div>
 
     <!-- Тело — только две кнопки -->
     <div id="notam-content" style="padding: 12px 16px; background: white;">
 
       <button onclick="quickNotamRequest()" id="notam-fetch-btn" style="
-        width:100%; background:linear-gradient(135deg,#43a047,#2e7d32);
+        width:100%; background:#2F2483;
         color:white; border:none; padding:10px 0; border-radius:6px;
         cursor:pointer; font-weight:bold; font-size:13px; letter-spacing:0.3px;
         margin-bottom:8px; display:block;
@@ -1592,7 +1608,7 @@
     border: 1px solid rgba(25,118,210,0.2);
   ">
     <div id="cursor-coords-pz" style="font-size:13px;"></div>
-    <div id="cursor-coords-elev" style="font-size:11.5px; color:#388e3c; font-weight:bold; margin-top:2px;"></div>
+    <div id="cursor-coords-elev" style="font-size:11.5px; color:#2F2483; font-weight:bold; margin-top:2px;"></div>
 
   </div>
 
@@ -12962,8 +12978,8 @@ ${placemarks}
   <!-- ═══ FLIGHT PLAN ═══ -->
   <div id="fp-panel">
     <div id="fp-header">
-      <span>✈ Flight Plan</span>
-      <span id="fp-refresh" title="Обновить" style="cursor:pointer;font-size:16px;" onclick="fpBuild()">↺</span>
+      <span>Flight Plan</span>
+      
     </div>
     <div id="fp-body">
       <div id="fp-empty-msg">Постройте маршрут в «Прокладке маршрута»</div>
@@ -12974,20 +12990,20 @@ ${placemarks}
   <!-- ═══ ПРОЕКТ ═══ -->
   <div id="project-menu">
     <div id="project-menu-header">
-      <span id="project-menu-header-title">📁 Проекты</span>
+      <span id="project-menu-header-title">Проекты</span>
       <span style="font-size:11px;opacity:.7;font-weight:normal;" id="proj-active-label"></span>
     </div>
     <div id="project-info"></div>
     <div id="project-list"></div>
     <div id="project-actions">
       <button class="proj-action-btn primary" onclick="projectLoad()">
-        <span class="pab-icon">📂</span>Загрузить
+        Загрузить
       </button>
       <button class="proj-action-btn secondary" onclick="projectSaveActive()">
-        <span class="pab-icon">💾</span>Сохранить
+        Сохранить
       </button>
       <button class="proj-action-btn secondary" onclick="projectNewEmpty()">
-        <span class="pab-icon">➕</span>Новый
+        Новый
       </button>
     </div>
   </div>
@@ -12996,8 +13012,7 @@ ${placemarks}
   <!-- ═══ ЭКСПОРТ / ПЕЧАТЬ ═══ -->
   <div id="export-menu">
     <div id="export-menu-header">
-      <span>🖨️ Редактирование</span>
-      <span>▼</span>
+      <span>Редактирование</span>
     </div>
     <div id="export-status">⏳ Подготовка изображения...</div>
 
@@ -13336,8 +13351,8 @@ ${placemarks}
   <!-- Панель списка элементов -->
   <div id="draw-panel">
     <div id="draw-panel-header">
-      <span>✏️ Графика<span id="draw-proj-label" style="font-size:10px;opacity:.7;margin-left:6px;font-weight:normal;"></span></span>
-      <span id="draw-panel-toggle">▼</span>
+      <span>Графика<span id="draw-proj-label" style="font-size:10px;opacity:.7;margin-left:6px;font-weight:normal;"></span></span>
+      
     </div>
     <div id="draw-panel-body">
       <div id="draw-items-list"></div>
