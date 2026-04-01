@@ -502,6 +502,10 @@
     body.night-mode .layer-VVPpoly         { background: #1a2e44; border-left-color: #66aaff; }
     .layer-SectorPoly      { background: #e8f5e9; border-left: 5px solid #388e3c; }
     body.night-mode .layer-SectorPoly      { background: #1a2e1f; border-left-color: #66cc88; }
+    .layer-IFRvp_SECTOR    { background: #e8f5e9; border-left: 5px solid #388e3c; }
+    body.night-mode .layer-IFRvp_SECTOR    { background: #1a2e1f; border-left-color: #66cc88; }
+    .layer-IFRvp_NAS       { background: #f3e5f5; border-left: 5px solid #4a0072; }
+    body.night-mode .layer-IFRvp_NAS       { background: #2a0a3a; border-left-color: #9c4dcc; }
     .layer-RP_point        { background: #fafafa; border-left: 5px solid #212121; }
     body.night-mode .layer-RP_point        { background: #222; border-left-color: #cccccc; }
     .layer-IFR_ENROUTE_MVL { background: #f8f8f8; border-left: 5px solid #000; }
@@ -1726,7 +1730,7 @@
     setTimeout(hideLoader, 10000);
 
     // Прогресс лоадера
-    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','LOM','ADHPLS','OBST','NOM1','NOM2','GoogleSat','IFRm','IFRp'];
+    const _loaderSources = ['openmaptiles','FIRS','marshr','zapretki','VVP','MET','SectorFIR','RP','RTS','LOM','ADHPLS','OBST','NOM1','NOM2','GoogleSat','IFRm','IFRp','IFRvp'];
     const _loaderLoaded  = new Set();
     function _loaderProgress(src) {
       if (!src || _loaderLoaded.has(src)) return;
@@ -1777,6 +1781,10 @@
           "SectorFIR": {
             "type": "geojson",
             "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/SECTOR.geojson"
+          },
+          "IFRvp": {
+            "type": "geojson",
+            "data": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRvp.geojson"
           },
           "RP": {
             "type": "geojson",
@@ -4408,61 +4416,7 @@
         "text-halo-width": 2
       }
     },
-    {
-      "id": "FIRS-copy-copy-copy",
-      "type": "line",
-      "source": "FIRS",
-      "minzoom": 6,
-      "layout": {
-        "line-cap": "butt",
-        "line-join": "bevel",
-        "line-miter-limit": 4,
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "#16833C",
-        "line-width": {"stops": [[6, 2], [10, 15]]},
-        "line-offset": 2,
-        "line-dasharray": [0.3, 14]
-      }
-    },
-    {
-      "id": "FIRS-copy-copy",
-      "type": "line",
-      "source": "FIRS",
-      "minzoom": 6,
-      "layout": {
-        "line-cap": "butt",
-        "line-join": "bevel",
-        "line-miter-limit": 4,
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "#16833C",
-        "line-width": {"stops": [[6, 2], [10, 15]]},
-        "line-offset": -2,
-        "line-dasharray": [0.3, 15]
-      }
-    },
-    {
-      "id": "FIRS",
-      "type": "line",
-      "source": "FIRS",
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "#16833C",
-        "line-width": {
-          "base": 4,
-          "stops": [[1, 1], [8, 4]],
-          "type": "exponential"
-        }
-      }
-    },
-    {
+        {
       "id": "ENROUTE_MVL_BUF",
       "type": "line",
       "source": "marshr",
@@ -4795,7 +4749,37 @@
         "line-color": "#16833C",
         "line-width": {
           "base": 1,
-          "stops": [[1, 1], [6, 4]],
+          "stops": [[1, 1], [6, 4], [8, 4]],
+          "type": "exponential"
+        }
+      }
+    },
+    {
+      "id": "IFRvp_NAS_line",
+      "type": "line",
+      "source": "IFRvp",
+      "filter": ["==", ["get", "SPACETYPE"], "SSO"],
+      "layout": {"visibility": "none"},
+      "paint": {
+        "line-color": "#4a0072",
+        "line-width": {
+          "base": 1,
+          "stops": [[1, 1], [6, 4], [8, 4]],
+          "type": "exponential"
+        }
+      }
+    },
+    {
+      "id": "IFRvp_SECTOR_line",
+      "type": "line",
+      "source": "IFRvp",
+      "filter": ["==", ["get", "SPACETYPE"], "Сектор контроля за воздушным движением (SECTOR)"],
+      "layout": {"visibility": "none"},
+      "paint": {
+        "line-color": "#16833C",
+        "line-width": {
+          "base": 1,
+          "stops": [[1, 1], [6, 4], [8, 4]],
           "type": "exponential"
         }
       }
@@ -4809,7 +4793,7 @@
         "text-field": ["concat", ["get", "NAME"]],
         "text-size": 12,
         "text-offset": [2, -1],
-        "visibility": "visible",
+        "visibility": "none",
         "text-font": [
           "literal",
           ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
@@ -5499,26 +5483,14 @@
       "layout": {
         "text-field": [
           "concat",
-          ["get", "ALT_NAME"],
-          "\n",
-          ["get", "CALLSIGN"],
-          "\n",
-          ["get", "FREQUENCY"],
-          "\n",
-          ["get", "HMAX"],
-          "  / ",
-          ["get", "HMIN"]
+          ["get", "ALT_NAME"], "\n",
+          ["get", "CALLSIGN"], "\n",
+          ["get", "FREQUENCY"], "\n",
+          ["get", "HMAX"], "  / ", ["get", "HMIN"]
         ],
         "symbol-placement": "line",
-        "text-font": [
-          "literal",
-          ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]
-        ],
-        "text-size": {
-          "base": 1,
-          "stops": [[1, 1], [6, 13]],
-          "type": "exponential"
-        },
+        "text-font": ["literal", ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]],
+        "text-size": {"base": 1, "stops": [[1, 1], [6, 13]], "type": "exponential"},
         "text-transform": "uppercase",
         "text-offset": [1, 3],
         "symbol-spacing": ["literal", 500],
@@ -5530,6 +5502,138 @@
         "text-color": "#16833C",
         "text-halo-color": "rgba(255, 255, 255, 1)",
         "text-halo-width": 2
+      }
+    },
+    {
+      "id": "IFRvp_NAS_poly",
+      "type": "fill",
+      "source": "IFRvp",
+      "filter": ["==", ["get", "SPACETYPE"], "SSO"],
+      "layout": {"visibility": "none"},
+      "paint": {"fill-opacity": 0}
+    },
+    {
+      "id": "IFRvp_SECTOR_poly",
+      "type": "fill",
+      "source": "IFRvp",
+      "filter": ["==", ["get", "SPACETYPE"], "Сектор контроля за воздушным движением (SECTOR)"],
+      "layout": {"visibility": "none"},
+      "paint": {"fill-opacity": 0}
+    },
+    {
+      "id": "IFRvp_NAS_name",
+      "type": "symbol",
+      "source": "IFRvp",
+      "minzoom": 9,
+      "filter": ["==", ["get", "SPACETYPE"], "SSO"],
+      "layout": {
+        "visibility": "none",
+        "text-field": [
+          "concat",
+          ["get", "ALT_NAME"], "\n",
+          ["get", "CALLSIGN"], "\n",
+          ["get", "FREQUENCY"], "\n",
+          ["get", "HMAX"], "  / ", ["get", "HMIN"]
+        ],
+        "symbol-placement": "line",
+        "text-font": ["literal", ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]],
+        "text-size": {"base": 1, "stops": [[1, 1], [6, 13]], "type": "exponential"},
+        "text-transform": "uppercase",
+        "text-offset": [1, 3],
+        "symbol-spacing": ["literal", 500],
+        "symbol-avoid-edges": false,
+        "text-max-angle": 30,
+        "icon-allow-overlap": false
+      },
+      "paint": {
+        "text-color": "#4a0072",
+        "text-halo-color": "rgba(255, 255, 255, 1)",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "IFRvp_SECTOR_name",
+      "type": "symbol",
+      "source": "IFRvp",
+      "minzoom": 9,
+      "filter": ["==", ["get", "SPACETYPE"], "Сектор контроля за воздушным движением (SECTOR)"],
+      "layout": {
+        "visibility": "none",
+        "text-field": [
+          "concat",
+          ["get", "ALT_NAME"], "\n",
+          ["get", "CALLSIGN"], "\n",
+          ["get", "FREQUENCY"], "\n",
+          ["get", "HMAX"], "  / ", ["get", "HMIN"]
+        ],
+        "symbol-placement": "line",
+        "text-font": ["literal", ["Arial Unicode MS Bold", "Arial Unicode MS Regular"]],
+        "text-size": {"base": 1, "stops": [[1, 1], [6, 13]], "type": "exponential"},
+        "text-transform": "uppercase",
+        "text-offset": [1, 3],
+        "symbol-spacing": ["literal", 500],
+        "symbol-avoid-edges": false,
+        "text-max-angle": 30,
+        "icon-allow-overlap": false
+      },
+      "paint": {
+        "text-color": "#16833C",
+        "text-halo-color": "rgba(255, 255, 255, 1)",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "FIRS-copy-copy-copy",
+      "type": "line",
+      "source": "FIRS",
+      "minzoom": 6,
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "bevel",
+        "line-miter-limit": 4,
+        "visibility": "none"
+      },
+      "paint": {
+        "line-color": "#16833C",
+        "line-width": {"stops": [[6, 2], [10, 15]]},
+        "line-offset": 2,
+        "line-dasharray": [0.3, 14]
+      }
+    },
+    {
+      "id": "FIRS-copy-copy",
+      "type": "line",
+      "source": "FIRS",
+      "minzoom": 6,
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "bevel",
+        "line-miter-limit": 4,
+        "visibility": "none"
+      },
+      "paint": {
+        "line-color": "#16833C",
+        "line-width": {"stops": [[6, 2], [10, 15]]},
+        "line-offset": -2,
+        "line-dasharray": [0.3, 15]
+      }
+    },
+    {
+      "id": "FIRS",
+      "type": "line",
+      "source": "FIRS",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "none"
+      },
+      "paint": {
+        "line-color": "#16833C",
+        "line-width": {
+          "base": 4,
+          "stops": [[1, 1], [8, 4]],
+          "type": "exponential"
+        }
       }
     },
     {
@@ -6163,12 +6267,52 @@
     const sourceGroups = [];
 
     // ── Состояние ВП ──────────────────────────────────────────────────────
-    const _vpState = { 'vp-ifr': true, 'vp-vfr': true };
-    const _vpSources = ['VVP', 'FIRS', 'SectorFIR'];
+    const _vpState = { 'vp-ifr': false, 'vp-vfr': true };
+
+    // Слои только для IFR: РПИ (FIRS) + IFRvp
+    const _ifrOnlyLayers = [
+      'FIRS-copy-copy-copy','FIRS-copy-copy','FIRS','FIR_LINE',
+      'IFRvp_NAS_line','IFRvp_SECTOR_line','IFRvp_NAS_poly','IFRvp_SECTOR_poly','IFRvp_NAS_name','IFRvp_SECTOR_name'
+    ];
+    // AFIZ видна только при VFR, на IFR скрыта
+    const _afizLayers = ['AFIZ'];
+    // Общие ВП слои (VVP, SectorFIR) — при любом включённом режиме
+    const _vpCommonSources = ['VVP'];
+    // SectorFIR visible only on VFR
+    const _vfrOnlySources = ['SectorFIR'];
 
     function applyVPFilter() {
-      const anyOn = _vpState['vp-ifr'] || _vpState['vp-vfr'];
-      _vpSources.forEach(src => toggleSourceLayers(src, anyOn));
+      const ifrOn = _vpState['vp-ifr'];
+      const vfrOn = _vpState['vp-vfr'];
+      const anyOn = ifrOn || vfrOn;
+
+      // VVP — при любом включённом
+      _vpCommonSources.forEach(src => toggleSourceLayers(src, anyOn));
+
+      // SectorFIR — только при VFR
+      _vfrOnlySources.forEach(src => toggleSourceLayers(src, vfrOn));
+
+      // FIRS + IFRvp — только при IFR
+      _ifrOnlyLayers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', ifrOn ? 'visible' : 'none');
+      });
+      if (ifrOn) {
+        // Диагностика: проверяем есть ли данные в IFRvp
+        const src = map.getSource('IFRvp');
+        if (src) {
+          const data = src._data || src._options?.data;
+          console.log('[IFRvp] source exists, type:', src.type);
+        }
+        ['IFRvp_NAS_line','IFRvp_SECTOR_line'].forEach(id => {
+          const l = map.getLayer(id);
+          console.log('[IFRvp] layer', id, l ? 'EXISTS, vis:' + map.getLayoutProperty(id,'visibility') : 'NOT FOUND');
+        });
+      }
+
+      // AFIZ — только при VFR (не при IFR)
+      _afizLayers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vfrOn ? 'visible' : 'none');
+      });
     }
 
     // ── Состояние Зон ─────────────────────────────────────────────────────
@@ -6305,6 +6449,8 @@
       { id: 'zapretki_poly', colorClass: 'layer-zapretki_poly', source: 'zapretki', idProps: ['NAME'] },
       { id: 'VVPpoly', colorClass: 'layer-VVPpoly', source: 'VVP', idProps: ['NAME', 'HMIN'] },
       { id: 'SectorPoly', colorClass: 'layer-SectorPoly', source: 'SectorFIR', idProps: ['NAME', 'HMAX'] },
+      { id: 'IFRvp_SECTOR_poly', colorClass: 'layer-IFRvp_SECTOR', source: 'IFRvp', idProps: ['NAME', 'HMAX'] },
+      { id: 'IFRvp_NAS_poly',    colorClass: 'layer-IFRvp_NAS',    source: 'IFRvp', idProps: ['NAME', 'HMAX'] },
       { id: 'RP_point', colorClass: 'layer-RP_point', source: 'RP', idProps: ['NAME'] },
       { id: 'IFR_ENROUTE_MVL', colorClass: 'layer-IFR_ENROUTE_MVL', source: 'IFRm', idProps: ['altname'] },
       { id: 'IFRp_point', colorClass: 'layer-IFRp_point', source: 'IFRp', idProps: ['name'] },
@@ -6331,7 +6477,8 @@
       "OBST": "https://huggingface.co/buckets/egorew/avcinfo/resolve/OBST.geojson",
       "ADHPLS": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/ADHPLS.geojson",
       "NOM1": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/refs/heads/main/5km10km.geojson",
-      "NOM2": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/refs/heads/main/2km.geojson"
+      "NOM2": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/refs/heads/main/2km.geojson",
+      "IFRvp": "https://raw.githubusercontent.com/xxmorexxavia/zapretki/main/IFRvp.geojson"
     };
 
     // Ночной режим
@@ -7710,7 +7857,7 @@
         const _srcLabelMap = {
           'IFRm':'Маршруты ППП','marshr':'Маршруты ПВП','IFRp':'Точки ППП','RP':'Точки ПВП',
           'RTS':'РТС','ADHPLS':'АД/ВД/ПП','OBST':'Препятствия','MET':'МЕТЕО',
-          'VVP':'Воздушное пространство','FIRS':'РПИ','SectorFIR':'Сектора РПИ',
+          'VVP':'Воздушное пространство','FIRS':'РПИ','SectorFIR':'Сектора РПИ','IFRvp':'ВП ИВП (IFR)',
           'zapretki':'Зоны','NOM1':'Номенклатура 500k/1M','NOM2':'Номенклатура 200k'
         };
         const groupLabel = _srcLabelMap[item.layerDef.source] || item.layerDef.id;
@@ -8002,38 +8149,26 @@
   },
   "SectorFIR": {
     "fields": [
-      {
-        "key": "ALT_NAME",
-        "label": "Название"
-      },
-      {
-        "key": "DESIGNATOR",
-        "label": "Регион"
-      },
-      {
-        "key": "HMIN",
-        "label": "Нижний предел высоты"
-      },
-      {
-        "key": "HMAX",
-        "label": "Верхний предел высоты"
-      },
-      {
-        "key": "CALLSIGN",
-        "label": "Позывной"
-      },
-      {
-        "key": "FREQUENCY",
-        "label": "Частота"
-      },
-      {
-        "key": "SPACETYPE",
-        "label": "Тип ВП"
-      },
-      {
-        "key": "SPACECLASS",
-        "label": "Класс ВП"
-      }
+      { "key": "ALT_NAME",   "label": "Название"              },
+      { "key": "DESIGNATOR", "label": "Регион"                },
+      { "key": "HMIN",       "label": "Нижний предел высоты"  },
+      { "key": "HMAX",       "label": "Верхний предел высоты" },
+      { "key": "CALLSIGN",   "label": "Позывной"              },
+      { "key": "FREQUENCY",  "label": "Частота"               },
+      { "key": "SPACETYPE",  "label": "Тип ВП"                },
+      { "key": "SPACECLASS", "label": "Класс ВП"              }
+    ]
+  },
+  "IFRvp": {
+    "fields": [
+      { "key": "ALT_NAME",   "label": "Название"              },
+      { "key": "DESIGNATOR", "label": "Регион"                },
+      { "key": "HMIN",       "label": "Нижний предел высоты"  },
+      { "key": "HMAX",       "label": "Верхний предел высоты" },
+      { "key": "CALLSIGN",   "label": "Позывной"              },
+      { "key": "FREQUENCY",  "label": "Частота"               },
+      { "key": "SPACETYPE",  "label": "Тип ВП"                },
+      { "key": "SPACECLASS", "label": "Класс ВП"              }
     ]
   },
   "marshr": {
@@ -12986,19 +13121,19 @@ ${placemarks}
 
   <!-- МОРА статус -->
   <div id="mora-status" style="
-    position: fixed; bottom: 110px; left: 10px; z-index: 999;
+    position: fixed; bottom: 195px; left: 10px; z-index: 999;
     background: rgba(21,101,192,0.92); color: white;
     padding: 5px 12px; border-radius: 8px; font-size: 12px;
     font-family: monospace; pointer-events: none; display: none;
   "></div>
   <div id="ama-status" style="
-    position: fixed; bottom: 140px; left: 10px; z-index: 999;
+    position: fixed; bottom: 225px; left: 10px; z-index: 999;
     background: rgba(156,39,176,0.92); color: white;
     padding: 5px 12px; border-radius: 8px; font-size: 12px;
     font-family: monospace; pointer-events: none; display: none;
   "></div>
   <div id="dem-status" style="
-    position: fixed; bottom: 170px; left: 10px; z-index: 999;
+    position: fixed; bottom: 255px; left: 10px; z-index: 999;
     color: white; padding: 5px 12px; border-radius: 8px; font-size: 12px;
     font-family: monospace; cursor: pointer; display: none;
   " onclick="checkDemServerManual()" title="Нажмите для повторной проверки"></div>
