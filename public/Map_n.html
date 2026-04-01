@@ -6040,6 +6040,34 @@
 
 // Добавляем контролы (наклон разрешён)
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    const _geoCtrl = new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: false,
+      showUserLocation: true
+    });
+    map.addControl(_geoCtrl, 'top-right');
+
+    let _geoHideTimer = null;
+
+    // При каждом нажатии — показываем точку и сбрасываем таймер
+    _geoCtrl._container.addEventListener('click', () => {
+      clearTimeout(_geoHideTimer);
+      const dot = document.querySelector('.maplibregl-user-location-dot');
+      const acc = document.querySelector('.maplibregl-user-location-accuracy-circle');
+      if (dot) dot.style.display = '';
+      if (acc) acc.style.display = '';
+    });
+
+    _geoCtrl.on('geolocate', () => {
+      clearTimeout(_geoHideTimer);
+      _geoHideTimer = setTimeout(() => {
+        const dot = document.querySelector('.maplibregl-user-location-dot');
+        const acc = document.querySelector('.maplibregl-user-location-accuracy-circle');
+        if (dot) dot.style.display = 'none';
+        if (acc) acc.style.display = 'none';
+        try { _geoCtrl._setButtonState('background'); } catch(_) {}
+      }, 5000);
+    });
 
     // map.dragRotate.disable();  // Закомментировано — теперь можно наклонять карту
     // map.touchZoomRotate.disableRotation();
