@@ -1,0 +1,270 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#app{padding:1.5rem 0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem}
+.controls select{padding:6px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px}
+.controls button{padding:6px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;cursor:pointer}
+.controls button:hover{background:var(--color-background-secondary)}
+.controls button.active{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info)}
+.stat{font-size:13px;color:var(--color-text-secondary);margin-left:auto}
+.card-wrap{perspective:900px;cursor:pointer;width:100%;max-width:640px;margin:0 auto 1.25rem;aspect-ratio:2.2/1;min-height:200px}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s ease}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;gap:10px}
+.face.back{transform:rotateY(180deg);background:var(--color-background-secondary)}
+.face .tag{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;position:absolute;top:14px;left:16px}
+.face .hint{font-size:11px;color:var(--color-text-tertiary);position:absolute;bottom:12px}
+.zh{font-size:28px;font-weight:500;color:var(--color-text-primary);line-height:1.3}
+.py{font-size:15px;color:var(--color-text-secondary);font-style:italic}
+.ru{font-size:16px;color:var(--color-text-primary);line-height:1.55}
+.nav{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:1.25rem;flex-wrap:wrap}
+.nav button{padding:7px 20px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;cursor:pointer}
+.nav button:hover{background:var(--color-background-secondary)}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav .pos{font-size:13px;color:var(--color-text-secondary);min-width:70px;text-align:center}
+.progress{width:100%;max-width:640px;margin:0 auto 1rem;height:3px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden}
+.progress-bar{height:100%;background:#378ADD;transition:width .3s}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.cat-btn{padding:4px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:999px;font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+.cat-btn:hover{border-color:var(--color-border-secondary);color:var(--color-text-primary)}
+.cat-btn.on{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info)}
+.known-bar{display:flex;gap:4px;max-width:640px;margin:0 auto .75rem;font-size:12px;color:var(--color-text-secondary);align-items:center}
+.known-count{margin-left:auto;color:var(--color-text-secondary)}
+</style>
+
+<div id="app">
+<h2 class="sr-only">Интерактивные карточки HSK 6+ — «Пресс-конференция министров»</h2>
+
+<div class="controls">
+  <button id="shuffleBtn" onclick="shuffle()">Перемешать</button>
+  <button id="knownOnly" onclick="toggleKnownOnly()">Только незнакомые</button>
+  <select id="catSel" onchange="filterCat()">
+    <option value="all">Все разделы</option>
+    <option value="pol">🏛️ Политика</option>
+    <option value="law">⚖️ Право</option>
+    <option value="eco">📊 Экономика</option>
+    <option value="enf">🚔 Правоприменение</option>
+    <option value="env">🌱 Экология</option>
+    <option value="dig">🤖 Цифровизация</option>
+    <option value="sea">🌍 Море / Международное</option>
+    <option value="phr">🧠 Устойчивые выражения</option>
+  </select>
+  <span class="stat" id="statLabel"></span>
+</div>
+
+<div class="progress"><div class="progress-bar" id="prog"></div></div>
+
+<div class="card-wrap" onclick="flip()">
+  <div class="card" id="card">
+    <div class="face front">
+      <span class="tag" id="catTag"></span>
+      <div class="zh" id="fZh"></div>
+      <div class="py" id="fPy"></div>
+      <span class="hint">нажмите, чтобы перевернуть</span>
+    </div>
+    <div class="face back">
+      <span class="tag">перевод</span>
+      <div class="ru" id="fRu"></div>
+      <span class="hint">нажмите снова</span>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button onclick="prev()">← Назад</button>
+  <span class="pos" id="pos"></span>
+  <button onclick="next()">Вперёд →</button>
+</div>
+
+<div class="known-bar">
+  <span>Прогресс: <b id="knownN">0</b> из <span id="totalN"></span> усвоено</span>
+  <button onclick="markKnown()" style="padding:4px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary)">✓ Знаю</button>
+  <button onclick="markUnknown()" style="padding:4px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary)">✗ Ещё учу</button>
+</div>
+</div>
+
+<script>
+const ALL = [
+  ["列席会议","lièxí huìyì","присутствовать на заседании без права голоса","pol"],
+  ["主要负责人","zhǔyào fùzérén","главное ответственное лицо","pol"],
+  ["回应关切","huíyìng guānqiè","отвечать на обеспокоенность общества","pol"],
+  ["社会各界","shèhuì gèjiè","все слои / сферы общества","pol"],
+  ["高度重视","gāodù zhòngshì","придавать высокую значимость","pol"],
+  ["彰显","zhāngxiǎn","демонстрировать, проявлять","pol"],
+  ["中国之治","Zhōngguó zhī zhì","управление Китаем (устойчивый оборот)","pol"],
+  ["制度优势","zhìdù yōushì","институциональное превосходство","pol"],
+  ["高质量","gāo zhìliàng","высокое качество / высококачественный","pol"],
+  ["牢固树立","láogù shùlì","твёрдо формировать / внедрять","pol"],
+  ["践行","jiànxíng","претворять в жизнь, воплощать","pol"],
+  ["政绩观","zhèngjì guān","понимание результатов управления","pol"],
+  ["宏伟蓝图","hóngwěi lántú","грандиозный план / Blueprint","pol"],
+  ["新征程","xīn zhēngchéng","новый этап пути","pol"],
+  ["奋进","fènjìn","энергично двигаться вперёд","pol"],
+  ["统筹谋划","tǒngchóu móuhuà","комплексное / скоординированное планирование","pol"],
+  ["系统布局","xìtǒng bùjú","системное размещение / стратегическое планирование","pol"],
+  ["工作大局","gōngzuò dàjú","общая картина / общий контекст работы","pol"],
+  ["凸显","tūxiǎn","становиться заметным, выделяться","pol"],
+  ["精准服务","jīngzhǔn fúwù","точечное обслуживание","pol"],
+  ["相协同","xiāng xiétóng","координироваться, работать согласованно","pol"],
+  ["提请审议","tíqǐng shěnyì","вносить на рассмотрение","law"],
+  ["制定修订","zhìdìng xiūdìng","принять и пересмотреть (нормативные акты)","law"],
+  ["废止","fèizhǐ","отменить, упразднить","law"],
+  ["营商环境","yínshāng huánjìng","деловая среда / бизнес-климат","law"],
+  ["法治轨道","fǎzhì guǐdào","правовое русло","law"],
+  ["着力解决","zhuólì jiějué","сосредоточиться на решении","law"],
+  ["地方保护","dìfāng bǎohù","локальный / местный протекционизм","law"],
+  ["准入条件","zhǔnrù tiáojiàn","условия допуска на рынок","law"],
+  ["内卷式竞争","nèijuǎn shì jìngzhēng","«инволюционная» конкуренция","law"],
+  ["制度供给","zhìdù gōngjǐ","институциональное обеспечение","law"],
+  ["新兴领域","xīnxīng lǐngyù","новые / нарождающиеся сферы","law"],
+  ["涉外领域","shèwài lǐngyù","сфера, связанная с иностранными делами","law"],
+  ["公平正义","gōngpíng zhèngyì","справедливость и правосудие","law"],
+  ["制度型开放","zhìdù xíng kāifàng","институциональная открытость","law"],
+  ["稳步扩大","wěnbù kuòdà","планомерно расширять","law"],
+  ["依法该严则严、当宽则宽","yīfǎ gāi yán zé yán, dāng kuān zé kuān","применять закон соразмерно ситуации","law"],
+  ["健全机制","jiànquán jīzhì","совершенствовать механизм","law"],
+  ["长效机制","cháng xiào jīzhì","долгосрочный механизм","law"],
+  ["涉企行政执法","shèqǐ xíngzhèng zhífǎ","административное правоприменение в отношении предприятий","law"],
+  ["稳定预期","wěndìng yùqī","стабилизировать ожидания","eco"],
+  ["提振信心","tízhèn xìnxīn","повысить / укрепить доверие","eco"],
+  ["小快灵","xiǎo kuài líng","«маленький, быстрый, гибкий» (о законотворчестве)","eco"],
+  ["民生","mínshēng","народная жизнь, нужды населения","eco"],
+  ["统筹推进","tǒngchóu tuījìn","комплексно / системно продвигать","eco"],
+  ["高水平保护","gāo shuǐpíng bǎohù","высокоуровневая защита","eco"],
+  ["压缩审批时限","yāsuō shěnpī shíxiàn","сокращать сроки рассмотрения/одобрения","eco"],
+  ["联动审批","liándòng shěnpī","совместное / синхронное рассмотрение","eco"],
+  ["盘活资源","pánhuó zīyuán","активизировать / задействовать ресурсы","eco"],
+  ["存量变增量","cúnliàng biàn zēngliàng","превратить запасы в прирост","eco"],
+  ["闲置资源","xiánzhì zīyuán","простаивающие / невостребованные ресурсы","eco"],
+  ["做大做强做优","zuò dà zuò qiáng zuò yōu","развивать, усиливать и оптимизировать","eco"],
+  ["比较优势","bǐjiào yōushì","сравнительное преимущество","eco"],
+  ["增长极","zēngzhǎng jí","полюс роста","eco"],
+  ["新质生产力","xīn zhì shēngchǎnlì","новые производительные силы (новый термин)","eco"],
+  ["绿色低碳转型","lǜsè dītàn zhuǎnxíng","зелёная низкоуглеродная трансформация","eco"],
+  ["大国胸怀","dàguó xiōnghuái","широта/открытость великой державы","eco"],
+  ["面广量大","miàn guǎng liàng dà","широкий охват и большой объём","enf"],
+  ["市场活力","shìchǎng huólì","рыночная активность / динамика рынка","enf"],
+  ["恪尽职守","kèjìn zhíshǒu","добросовестно исполнять обязанности","enf"],
+  ["合法权益","héfǎ quányì","законные права и интересы","enf"],
+  ["挽回经济损失","wǎnhuí jīngjì sǔnshī","компенсировать экономические потери","enf"],
+  ["查处纠正","chácǔ jiūzhèng","выявлять и исправлять нарушения","enf"],
+  ["乱执法/滥执法","luàn zhífǎ / làn zhífǎ","произвольное / злоупотребительное правоприменение","enf"],
+  ["放松监管","fàngsōng jiāngǔan","ослаблять надзор/контроль","enf"],
+  ["刚性约束","gāngxìng yuēshù","жёсткие / непреклонные ограничения","enf"],
+  ["执法的温度","zhífǎ de wēndù","«теплота» правоприменения (человечность)","enf"],
+  ["久久为功","jiǔ jiǔ wéi gōng","настойчиво и неустанно добиваться результата","enf"],
+  ["科技赋能","kējì fùnéng","технологическое наделение возможностями","enf"],
+  ["减负","jiǎn fù","снижать нагрузку / бремя","enf"],
+  ["一阵风","yī zhèn fēng","«порыв ветра» — кратковременная кампания без результата","enf"],
+  ["山水林田湖草沙一体化保护","shān shuǐ lín tián hú cǎo shā yītǐhuà bǎohù","комплексная защита природных систем (официальный оборот)","env"],
+  ["系统治理","xìtǒng zhìlǐ","системное управление","env"],
+  ["三条红线","sān tiáo hóngxiàn","три «красные линии» (непереступаемые границы)","env"],
+  ["守住底线","shǒuzhù dǐxiàn","удерживать нижнюю черту / красную линию","env"],
+  ["无序扩张","wúxù kuòzhāng","хаотичное / неупорядоченное расширение","env"],
+  ["摊大饼式发展","tān dàbǐng shì fāzhǎn","«развитие-тесто» — бесконтрольное расползание","env"],
+  ["自然岸线保有率","zìrán ànxiàn bǎoyǒu lǜ","доля сохранённой естественной береговой линии","env"],
+  ["态势","tàishì","тенденция, динамика, обстановка","env"],
+  ["围填海","wéi tián hǎi","намыв прибрежных территорий","env"],
+  ["标本兼治","biāoběn jiān zhì","лечить и симптомы, и причины (устойчивый оборот)","env"],
+  ["治本为主","zhì běn wéi zhǔ","приоритет устранения коренных причин","env"],
+  ["碳达峰","tàn dáfēng","пик выбросов углерода (carbon peak)","env"],
+  ["有利时机","yǒulì shíjī","благоприятный момент / окно возможностей","env"],
+  ["重污染天数","zhòng wūrǎn tiānshù","количество дней с сильным загрязнением воздуха","env"],
+  ["污染防治攻坚战","wūrǎn fángzhì gōngjiān zhàn","«решительная битва» с загрязнением","env"],
+  ["硬骨头","yìng gútou","«крепкий орешек» — трудная проблема (разг.)","env"],
+  ["全过程全链条监管","quán guòchéng quán liàntǐao jiāngǔan","надзор на протяжении всего процесса и всей цепочки","dig"],
+  ["技防优先","jì fáng yōuxiān","приоритет технологических мер защиты","dig"],
+  ["人防为主","rén fáng wéi zhǔ","приоритет человеческих ресурсов в защите","dig"],
+  ["下降幅度","xiàjiàng fúdù","масштаб снижения / сокращения","dig"],
+  ["链条化","liàntǐao huà","цепочная структура, системность (нарушений)","dig"],
+  ["专业化","zhuānyè huà","профессионализация","dig"],
+  ["数据造假","shùjù zào jiǎ","фальсификация данных","dig"],
+  ["人海战术","rénhǎi zhànshù","«тактика людского моря» — брать числом","dig"],
+  ["无济于事","wú jì yú shì","бесполезно, ничего не даёт (чэнъюй)","dig"],
+  ["问题线索","wèntí xiànsuǒ","сигналы о проблемах, зацепки","dig"],
+  ["筛查","shāichá","скрининг, фильтрация","dig"],
+  ["精准定位","jīngzhǔn dìngwèi","точное определение / позиционирование","dig"],
+  ["重塑体系","chóngsù tǐxì","перестроить систему","dig"],
+  ["黑灯实验室","hēidēng shíyànshì","«тёмная лаборатория» — полностью автоматизированная","dig"],
+  ["无事不扰","wúshì bù rǎo","не беспокоить без дела (о надзоре)","dig"],
+  ["利剑高悬","lìjiàn gāo xuán","«меч правосудия нависает» — постоянная угроза наказания","dig"],
+  ["经略海洋","jīnglüè hǎiyáng","стратегически развивать и осваивать океан","sea"],
+  ["战略要地","zhànlüè yào dì","стратегически важный регион","sea"],
+  ["向海图强","xiàng hǎi tú qiáng","стремиться к усилению через освоение морей","sea"],
+  ["首批缔约国","shǒupī dìyuē guó","первая группа стран-подписантов","sea"],
+  ["海洋命运共同体","hǎiyáng mìngyùn gòngtóngtǐ","Сообщество морской судьбы","sea"],
+  ["更加注重…","gèngjiā zhùzhòng","уделять повышенное внимание… (ключевая структура)","sea"],
+  ["创新驱动","chuàngxīn qūdòng","инновационное движение / движущая сила инноваций","sea"],
+  ["合作共赢","hézuò gòng yíng","взаимовыгодное сотрудничество","sea"],
+  ["扬帆远航","yáng fān yuǎn háng","поднять паруса в далёкое плавание (образн.)","sea"],
+  ["向海而行","xiàng hǎi ér xíng","идти к морю / устремиться к морю","sea"],
+  ["民之所盼，政之所向","mín zhī suǒ pàn, zhèng zhī suǒ xiàng","народные чаяния определяют курс политики","phr"],
+  ["口碑工程","kǒubēi gōngchéng","«работа на репутацию» — реальный позитивный результат","phr"],
+  ["口号工程","kǒuhào gōngchéng","«лозунговая работа» — пустые декларации","phr"],
+  ["民心工程","mínxīn gōngchéng","«работа для народного сердца»","phr"],
+  ["面子工程","miànzi gōngchéng","«работа ради фасада» — показуха","phr"],
+  ["感同身受","gǎn tóng shēn shòu","разделять чувства; сопереживать (чэнъюй)","phr"],
+  ["一张蓝图绘到底","yī zhāng lántú huì dào dǐ","последовательно воплощать единый план (ключевой оборот)","phr"],
+  ["统筹发展和安全","tǒngchóu fāzhǎn hé ānquán","комплексно балансировать развитие и безопасность","phr"],
+  ["绿水青山","lǜ shuǐ qīng shān","«зелёные воды и синие горы» — символ устойчивого развития","phr"],
+  ["穿透力","chuāntòulì","«проникающая сила» — способность выявлять скрытое","phr"],
+  ["恪守原则","kèshǒu yuánzé","неукоснительно соблюдать принципы","phr"],
+  ["咬定青山不放松","yǎo dìng qīng shān bù fàng sōng","крепко держаться цели, не отступая","phr"],
+];
+
+const catNames = {all:"Все",pol:"🏛️ Политика",law:"⚖️ Право",eco:"📊 Экономика",enf:"🚔 Правоприменение",env:"🌱 Экология",dig:"🤖 Цифровизация",sea:"🌍 Море",phr:"🧠 Выражения"};
+
+let deck = [], idx = 0, knownOnly = false, known = new Set(), curCat = "all";
+
+function buildDeck(){
+  deck = ALL.filter(c => curCat==="all" || c[3]===curCat);
+  if(knownOnly) deck = deck.filter(c => !known.has(c[0]));
+  idx = 0;
+  render();
+}
+
+function render(){
+  if(!deck.length){
+    document.getElementById("fZh").textContent="—";
+    document.getElementById("fPy").textContent="Нет карточек";
+    document.getElementById("fRu").textContent="Измените фильтр";
+    document.getElementById("catTag").textContent="";
+    document.getElementById("pos").textContent="0 / 0";
+    document.getElementById("prog").style.width="0%";
+    document.getElementById("statLabel").textContent="0 карточек";
+    return;
+  }
+  const c = deck[idx];
+  document.getElementById("fZh").textContent=c[0];
+  document.getElementById("fPy").textContent=c[1];
+  document.getElementById("fRu").textContent=c[2];
+  document.getElementById("catTag").textContent=catNames[c[3]]||"";
+  document.getElementById("pos").textContent=(idx+1)+" / "+deck.length;
+  document.getElementById("prog").style.width=Math.round((idx+1)/deck.length*100)+"%";
+  document.getElementById("statLabel").textContent=deck.length+" карточек";
+  document.getElementById("card").classList.remove("flipped");
+  document.getElementById("knownN").textContent=known.size;
+  document.getElementById("totalN").textContent=ALL.length;
+  const isKnown = known.has(c[0]);
+  document.querySelector(".card-wrap").style.opacity= isKnown ? "0.6" : "1";
+}
+
+function flip(){ document.getElementById("card").classList.toggle("flipped"); }
+function next(){ if(idx<deck.length-1){idx++;render();} }
+function prev(){ if(idx>0){idx--;render();} }
+function shuffle(){ deck.sort(()=>Math.random()-.5); idx=0; render(); }
+function filterCat(){ curCat=document.getElementById("catSel").value; buildDeck(); }
+function markKnown(){ if(deck.length){known.add(deck[idx][0]); document.getElementById("knownN").textContent=known.size; next();} }
+function markUnknown(){ if(deck.length){known.delete(deck[idx][0]); render();} }
+function toggleKnownOnly(){ knownOnly=!knownOnly; document.getElementById("knownOnly").classList.toggle("active",knownOnly); buildDeck(); }
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key==="ArrowDown") next();
+  if(e.key==="ArrowLeft"||e.key==="ArrowUp") prev();
+  if(e.key===" "){e.preventDefault();flip();}
+});
+
+buildDeck();
+</script>
