@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HSK 6+ Карточки — «Первая встреча» (科技部 · 工信部 · 国资委)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;padding:1.5rem}
+h1{font-size:18px;font-weight:500;margin-bottom:4px}
+.sub{font-size:13px;color:#666;margin-bottom:1.25rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.controls select,.controls button{padding:6px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;cursor:pointer}
+.controls button:hover{background:#f0f0f0}
+.controls button.active{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+.stat{font-size:13px;color:#888;margin-left:auto}
+.progress{width:100%;max-width:640px;margin:0 auto 1rem;height:3px;background:#e0e0e0;border-radius:2px;overflow:hidden}
+.progress-bar{height:100%;background:#378ADD;transition:width .3s}
+.card-wrap{perspective:900px;cursor:pointer;width:100%;max-width:640px;margin:0 auto 1.25rem;min-height:200px;aspect-ratio:2.2/1}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s ease}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border:1px solid #e0e0e0;border-radius:12px;background:#fff;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;gap:10px}
+.face.back{transform:rotateY(180deg);background:#f9f9f7}
+.face .tag{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;position:absolute;top:14px;left:16px}
+.face .hint{font-size:11px;color:#bbb;position:absolute;bottom:12px}
+.zh{font-size:28px;font-weight:500;color:#1a1a1a;line-height:1.3}
+.py{font-size:15px;color:#666;font-style:italic}
+.ru{font-size:16px;color:#1a1a1a;line-height:1.55;max-width:90%}
+.nav{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:1.25rem}
+.nav button{padding:7px 20px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:14px;cursor:pointer}
+.nav button:hover{background:#f0f0f0}
+.nav .pos{font-size:13px;color:#888;min-width:70px;text-align:center}
+.known-bar{display:flex;gap:8px;max-width:640px;margin:0 auto .75rem;font-size:12px;color:#888;align-items:center;flex-wrap:wrap}
+.known-bar button{padding:4px 12px;border:1px solid #ccc;border-radius:8px;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a}
+.known-bar button:hover{background:#f0f0f0}
+.kbd{display:inline-block;padding:1px 6px;border:1px solid #ccc;border-radius:4px;font-size:11px;color:#888;background:#f5f5f5}
+.tips{font-size:12px;color:#aaa;text-align:center;margin-top:.5rem}
+</style>
+</head>
+<body>
+<h1>HSK 6+ Карточки — «Первая встреча» (科技部 · 工信部 · 国资委)</h1>
+<p class="sub">163 выражения · Наука · Промышленность · ИИ · Политика · Устойчивые выражения</p>
+
+<div class="controls">
+  <button onclick="shuffle()">Перемешать</button>
+  <button id="knownOnly" onclick="toggleKnownOnly()">Только незнакомые</button>
+  <select id="catSel" onchange="filterCat()">
+    <option value="all">Все разделы</option>
+    <option value="pol">🏛️ Политика</option>
+    <option value="sci">🔬 Наука и инновации</option>
+    <option value="ind">🏭 Промышленность</option>
+    <option value="ai">🤖 Искусственный интеллект</option>
+    <option value="phr">🧠 Устойчивые выражения</option>
+  </select>
+  <span class="stat" id="statLabel"></span>
+</div>
+
+<div class="progress"><div class="progress-bar" id="prog"></div></div>
+
+<div class="card-wrap" onclick="flip()">
+  <div class="card" id="card">
+    <div class="face front">
+      <span class="tag" id="catTag"></span>
+      <div class="zh" id="fZh"></div>
+      <div class="py" id="fPy"></div>
+      <span class="hint">нажмите, чтобы перевернуть</span>
+    </div>
+    <div class="face back">
+      <span class="tag">перевод</span>
+      <div class="ru" id="fRu"></div>
+      <span class="hint">нажмите снова</span>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button onclick="prev()">← Назад</button>
+  <span class="pos" id="pos"></span>
+  <button onclick="next()">Вперёд →</button>
+</div>
+
+<div class="known-bar">
+  <span>Прогресс: <b id="knownN">0</b> из <span id="totalN"></span> усвоено</span>
+  <button onclick="markKnown()">✓ Знаю</button>
+  <button onclick="markUnknown()">✗ Ещё учу</button>
+</div>
+<p class="tips"><span class="kbd">Пробел</span> перевернуть &nbsp; <span class="kbd">←</span><span class="kbd">→</span> переключать &nbsp; <span class="kbd">K</span> знаю &nbsp; <span class="kbd">U</span> ещё учу</p>
+
+<script>
+const ALL=[
+  ["列席会议","lièxí huìyì","присутствовать на заседании без права голоса","pol"],
+  ["主要负责人","zhǔyào fùzérén","главное ответственное лицо","pol"],
+  ["回应社会各界的关切","huíyìng shèhuì gèjiè de guānqiè","отвечать на обеспокоенность всех слоёв общества","pol"],
+  ["坚强领导","jiānqiáng lǐngdǎo","твёрдое / крепкое руководство","pol"],
+  ["跃上新台阶","yuè shàng xīn táijiē","подняться на новую ступень (о потенциале)","pol"],
+  ["科技事业","kējì shìyè","дело науки и техники; научно-технический сектор","pol"],
+  ["坚决贯彻","jiānjué guànchè","решительно претворять в жизнь","pol"],
+  ["重要论述","zhòngyào lùnshù","важные высказывания / теоретические положения","pol"],
+  ["决策部署","juécè bùshǔ","решения и стратегические установки","pol"],
+  ["认真落实","rènzhēn luòshí","добросовестно реализовывать, воплощать в жизнь","pol"],
+  ["牢牢把握","láoláo bǎwò","твёрдо держаться / крепко удерживать","pol"],
+  ["历史机遇","lìshǐ jīyù","историческая возможность / исторический шанс","pol"],
+  ["产业变革","chǎnyè biàngé","промышленные преобразования / трансформация индустрии","pol"],
+  ["竞争态势","jìngzhēng tàishì","конкурентная обстановка / расстановка сил","pol"],
+  ["统筹谋划","tǒngchóu móuhuà","комплексное / скоординированное планирование","pol"],
+  ["系统布局","xìtǒng bùjú","системное размещение / стратегическое планирование","pol"],
+  ["科技赋能","kējì fùnéng","технологическое наделение возможностями (empowerment)","pol"],
+  ["充分彰显","chōngfèn zhāngxiǎn","полностью проявляться, наглядно демонстрировать","pol"],
+  ["中国式现代化","Zhōngguóshì xiàndàihuà","китайский путь к модернизации (ключевой термин)","pol"],
+  ["支撑引领","zhīchēng yǐnlǐng","поддерживать и вести за собой; опора и лидерство","pol"],
+  ["科技自立自强","kējì zìlì zìqiáng","научно-технологическая самостоятельность и самоукрепление (ключевой термин)","sci"],
+  ["大幅提高","dàfú tígāo","значительно повысить / существенно улучшить","sci"],
+  ["新质生产力","xīn zhì shēngchǎnlì","новые производительные силы (новейший политический термин)","sci"],
+  ["引领…发展","yǐnlǐng…fāzhǎn","вести за собой развитие…; лидировать в развитии…","sci"],
+  ["创新指数","chuàngxīn zhǐshù","индекс инноваций","sci"],
+  ["研发投入","yánfā tóurù","расходы на НИОКР (исследования и разработки)","sci"],
+  ["基础研究","jīchǔ yánjiū","фундаментальные / базовые исследования","sci"],
+  ["创历史新高","chuàng lìshǐ xīn gāo","установить исторический рекорд","sci"],
+  ["首次破…","shǒucì pò…","впервые преодолеть отметку в… (устойчивый оборот)","sci"],
+  ["开源大模型","kāiyuán dà móxíng","открытая большая языковая модель (open-source LLM)","sci"],
+  ["领跑全球","lǐngpǎo quánqiú","лидировать / задавать тон в мире","sci"],
+  ["芯片攻关","xīnpiàn gōngguān","прорыв / штурм в разработке чипов","sci"],
+  ["取得新突破","qǔdé xīn tūpò","достичь нового прорыва","sci"],
+  ["创新药","chuàngxīn yào","инновационный лекарственный препарат","sci"],
+  ["批准上市","pīzhǔn shàngshì","одобрить / разрешить выход на рынок","sci"],
+  ["对外授权交易","duìwài shòuquán jiāoyì","сделки по внешнему лицензированию","sci"],
+  ["原创性引领性","yuánchuàngxìng yǐnlǐngxìng","оригинальный и ведущий / первопроходческий","sci"],
+  ["全链条部署","quán liàntǐao bùshǔ","развёртывание по всей цепочке","sci"],
+  ["体系化布局","tǐxìhuà bùjú","системное / структурированное планирование","sci"],
+  ["卡点堵点","qǎdiǎn dǔdiǎn","узкие места и тупики (препятствия в развитии)","sci"],
+  ["抢占科技制高点","qiǎngzhàn kējì zhìgāodiǎn","занять господствующие высоты в науке и технике","sci"],
+  ["培育壮大","péiyù zhuàngdà","выращивать и развивать (отрасли, предприятия)","sci"],
+  ["万亿级产业集群","wànyì jí chǎnyè jíqún","промышленный кластер масштаба в триллион юаней","sci"],
+  ["前瞻布局","qiánzhān bùjú","стратегическое планирование с опережением","sci"],
+  ["经济增长点","jīngjì zēngzhǎngdiǎn","точка / полюс экономического роста","sci"],
+  ["整体效能","zhěngtǐ xiàonéng","общая эффективность / совокупная функциональность","sci"],
+  ["国家战略科技力量","guójiā zhànlüè kējì lìliàng","национальный стратегический научно-технический потенциал","sci"],
+  ["协同创新","xiétóng chuàngxīn","совместные / скоординированные инновации","sci"],
+  ["原始创新策源功能","yuánshǐ chuàngxīn cèyuán gōngnéng","функция источника оригинальных инноваций","sci"],
+  ["顶尖人才集聚","dǐngjiān réncái jíjù","концентрация ведущих / выдающихся талантов","sci"],
+  ["战略支点","zhànlüè zhīdiǎn","стратегическая опора / точка опоры","sci"],
+  ["央地协同","yāng dì xiétóng","координация центра и регионов","sci"],
+  ["部门联动","bùmén liándòng","межведомственное взаимодействие / совместные действия","sci"],
+  ["一盘棋格局","yī pán qí géjú","единый формат (букв. «одна шахматная доска»)","sci"],
+  ["一体推进","yītǐ tuījìn","комплексно продвигать (как единое целое)","sci"],
+  ["世界一流","shìjiè yīliú","мирового класса / первоклассный в мире","sci"],
+  ["创新生态","chuàngxīn shēngtài","инновационная экосистема","sci"],
+  ["开放共享","kāifàng gòngxiǎng","открытый доступ и совместное использование","sci"],
+  ["科技评价改革","kējì píngjià gǎigé","реформа системы оценки научно-технических достижений","sci"],
+  ["科研诚信","kēyán chéngxìn","научная честность / академическая этика","sci"],
+  ["知识产权保护","zhīshí chǎnquán bǎohù","защита интеллектуальной собственности","sci"],
+  ["弘扬科学家精神","hóngyáng kēxuéjiā jīngshén","пропагандировать / нести дух учёного","sci"],
+  ["牵头组织","qiāntóu zǔzhī","возглавлять / брать на себя организацию","sci"],
+  ["大科学计划","dà kēxué jìhuà","крупный международный научный план / мегапроект","sci"],
+  ["惯性思维","guànxìng sīwéi","инерционное мышление / шаблонный образ мышления","sci"],
+  ["摆脱…惯性思维","bǎituō…guànxìng sīwéi","избавиться от инерционного мышления","sci"],
+  ["一体谋划、一体部署、一体推动","yītǐ móuhuà, yītǐ bùshǔ, yītǐ tuīdòng","единое планирование, развёртывание и продвижение","sci"],
+  ["打通…通道","dǎtōng…tōngdào","проложить / пробить путь/канал","sci"],
+  ["科技强→产业强→经济强→国家强","kējì qiáng → chǎnyè qiáng → jīngjì qiáng → guójiā qiáng","цепочка: технологическая → промышленная → экономическая → государственная мощь","sci"],
+  ["主体地位","zhǔtǐ dìwèi","ведущая / ключевая роль; статус основного субъекта","sci"],
+  ["科技领军企业","kējì lǐngjūn qǐyè","технологическое предприятие-лидер","sci"],
+  ["产学研融通创新","chǎn xué yán róngtōng chuàngxīn","инновации на стыке производства, учёбы и исследований","sci"],
+  ["创新联合体","chuàngxīn liántǐ","инновационный консорциум / альянс","sci"],
+  ["研发费用加计扣除","yánfā fèiyòng jiā jì kòuchú","дополнительный налоговый вычет на расходы на НИОКР","sci"],
+  ["调动…积极性","diàodòng…jījíxìng","мотивировать, стимулировать активность","sci"],
+  ["概念验证","gàiniàn yànzhèng","верификация концепции (proof of concept)","sci"],
+  ["中试验证","zhōngshì yànzhèng","пилотное / опытно-промышленное испытание","sci"],
+  ["应用场景","yìngyòng chǎngjǐng","прикладной сценарий / область применения","sci"],
+  ["投早、投小、投长期、投硬科技","tóu zǎo, tóu xiǎo, tóu chángqī, tóu yìng kējì","инвестировать на ранней стадии, в малое, долгосрочное, в «жёсткие технологии»","sci"],
+  ["硬科技","yìng kējì","«жёсткие технологии» — глубокие технологии с высоким барьером","sci"],
+  ["资源禀赋","zīyuán bǐngfù","природная наделённость ресурсами; ресурсный потенциал","sci"],
+  ["锻造创新长板","duànzào chuàngxīn cháng bǎn","ковать инновационные сильные стороны (длинные доски)","sci"],
+  ["城市群协同","chéngshì qún xiétóng","координация городских агломераций","sci"],
+  ["因地制宜","yīn dì zhì yí","действовать сообразно местным условиям (чэнъюй)","sci"],
+  ["现代化产业体系","xiàndàihuà chǎnyè tǐxì","современная промышленная система","ind"],
+  ["物质技术基础","wùzhì jìshù jīchǔ","материально-техническая основа","ind"],
+  ["稳增长","wěn zēngzhǎng","стабилизировать рост","ind"],
+  ["促融合","cù rónghé","содействовать интеграции / слиянию","ind"],
+  ["优治理","yōu zhìlǐ","совершенствовать управление","ind"],
+  ["防风险","fáng fēngxiǎn","предотвращать / контролировать риски","ind"],
+  ["工业增加值","gōngyè zēngjiā zhí","промышленная добавленная стоимость","ind"],
+  ["贡献率","gòngxiàn lǜ","доля вклада / коэффициент вклада","ind"],
+  ["门类齐全","ménjuàn qí quán","полнота категорий / исчерпывающий охват отраслей","ind"],
+  ["地位更加巩固","dìwèi gèngjiā gǒnggù","позиции ещё более укрепились","ind"],
+  ["新动能","xīn dòngnéng","новая движущая сила (экономического развития)","ind"],
+  ["产业结构持续优化","chǎnyè jiégòu chíxù yōuhuà","непрерывная оптимизация промышленной структуры","ind"],
+  ["数智制造","shùzhì zhìzào","цифровое и интеллектуальное производство","ind"],
+  ["绿色低碳转型","lǜsè dītàn zhuǎnxíng","зелёная низкоуглеродная трансформация","ind"],
+  ["步履稳健","bùlǚ wěnjiàn","уверенный шаг; стабильное продвижение","ind"],
+  ["工业互联网","gōngyè hùliánwǎng","промышленный Интернет (Industrial Internet)","ind"],
+  ["融合应用","rónghé yìngyòng","интегрированное / конвергентное применение","ind"],
+  ["梯度培育","tīdù péiyù","поэтапное / ступенчатое развитие","ind"],
+  ["卓越级智能工厂","zhuōyuè jí zhìnéng gōngchǎng","умный завод превосходного уровня","ind"],
+  ["供需两端","gōng xū liǎng duān","обе стороны: предложение и спрос","ind"],
+  ["政策组合拳","zhèngcè zǔhé quán","комплекс политических мер («комбинированный удар»)","ind"],
+  ["扩消费、促投资、稳出口","kuò xiāofèi, cù tóuzī, wěn chūkǒu","расширять потребление, стимулировать инвестиции, стабилизировать экспорт","ind"],
+  ["耐心资本","nàixīn zīběn","«терпеливый капитал» — долгосрочные инвестиции","ind"],
+  ["产业出题、科技答题","chǎnyè chū tí, kējì dá tí","«промышленность ставит вопрос, наука отвечает» (устойчивый оборот)","ind"],
+  ["产业链","chǎnyè liàn","промышленная / производственная цепочка","ind"],
+  ["标志性创新成果","biāozhìxìng chuàngxīn chénguǒ","знаковые инновационные достижения","ind"],
+  ["加速转化","jiāsù zhuǎnhuà","ускорить трансформацию / внедрение (результатов)","ind"],
+  ["专精特新","zhuān jīng tè xīn","«специализированные, утончённые, особенные, новаторские» (официальный термин для МСП)","ind"],
+  ["小巨人企业","xiǎo jùrén qǐyè","предприятие-«маленький гигант» (нишевый лидер)","ind"],
+  ["制造业单项冠军","zhìzào yè dān xiàng guànjūn","чемпион отдельной ниши в производстве","ind"],
+  ["提质增效","tí zhì zēng xiào","повышать качество и эффективность","ind"],
+  ["零碳园区","líng tàn yuánqū","зона нулевого углерода / безуглеродная зона","ind"],
+  ["未来产业新赛道","wèilái chǎnyè xīn sàidào","новая дорожка / ниша для отраслей будущего","ind"],
+  ["内卷式竞争","nèijuǎn shì jìngzhēng","«инволюционная» / избыточная конкуренция","ind"],
+  ["综合整治","zōnghé zhěngzhì","комплексное упорядочение / комплексная зачистка","ind"],
+  ["行业自律","hángyè zìlǜ","отраслевая самодисциплина / саморегулирование","ind"],
+  ["标准引领","biāozhǔn yǐnlǐng","ведущая роль стандартов","ind"],
+  ["市场化、法治化、国际化","shìchǎng huà, fǎzhì huà, guójì huà","рыночно-ориентированный, правовой, международный (три характеристики деловой среды)","ind"],
+  ["营商环境","yínshāng huánjìng","деловая / предпринимательская среда; бизнес-климат","ind"],
+  ["关键变量","guānjiàn biànliàng","ключевая переменная (о факторе развития)","ai"],
+  ["强劲增量","qiángjìng zēngliàng","мощный прирост / сильная прибавка","ai"],
+  ["使用门槛","shǐyòng ménkǎn","порог использования / входной барьер","ai"],
+  ["普惠性","pǔhuì xìng","инклюзивность, доступность для широких масс","ai"],
+  ["大幅度降低","dàfúdù jiàngdī","значительно снизить","ai"],
+  ["规上制造业企业","guī shàng zhìzào yè qǐyè","производственное предприятие выше установленного размера","ai"],
+  ["应用普及率","yìngyòng pǔjí lǜ","уровень распространения / охвата применения","ai"],
+  ["无人产线","wúrén chǎnxiàn","безлюдная производственная линия","ai"],
+  ["人机协同","rén jī xiétóng","взаимодействие человека и машины (human-machine collaboration)","ai"],
+  ["质效","zhìxiào","качество и эффективность","ai"],
+  ["场景落地","chǎngjǐng luòdì","реализация в конкретных сценариях; прикладное внедрение","ai"],
+  ["走进大众视野","zǒujìn dàzhòng shìyě","войти в массовое поле зрения","ai"],
+  ["生动展示","shēngdòng zhǎnshì","живая / наглядная демонстрация","ai"],
+  ["双向奔赴","shuāngxiàng bēn fù","движение навстречу друг другу; двустороннее сближение (модное выражение)","ai"],
+  ["人工智能+制造","réngōng zhìnéng + zhìzào","«ИИ + производство» (официальная формулировка)","ai"],
+  ["高价值应用场景","gāo jiàzhí yìngyòng chǎngjǐng","высокоценные прикладные сценарии","ai"],
+  ["智能体","zhìnéng tǐ","интеллектуальный агент (AI agent)","ai"],
+  ["找场景/造场景","zhǎo chǎngjǐng / zào chǎngjǐng","«найти сценарий / создать сценарий» (устойчивые обороты о ИИ-приложениях)","ai"],
+  ["创新活力","chuàngxīn huólì","инновационная жизнеспособность / энергия инноваций","ai"],
+  ["统筹发展和安全","tǒngchóu fāzhǎn hé ānquán","координировать развитие и безопасность (ключевой официальный оборот)","ai"],
+  ["为人所用、为人服务、为人所控","wèi rén suǒ yòng, wèi rén fúwù, wèi rén suǒ kòng","используется людьми, служит людям, контролируется людьми","ai"],
+  ["治理框架","zhìlǐ kuàngjià","рамки управления / управленческая архитектура","ai"],
+  ["广泛共识","guǎngfàn gòngshí","широкий консенсус","ai"],
+  ["公共产品","gōnggòng chǎnpǐn","общественное благо / общественный продукт","ai"],
+  ["造福人类","zào fú rénlèi","служить на благо человечества","ai"],
+  ["老树发新芽","lǎo shù fā xīn yá","«старое дерево даёт новые побеги» — образ трансформации традиционных отраслей","phr"],
+  ["大放异彩","dà fàng yì cǎi","блистать; сверкать великолепием (иносказ. о ярком успехе)","phr"],
+  ["十八般武艺","shíbā bān wǔyì","«восемнадцать видов боевого искусства» — разнообразные таланты и умения","phr"],
+  ["竞相展示","jìngxiāng zhǎnshì","наперебой демонстрировать","phr"],
+  ["顶流","dǐng liú","«топ-тренд» / главный хит (разг.)","phr"],
+  ["全网热议","quán wǎng rè yì","горячее обсуждение во всей сети","phr"],
+  ["为之惊艳","wéi zhī jīngyàn","восхищаться, быть поражённым красотой/мастерством","phr"],
+  ["潮品/爆款","cháopǐn / bào kuǎn","трендовый товар / хит продаж; вирусный продукт","phr"],
+  ["走进千家万户","zǒujìn qiān jiā wàn hù","войти в тысячи домов; стать повсеместным","phr"],
+  ["必答题/选择题","bì dá tí / xuǎnzé tí","«обязательный вопрос» / «вопрос на выбор» — образ о неизбежности или опциональности","phr"],
+  ["注入新动能","zhùrù xīn dòngnéng","вливать / вдохнуть новую движущую силу","phr"],
+  ["向新向好","xiàng xīn xiàng hǎo","к новому и лучшему (устойчивый оборот о развитии)","phr"],
+  ["深度融合","shēndù rónghé","глубокая интеграция / конвергенция","phr"],
+  ["现代化治理","xiàndàihuà zhìlǐ","современное / модернизированное управление","phr"],
+  ["挑大梁","tiāo dà liáng","«нести большую балку» — взять на себя ключевую ответственность","phr"]
+];
+const catNames={"all": "Все разделы", "pol": "🏛️ Политика", "sci": "🔬 Наука и инновации", "ind": "🏭 Промышленность", "ai": "🤖 Искусственный интеллект", "phr": "🧠 Устойчивые выражения"};
+let deck=[],idx=0,knownOnly=false,known=new Set(),curCat="all";
+function buildDeck(){
+  deck=ALL.filter(c=>curCat==="all"||c[3]===curCat);
+  if(knownOnly)deck=deck.filter(c=>!known.has(c[0]));
+  idx=0;render();
+}
+function render(){
+  if(!deck.length){
+    document.getElementById("fZh").textContent="—";
+    document.getElementById("fPy").textContent="Нет карточек";
+    document.getElementById("fRu").textContent="Измените фильтр";
+    document.getElementById("catTag").textContent="";
+    document.getElementById("pos").textContent="0 / 0";
+    document.getElementById("prog").style.width="0%";
+    document.getElementById("statLabel").textContent="0 карточек";
+    return;
+  }
+  const c=deck[idx];
+  document.getElementById("fZh").textContent=c[0];
+  document.getElementById("fPy").textContent=c[1];
+  document.getElementById("fRu").textContent=c[2];
+  document.getElementById("catTag").textContent=catNames[c[3]]||"";
+  document.getElementById("pos").textContent=(idx+1)+" / "+deck.length;
+  document.getElementById("prog").style.width=Math.round((idx+1)/deck.length*100)+"%";
+  document.getElementById("statLabel").textContent=deck.length+" карточек";
+  document.getElementById("card").classList.remove("flipped");
+  document.getElementById("knownN").textContent=known.size;
+  document.getElementById("totalN").textContent=ALL.length;
+  document.querySelector(".card-wrap").style.opacity=known.has(c[0])?"0.6":"1";
+}
+function flip(){document.getElementById("card").classList.toggle("flipped");}
+function next(){if(idx<deck.length-1){idx++;render();}}
+function prev(){if(idx>0){idx--;render();}}
+function shuffle(){deck.sort(()=>Math.random()-.5);idx=0;render();}
+function filterCat(){curCat=document.getElementById("catSel").value;buildDeck();}
+function markKnown(){if(deck.length){known.add(deck[idx][0]);document.getElementById("knownN").textContent=known.size;next();}}
+function markUnknown(){if(deck.length){known.delete(deck[idx][0]);render();}}
+function toggleKnownOnly(){knownOnly=!knownOnly;document.getElementById("knownOnly").classList.toggle("active",knownOnly);buildDeck();}
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key==="ArrowDown")next();
+  if(e.key==="ArrowLeft"||e.key==="ArrowUp")prev();
+  if(e.key===" "){e.preventDefault();flip();}
+  if(e.key==="k"||e.key==="K")markKnown();
+  if(e.key==="u"||e.key==="U")markUnknown();
+});
+buildDeck();
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HSK 6+ Карточки — «Представители» (代表通道 2026)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;padding:1.5rem}
+h1{font-size:18px;font-weight:500;margin-bottom:4px}
+.sub{font-size:13px;color:#666;margin-bottom:1.25rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.controls select,.controls button{padding:6px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;cursor:pointer}
+.controls button:hover{background:#f0f0f0}
+.controls button.active{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+.stat{font-size:13px;color:#888;margin-left:auto}
+.progress{width:100%;max-width:640px;margin:0 auto 1rem;height:3px;background:#e0e0e0;border-radius:2px;overflow:hidden}
+.progress-bar{height:100%;background:#378ADD;transition:width .3s}
+.card-wrap{perspective:900px;cursor:pointer;width:100%;max-width:640px;margin:0 auto 1.25rem;min-height:200px;aspect-ratio:2.2/1}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .45s ease}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border:1px solid #e0e0e0;border-radius:12px;background:#fff;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;gap:10px}
+.face.back{transform:rotateY(180deg);background:#f9f9f7}
+.face .tag{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;position:absolute;top:14px;left:16px}
+.face .hint{font-size:11px;color:#bbb;position:absolute;bottom:12px}
+.zh{font-size:28px;font-weight:500;color:#1a1a1a;line-height:1.3}
+.py{font-size:15px;color:#666;font-style:italic}
+.ru{font-size:16px;color:#1a1a1a;line-height:1.55;max-width:90%}
+.nav{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:1.25rem}
+.nav button{padding:7px 20px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:14px;cursor:pointer}
+.nav button:hover{background:#f0f0f0}
+.nav .pos{font-size:13px;color:#888;min-width:70px;text-align:center}
+.known-bar{display:flex;gap:8px;max-width:640px;margin:0 auto .75rem;font-size:12px;color:#888;align-items:center;flex-wrap:wrap}
+.known-bar button{padding:4px 12px;border:1px solid #ccc;border-radius:8px;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a}
+.known-bar button:hover{background:#f0f0f0}
+.kbd{display:inline-block;padding:1px 6px;border:1px solid #ccc;border-radius:4px;font-size:11px;color:#888;background:#f5f5f5}
+.tips{font-size:12px;color:#aaa;text-align:center;margin-top:.5rem}
+</style>
+</head>
+<body>
+<h1>HSK 6+ Карточки — «Представители» (代表通道 2026)</h1>
+<p class="sub">149 выражений · Политика · Блокчейн · Агронаука · Образование · Спорт · Армия · Устойчивые выражения</p>
+
+<div class="controls">
+  <button onclick="shuffle()">Перемешать</button>
+  <button id="knownOnly" onclick="toggleKnownOnly()">Только незнакомые</button>
+  <select id="catSel" onchange="filterCat()">
+    <option value="all">Все разделы</option>
+    <option value="pol">🏛️ Политика</option>
+    <option value="tech">🔬 Технологии и блокчейн</option>
+    <option value="agr">🌾 Агронаука</option>
+    <option value="edu">🏫 Образование</option>
+    <option value="sport">🏅 Спорт</option>
+    <option value="mil">✈️ Армия</option>
+    <option value="phr">🧠 Устойчивые выражения</option>
+  </select>
+  <span class="stat" id="statLabel"></span>
+</div>
+
+<div class="progress"><div class="progress-bar" id="prog"></div></div>
+
+<div class="card-wrap" onclick="flip()">
+  <div class="card" id="card">
+    <div class="face front">
+      <span class="tag" id="catTag"></span>
+      <div class="zh" id="fZh"></div>
+      <div class="py" id="fPy"></div>
+      <span class="hint">нажмите, чтобы перевернуть</span>
+    </div>
+    <div class="face back">
+      <span class="tag">перевод</span>
+      <div class="ru" id="fRu"></div>
+      <span class="hint">нажмите снова</span>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button onclick="prev()">← Назад</button>
+  <span class="pos" id="pos"></span>
+  <button onclick="next()">Вперёд →</button>
+</div>
+
+<div class="known-bar">
+  <span>Прогресс: <b id="knownN">0</b> из <span id="totalN"></span> усвоено</span>
+  <button onclick="markKnown()">✓ Знаю</button>
+  <button onclick="markUnknown()">✗ Ещё учу</button>
+</div>
+<p class="tips"><span class="kbd">Пробел</span> перевернуть &nbsp; <span class="kbd">←</span><span class="kbd">→</span> переключать &nbsp; <span class="kbd">K</span> знаю &nbsp; <span class="kbd">U</span> ещё учу</p>
+
+<script>
+const ALL=[
+  ["全国人大代表","quánguó réndà dàibiǎo","депутат Всекитайского собрания народных представителей","pol"],
+  ["紧密结合","jǐnmì jiéhé","тесно сочетать / органично связывать","pol"],
+  ["履职","lǚzhí","исполнять депутатские/должностные обязанности","pol"],
+  ["代表通道","dàibiǎo tōngdào","«Коридор представителей» (официальный формат пресс-встречи)","pol"],
+  ["视察","shìchá","инспектировать, проводить инспекцию","pol"],
+  ["嘱咐","zhǔfù","наказывать, давать наставление / поручение","pol"],
+  ["关键核心技术","guānjiàn héxīn jìshù","ключевые и основные / стержневые технологии","pol"],
+  ["掌握在自己手里","zhǎngwò zài zìjǐ shǒu lǐ","держать в собственных руках; самостоятельно владеть","pol"],
+  ["民族品牌","mínzú pínpái","национальный / отечественный бренд","pol"],
+  ["全心全意为人民服务","quánxīn quányì wèi rénmín fúwù","всем сердцем и душой служить народу (партийный лозунг)","pol"],
+  ["初心使命","chūxīn shǐmìng","первоначальное устремление и миссия (ключевой политический термин)","pol"],
+  ["坚守","jiānshǒu","стойко держаться, хранить верность","pol"],
+  ["庄重的承诺","zhuānzhòng de chéngnuò","торжественное / весомое обещание, обязательство","pol"],
+  ["守初心","shǒu chūxīn","хранить первоначальное устремление","pol"],
+  ["描绘新蓝图","miáohuì xīn lántú","нарисовать / начертить новый план / Blueprint","pol"],
+  ["强国强军","qiángguó qiángjūn","строительство мощной страны и мощной армии","pol"],
+  ["立足本职岗位","lìzú běnzhí gǎngwèi","опираться на свой профессиональный пост","pol"],
+  ["争分夺秒","zhēng fēn duó miǎo","бороться за каждую минуту и секунду (чэнъюй)","phr"],
+  ["枕戈待旦","zhěn gē dài dàn","спать на оружии в ожидании рассвета — быть в постоянной боевой готовности (чэнъюй)","phr"],
+  ["履行使命","lǚxíng shǐmìng","выполнять / исполнять миссию","pol"],
+  ["前沿信息技术","qiányán xìnxī jìshù","передовые / фронтирные информационные технологии","tech"],
+  ["算法、算力、数据","suànfǎ, suànlì, shùjù","алгоритм, вычислительная мощность, данные (три элемента ИИ)","tech"],
+  ["可信、可回溯","kě xìn, kě huísù","надёжный / достоверный и прослеживаемый","tech"],
+  ["数字基础设施","shùzì jīchǔ shèshī","цифровая инфраструктура","tech"],
+  ["数字经济","shùzì jīngjì","цифровая экономика","tech"],
+  ["底层技术","dǐcéng jìshù","базовые технологии нижнего уровня; фундаментальные технологии","tech"],
+  ["底层核心科技","dǐcéng héxīn kējì","основные технологии нижнего уровня; базовые ключевые технологии","tech"],
+  ["主动承担","zhǔdòng chéngdān","добровольно брать на себя (ответственность/задачу)","tech"],
+  ["汇聚","huìjù","собирать воедино, концентрировать","tech"],
+  ["顶级科学家","dǐngjí kēxuéjiā","ведущие / топ-учёные","tech"],
+  ["集团军作战","jítuánjūn zuòzhàn","метод «боевых действий армейской группы» — массированный скоординированный штурм","tech"],
+  ["集中攻坚","jízhōng gōngjiān","сосредоточиться на штурме трудных задач","tech"],
+  ["软硬一体","ruǎn yìng yītǐ","программно-аппаратная интеграция (software-hardware integrated)","tech"],
+  ["源码","yuán mǎ","исходный код (source code)","tech"],
+  ["开源开放","kāiyuán kāifàng","открытый исходный код и открытый доступ (open source)","tech"],
+  ["社会价值","shèhuì jiàzhí","социальная ценность / значимость для общества","tech"],
+  ["专用加速芯片","zhuānyòng jiāsù xīnpiàn","специализированный ускорительный чип (ASIC)","tech"],
+  ["算力瓶颈","suànlì píngjǐng","узкое место в вычислительной мощности","tech"],
+  ["超大规模","chāo dàguīmó","сверхмасштабный / ультракрупный","tech"],
+  ["中国芯","Zhōngguó xīn","«китайское ядро / сердце» — отечественный чип (образн.)","phr"],
+  ["可信数字基础设施","kě xìn shùzì jīchǔ shèshī","доверенная цифровая инфраструктура","tech"],
+  ["跨境贸易","kuàjìng màoyì","трансграничная / международная торговля","tech"],
+  ["通关效率","tōngguān xiàolǜ","эффективность таможенного оформления","tech"],
+  ["指数级提升","zhǐshùjí tíshēng","экспоненциальный рост; скачкообразное повышение","tech"],
+  ["链通","liàn tōng","связывать через блокчейн; объединять в цепочку","tech"],
+  ["数字人民币","shùzì rénmínbì","цифровой юань (e-CNY, CBDC Китая)","tech"],
+  ["资金流、业务流、信息流","zījīn liú, yèwù liú, xìnxī liú","денежный поток, деловой поток, информационный поток","tech"],
+  ["三流合一","sān liú hé yī","«слияние трёх потоков» (устойчивый оборот)","tech"],
+  ["跨境支付","kuàjìng zhīfù","трансграничные платежи","tech"],
+  ["咬定青山不放松","yǎo dìng qīng shān bù fàng sōng","«крепко держаться за зелёную гору» — стойко придерживаться цели (из стихотворения Чжэн Баньцяо)","phr"],
+  ["重大战略需求","zhòngdà zhànlüè xūqiú","важнейшие стратегические потребности","tech"],
+  ["持续领先","chíxù lǐngxiān","сохранять устойчивое лидерство","tech"],
+  ["夯实","hānshí","укреплять фундамент, закладывать прочную основу","tech"],
+  ["可信数字长城","kě xìn shùzì chángchéng","«доверенная цифровая Великая стена» (образный термин)","phr"],
+  ["育种","yùzhǒng","селекция, выведение новых сортов","agr"],
+  ["时令","shílìng","сезон, время года; сезонный цикл","agr"],
+  ["打交道","dǎ jiāodao","иметь дело с чем-либо / кем-либо; заниматься","agr"],
+  ["分蘖","fēnniè","боковые побеги злаков; кущение (агр.)","agr"],
+  ["向土地求教","xiàng tǔdì qiújiào","учиться у земли; постигать науку через практику на земле","phr"],
+  ["赤霉病","chì méi bìng","фузариоз колоса / «рак пшеницы»","agr"],
+  ["颗粒无收","kēlì wú shōu","полная потеря урожая (ни единого зёрнышка — чэнъюй)","phr"],
+  ["常发重发区","cháng fā zhòng fā qū","зона частых и тяжёлых вспышек (болезней/стихийных бедствий)","agr"],
+  ["地处","dì chǔ","располагаться (о географическом положении)","agr"],
+  ["攻坚克难","gōngjiān kè nán","штурмовать трудности и преодолевать препятствия","agr"],
+  ["跳出传统模式","tiàochū chuántǒng móshì","выйти за рамки традиционной модели","agr"],
+  ["分子育种技术","fēnzǐ yùzhǒng jìshù","технология молекулярной селекции","agr"],
+  ["植入抗病基因","zhírù kàng bìng jīyīn","встраивать ген устойчивости к болезням","agr"],
+  ["历经…年","lì jīng…nián","пройти через…лет; на протяжении многих лет","agr"],
+  ["育成品种","yùchéng pǐnzhǒng","вывести / создать сорт (культуры)","agr"],
+  ["示范方","shìfàn fāng","демонстрационный участок (агр.)","agr"],
+  ["亩产","mǔ chǎn","урожайность с одного му (единица площади)","agr"],
+  ["两端快速发育","liǎng duān kuàisù fāyù","быстрое развитие на обоих концах (вегетационного периода)","agr"],
+  ["耐迟播","nài chí bō","терпимый к позднему посеву; пригодный для позднего сева","agr"],
+  ["茬口","chákǒu","время уборки предшественника; севооборотный интервал","agr"],
+  ["弱筋小麦","ruò jīn xiǎomài","слабоклейковинная пшеница (для кондитерских изделий)","agr"],
+  ["扭转局面","niǔzhuǎn júmiàn","переломить ситуацию; изменить положение дел","agr"],
+  ["依赖进口","yīlài jìnkǒu","зависеть от импорта; импортозависимость","agr"],
+  ["高标准农田","gāo biāozhǔn nóngtián","высококачественные / высокостандартные сельскохозяйственные угодья","agr"],
+  ["代表建议被采纳","dàibiǎo jiànyì bèi cǎinà","предложение депутата принято (официальная формулировка)","agr"],
+  ["惠农补贴","huì nóng bǔtiē","субсидии для крестьян / агросубсидии","agr"],
+  ["端稳饭碗","duān wěn fànwǎn","крепко держать «чашу с рисом» — обеспечивать продовольственную безопасность (образн.)","phr"],
+  ["粮食安全","liángshí ānquán","продовольственная безопасность","agr"],
+  ["渴求知识","kě qiú zhīshí","жаждать знаний; стремление к знаниям","edu"],
+  ["迈不开步伐","mài bu kāi bùfá","не смочь сделать шаг; ноги не повернулись","edu"],
+  ["用拳头握住锄头","yòng quántou wò zhù chútou","хватать мотыгу кулаками (о преодолении физических ограничений)","edu"],
+  ["升学资料","shēngxué zīliào","документы для поступления в учебное заведение","edu"],
+  ["麻风村","máfēng cūn","«деревня прокажённых» (деревня для больных лепрой)","edu"],
+  ["朴实无华","pǔshí wú huá","скромный и незатейливый; без украшений и прикрас (о характере)","phr"],
+  ["默默奉献","mòmò fèngxiàn","тихо жертвовать собой; бескорыстно служить в безвестности","phr"],
+  ["复式教学","fùshì jiāoxué","разновозрастное / смешанное обучение (один учитель — несколько классов)","edu"],
+  ["走上工作岗位","zǒushàng gōngzuò gǎngwèi","выйти на работу; начать трудовую деятельность","edu"],
+  ["漏风漏雨","lòu fēng lòu yǔ","продуваемый и протекающий (о ветхом строении)","edu"],
+  ["宽敞明亮","kuānchǎng míngliàng","просторный и светлый (о помещении)","edu"],
+  ["闭塞","bìsè","отрезанный от мира; изолированный; захолустный","edu"],
+  ["摆脱贫困","bǎituō pínkùn","избавиться от бедности; выйти из нищеты","edu"],
+  ["民族团结进步示范村","mínzú tuánjié jìnbù shìfàncūn","образцовая деревня межнационального единства и прогресса (официальный статус)","edu"],
+  ["知识改变命运","zhīshí gǎibiàn mìngyùn","«знания меняют судьбу» (устойчивый афоризм)","phr"],
+  ["高精尖","gāo jīng jiān","высокоточный, высокотехнологичный (букв. высокий-точный-передовой)","sport"],
+  ["精度要求","jīngdù yāoqiú","требование к точности / допуск","sport"],
+  ["差一丝一毫","chā yī sī yī háo","отклониться хоть на волосок; ни малейшего отклонения","phr"],
+  ["没有捷径","méiyǒu jié jìng","нет коротких путей; без обходных путей","sport"],
+  ["把手练出记性","bǎ shǒu liàn chū jìxìng","выработать у рук «память»; довести до мышечной памяти","sport"],
+  ["研究透","yánjiū tòu","досконально изучить; разобраться до конца","sport"],
+  ["用不完的劲儿","yòng bu wán de jìnr","неиссякаемая энергия / сила","sport"],
+  ["牢牢攥在手里","láoláo zuàn zài shǒu lǐ","крепко сжимать в кулаке; надёжно держать в руках","sport"],
+  ["与国家共进，与时代同行","yǔ guójiā gòng jìn, yǔ shídài tóng xíng","идти вперёд вместе со страной, шагать в ногу с эпохой","phr"],
+  ["精密","jīngmì","точный, прецизионный; высококачественный","sport"],
+  ["摸爬滚打","mō pá gǔn dǎ","работать в тяжёлых условиях; прошедший все испытания (чэнъюй, букв. «ощупывать, ползти, кататься, биться»)","phr"],
+  ["伟大的事业","wěidà de shìyè","великое дело / грандиозное начинание","sport"],
+  ["这辈子，值了","zhè bèizi, zhí le","в этой жизни — оно того стоило (разговорное)","phr"],
+  ["带着遗憾","dàizhe yíhàn","с сожалением; неся груз сожаления","sport"],
+  ["退役/复出","tuìyì / fùchū","завершить карьеру / вернуться в спорт (устойчивые спортивные термины)","sport"],
+  ["熊熊燃起","xióngxióng rán qǐ","вспыхнуть ярким пламенем; разгореться","sport"],
+  ["毅然决然","yìrán juérán","решительно и бесповоротно; без колебаний (чэнъюй)","phr"],
+  ["革命老区","gémìng lǎoqū","старый революционный район (районы, освобождённые в годы революции)","sport"],
+  ["倔劲和拼劲","juèjìn hé pīnjìn","упрямство и боевой дух; упорство и самоотдача","sport"],
+  ["拼命与时间赛跑","pīnmìng yǔ shíjiān sàipǎo","изо всех сил соревноваться со временем","sport"],
+  ["浑身像散了架","húnshēn xiàng sǎn le jià","всё тело будто рассыпалось на части (о крайней усталости)","sport"],
+  ["中国的速度","Zhōngguó de sùdù","«скорость Китая» — символ стремительного прогресса страны","phr"],
+  ["施展才华的舞台","shīzhǎn cáihuá de wǔtái","сцена / площадка для проявления таланта","sport"],
+  ["境外参赛最好成绩","jìng wài cānsài zuì hǎo de chéngjī","лучший результат в соревнованиях за рубежом","sport"],
+  ["底气","dǐqì","внутренняя уверенность; база силы; основательность","sport"],
+  ["祖国的强大","zǔguó de qiángdà","мощь / сила Родины","sport"],
+  ["盘活闲置空间","pánhuó xiánzhì kōngjiān","задействовать / активизировать пустующие пространства","sport"],
+  ["全民健身","quánmín jiànshēn","общенациональный фитнес / всенародное физическое воспитание","sport"],
+  ["热潮","rècháo","волна энтузиазма; бум; ажиотаж","sport"],
+  ["入列","rùliè","вступать в строй; встать в ряды (воен.)","mil"],
+  ["重温历史","chóngyuēn lìshǐ","вновь обратиться к истории; пересмотреть историю","mil"],
+  ["砥砺初心","dìlì chūxīn","закалять / укреплять первоначальное устремление","mil"],
+  ["闻令而动","wén lìng ér dòng","немедленно действовать по приказу; мгновенно реагировать на команду","mil"],
+  ["奔赴战场","bēnfù zhànchǎng","устремляться на поле боя","mil"],
+  ["轮战驻训","lún zhàn zhù xùn","ротационные боевые учения на местах дислокации","mil"],
+  ["因战而建、为战而飞、向战而行","yīn zhàn ér jiàn, wèi zhàn ér fēi, xiàng zhàn ér xíng","создана ради войны, летает ради войны, движется к войне (боевой девиз ВВС)","mil"],
+  ["换装转型","huànzhuāng zhuǎnxíng","перевооружение и трансформация (воен.)","mil"],
+  ["不竭动力","bùjié dònglì","неиссякаемая движущая сила","mil"],
+  ["战备训练","zhànbèi xùnliàn","боевая подготовка; боевые учения","mil"],
+  ["打仗能力","dǎzhàng nénglì","боевые возможности / боеспособность","mil"],
+  ["基层部队","jīcéng bùduì","низовые части / части первичного звена","mil"],
+  ["加力升空","jiālì shēngkōng","взлетать с форсажом / на форсированной тяге","mil"],
+  ["空战场态势","kōng zhàn chǎng tàishì","воздушная тактическая обстановка","mil"],
+  ["扑面而来","pū miàn ér lái","обрушиваться лавиной; захлёстывать (образн.)","phr"],
+  ["背对背展开攻防","bèi duì bèi zhǎnkāi gōngfáng","«спина к спине» развёртывать атаку и оборону","mil"],
+  ["穿针引线","chuān zhēn yǐn xiàn","«продевать нить в иголку» — здесь образ воздушной дозаправки (чэнъюй: быть посредником)","phr"],
+  ["反复切换","fǎnfù qiēhuàn","многократно переключаться между состояниями","mil"],
+  ["突破能力边界","tūpò nénglì biānjie","прорывать границы собственных возможностей","mil"],
+  ["夜幕降临","yèmù jiànglín","спускается ночной покров; наступает ночь (устойчивый образ)","phr"],
+  ["万家灯火","wàn jiā dēng huǒ","огни тысяч домов; мирный свет окон (устойчивый образ)","phr"],
+  ["守护家国安宁","shǒuhù jiā guó ānníng","хранить мир семьи и Родины","mil"],
+  ["油然而生","yóurán ér shēng","возникать само собой; непроизвольно рождаться (о чувствах) — чэнъюй","phr"]
+];
+const catNames={"all": "Все разделы", "pol": "🏛️ Политика", "tech": "🔬 Технологии и блокчейн", "agr": "🌾 Агронаука", "edu": "🏫 Образование", "sport": "🏅 Спорт", "mil": "✈️ Армия", "phr": "🧠 Устойчивые выражения"};
+let deck=[],idx=0,knownOnly=false,known=new Set(),curCat="all";
+function buildDeck(){
+  deck=ALL.filter(c=>curCat==="all"||c[3]===curCat);
+  if(knownOnly)deck=deck.filter(c=>!known.has(c[0]));
+  idx=0;render();
+}
+function render(){
+  if(!deck.length){
+    document.getElementById("fZh").textContent="—";
+    document.getElementById("fPy").textContent="Нет карточек";
+    document.getElementById("fRu").textContent="Измените фильтр";
+    document.getElementById("catTag").textContent="";
+    document.getElementById("pos").textContent="0 / 0";
+    document.getElementById("prog").style.width="0%";
+    document.getElementById("statLabel").textContent="0 карточек";
+    return;
+  }
+  const c=deck[idx];
+  document.getElementById("fZh").textContent=c[0];
+  document.getElementById("fPy").textContent=c[1];
+  document.getElementById("fRu").textContent=c[2];
+  document.getElementById("catTag").textContent=catNames[c[3]]||"";
+  document.getElementById("pos").textContent=(idx+1)+" / "+deck.length;
+  document.getElementById("prog").style.width=Math.round((idx+1)/deck.length*100)+"%";
+  document.getElementById("statLabel").textContent=deck.length+" карточек";
+  document.getElementById("card").classList.remove("flipped");
+  document.getElementById("knownN").textContent=known.size;
+  document.getElementById("totalN").textContent=ALL.length;
+  document.querySelector(".card-wrap").style.opacity=known.has(c[0])?"0.6":"1";
+}
+function flip(){document.getElementById("card").classList.toggle("flipped");}
+function next(){if(idx<deck.length-1){idx++;render();}}
+function prev(){if(idx>0){idx--;render();}}
+function shuffle(){deck.sort(()=>Math.random()-.5);idx=0;render();}
+function filterCat(){curCat=document.getElementById("catSel").value;buildDeck();}
+function markKnown(){if(deck.length){known.add(deck[idx][0]);document.getElementById("knownN").textContent=known.size;next();}}
+function markUnknown(){if(deck.length){known.delete(deck[idx][0]);render();}}
+function toggleKnownOnly(){knownOnly=!knownOnly;document.getElementById("knownOnly").classList.toggle("active",knownOnly);buildDeck();}
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key==="ArrowDown")next();
+  if(e.key==="ArrowLeft"||e.key==="ArrowUp")prev();
+  if(e.key===" "){e.preventDefault();flip();}
+  if(e.key==="k"||e.key==="K")markKnown();
+  if(e.key==="u"||e.key==="U")markUnknown();
+});
+buildDeck();
+</script>
+</body>
+</html>
